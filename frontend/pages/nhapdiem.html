@@ -1,0 +1,61 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Nhập Điểm Lớp Tín Chỉ</h1>
+    <div class="breadcrumb">
+      <span class="breadcrumb-item">Trang chủ</span>
+      <span>/</span>
+      <span class="breadcrumb-item active">Nhập Điểm</span>
+    </div>
+  </div>
+  <div style="display: flex; gap: 12px;">
+    <button class="btn btn-secondary" id="btnRefreshDiem">
+      ↻ Làm mới
+    </button>
+    <button class="btn btn-primary" id="btnSaveAllDiem">
+      💾 Lưu tất cả thay đổi
+    </button>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+  <div class="card-body">
+    <div style="display: flex; gap: 16px; align-items: flex-end;">
+      <div class="form-group" style="margin-bottom: 0; flex: 1; max-width: 300px;">
+        <label class="form-label" for="selectLopTinChi">Chọn Lớp Tín Chỉ</label>
+        <select id="selectLopTinChi" class="form-control">
+          <option value="">-- Chọn một lớp tín chỉ --</option>
+          <!-- Sẽ được fill bằng JS -->
+        </select>
+      </div>
+      <button class="btn btn-primary" id="btnLoadDanhSach">Tải danh sách</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="bangDiemCard" style="display: none;">
+  <div class="card-header">
+    <h3 class="card-title">Bảng điểm sinh viên</h3>
+    <span style="font-size: 13px; color: var(--text-muted);" id="unsavedWarning"></span>
+  </div>
+  <div class="table-responsive">
+    <table class="table" id="tableDiem">
+      <thead>
+        <tr>
+          <th width="50">STT</th>
+          <th width="150">Mã SV</th>
+          <th>Họ và Tên</th>
+          <th width="100" style="text-align: center;">Điểm CC (10%)</th>
+          <th width="100" style="text-align: center;">Điểm GK (30%)</th>
+          <th width="100" style="text-align: center;">Điểm CK (60%)</th>
+          <th width="120" style="text-align: center; font-weight: bold; color: var(--primary-color);">Điểm TK</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyDiem">
+        <!-- JS sẽ render ở đây -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Import script riêng cho trang này -->
+<script src="js/modules/nhapdiem.js"></script>

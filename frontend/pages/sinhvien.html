@@ -1,0 +1,89 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Quản lý Sinh viên</h1>
+    <div class="breadcrumb">
+      <span class="breadcrumb-item">Trang chủ</span>
+      <span>/</span>
+      <span class="breadcrumb-item active">Sinh viên</span>
+    </div>
+  </div>
+  <button class="btn btn-primary" id="btnAddSV">+ Thêm sinh viên</button>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+  <div class="card-body">
+    <div style="display: flex; gap: 16px; align-items: flex-end;">
+      <div class="form-group" style="margin-bottom: 0; flex: 1; max-width: 300px;">
+        <label class="form-label" for="selectLopSV">Chọn Lớp học</label>
+        <select id="selectLopSV" class="form-control">
+          <option value="">-- Chọn một lớp --</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="btnLoadSV">Hiển thị danh sách</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="cardSV" style="display: none;">
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Mã SV</th>
+          <th>Họ</th>
+          <th>Tên</th>
+          <th>Mã Lớp</th>
+          <th>Phái</th>
+          <th style="text-align: center;">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="7" style="text-align:center;">Dữ liệu sẽ được tải từ SP_GET_ALL_SINHVIEN</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal thêm/sửa Sinh Viên -->
+<div class="modal-overlay" id="modalSV">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalTitleSV">Thêm Sinh Viên</h3>
+      <button class="btn-close" id="btnCloseModalSV">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="formSV">
+        <div class="form-group">
+          <label class="form-label required" for="maSV">Mã Sinh Viên</label>
+          <input type="text" id="maSV" class="form-control" required placeholder="Ví dụ: N19DCCN001">
+        </div>
+        <div style="display: flex; gap: 16px;">
+          <div class="form-group" style="flex: 2;">
+            <label class="form-label required" for="hoSV">Họ và đệm</label>
+            <input type="text" id="hoSV" class="form-control" required placeholder="Ví dụ: Nguyễn Văn">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label required" for="tenSV">Tên</label>
+            <input type="text" id="tenSV" class="form-control" required placeholder="Ví dụ: A">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label required" for="phaiSV">Giới tính</label>
+          <select id="phaiSV" class="form-control">
+            <option value="0">Nam</option>
+            <option value="1">Nữ</option>
+          </select>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnCancelModalSV">Huỷ</button>
+      <button class="btn btn-primary" id="btnSaveSV">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/modules/sinhvien.js"></script>

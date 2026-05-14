@@ -1,0 +1,76 @@
+/* ====================================
+   FORM STYLES
+   File: css/forms.css
+==================================== */
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.form-label.required::after {
+  content: " *";
+  color: var(--danger-color);
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-main);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.form-control:disabled,
+.form-control[readonly] {
+  background-color: var(--bg-main);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* ====================================
+   INLINE EDIT (Dùng cho Nhập Điểm)
+==================================== */
+.inline-input {
+  width: 80px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  background-color: transparent;
+  border-radius: 4px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.inline-input:hover {
+  border-color: var(--border-color);
+  background-color: var(--bg-surface);
+}
+
+.inline-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: var(--bg-surface);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.inline-input.is-invalid {
+  border-color: var(--danger-color);
+  background-color: #fef2f2;
+}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Quản lý Điểm Sinh Viên</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/table.css">
+  <link rel="stylesheet" href="css/forms.css">
+</head>
+
+<body>
+
+  <div class="app-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <span>PTIT</span>
+      </div>
+      <div class="sidebar-menu" id="sidebarMenu">
+        <!-- Dynamic menu based on role will be injected here by sidebar.js -->
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+      <!-- TOP NAVBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="btn-icon" id="toggleSidebar" title="Toggle Sidebar">☰</button>
+        </div>
+        <div class="topbar-right">
+          <div class="user-profile" id="userProfileBtn">
+            <div class="user-info" style="text-align: right;">
+              <span class="user-name" id="displayFullName">Đang tải...</span>
+              <span class="user-role" id="displayRole">Role</span>
+            </div>
+            <div class="avatar">U</div>
+          </div>
+          <button class="btn-icon" id="btnLogout" title="Đăng xuất">⎋</button>
+        </div>
+      </header>
+
+      <!-- DYNAMIC PAGE CONTENT -->
+      <div class="page-content" id="pageContent">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Tổng quan</h1>
+            <div class="breadcrumb">
+              <span class="breadcrumb-item">Trang chủ</span>
+              <span>/</span>
+              <span class="breadcrumb-item active">Tổng quan</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <h3>Chào mừng đến với Hệ thống Quản lý Điểm theo Hệ Tín Chỉ</h3>
+            <p style="color: var(--text-muted); margin-top: 10px;">
+              Vui lòng chọn chức năng trên menu bên trái để tiếp tục.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- CORE SCRIPTS -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/components/toast.js"></script>
+  <script src="js/sidebar.js"></script>
+  <script src="js/dashboard.js"></script>
+
+  <script>
+    // Kiểm tra đăng nhập
+    document.addEventListener('DOMContentLoaded', () => {
+      Auth.checkAuth();
+
+      const user = Auth.getUser();
+      if (user) {
+        document.getElementById('displayFullName').textContent = user.fullName || user.username;
+        document.getElementById('displayRole').textContent = user.role;
+        document.querySelector('.avatar').textContent = (user.fullName || user.username).charAt(0).toUpperCase();
+      }
+
+      // Khởi tạo sidebar theo role
+      Sidebar.init(user ? user.role : null);
+
+      // Đăng xuất
+      document.getElementById('btnLogout').addEventListener('click', () => {
+        Auth.logout();
+      });
+
+      // Toggle Sidebar
+      document.getElementById('toggleSidebar').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('collapsed');
+      });
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập - Quản lý Điểm Sinh Viên</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/forms.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: var(--bg-main);
+    }
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      padding: 32px;
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+    }
+    .login-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .login-title {
+      font-size: 24px;
+      color: var(--primary-color);
+      margin-bottom: 8px;
+    }
+    .login-subtitle {
+      color: var(--text-muted);
+    }
+    .error-message {
+      color: var(--danger-color);
+      font-size: 13px;
+      margin-bottom: 16px;
+      text-align: center;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="login-header">
+      <h1 class="login-title">Hệ Tín Chỉ</h1>
+      <p class="login-subtitle">Đăng nhập hệ thống quản lý điểm</p>
+    </div>
+
+    <div id="errorMsg" class="error-message"></div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label class="form-label" for="username">Tên đăng nhập</label>
+        <input type="text" id="username" class="form-control" required placeholder="Nhập mã sinh viên hoặc mã GV">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Mật khẩu</label>
+        <input type="password" id="password" class="form-control" required placeholder="Nhập mật khẩu">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 16px;">
+        Đăng nhập
+      </button>
+    </form>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      const errorMsg = document.getElementById('errorMsg');
+
+      try {
+        errorMsg.style.display = 'none';
+        await Auth.login(user, pass);
+        window.location.href = 'index.html';
+      } catch (error) {
+        errorMsg.textContent = error.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
+        errorMsg.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
