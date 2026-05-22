@@ -35,10 +35,26 @@
   font-weight: 700;
   font-size: 18px;
   color: var(--primary-color);
+  gap: 12px;
+}
+
+.sidebar-logo {
+  height: 56px;
+  width: auto;
+  border-radius: var(--radius-sm);
 }
 
 .sidebar.collapsed .sidebar-header span {
   display: none;
+}
+
+.sidebar.collapsed .sidebar-header .sidebar-logo {
+  margin: 0 auto;
+}
+
+.sidebar.collapsed .sidebar-header {
+  padding: 0;
+  justify-content: center;
 }
 
 .sidebar-menu {
