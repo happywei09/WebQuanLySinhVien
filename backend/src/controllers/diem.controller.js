@@ -46,6 +46,9 @@ const updateBatchDiem = async (req, res, next) => {
 
 const reportBangDiemMonHoc = async (req, res, next) => {
   try {
+    if (req.user.role === 'SINHVIEN') {
+      return res.status(403).json({ success: false, message: "Bạn không có quyền xem báo cáo này." });
+    }
     const data = await diemService.reportBangDiemMonHoc(parseInt(req.params.maLTC));
     res.json({ success: true, message: "Success", data });
   } catch (error) { next(error); }
@@ -53,13 +56,20 @@ const reportBangDiemMonHoc = async (req, res, next) => {
 
 const reportPhieuDiem = async (req, res, next) => {
   try {
-    const data = await diemService.reportPhieuDiem(req.params.maSV);
+    const { maSV } = req.params;
+    if (req.user.role === 'SINHVIEN' && req.user.username !== maSV) {
+      return res.status(403).json({ success: false, message: "Bạn chỉ được phép xem phiếu điểm của chính mình." });
+    }
+    const data = await diemService.reportPhieuDiem(maSV);
     res.json({ success: true, message: "Success", data });
   } catch (error) { next(error); }
 };
 
 const reportBangDiemTongKet = async (req, res, next) => {
   try {
+    if (req.user.role === 'SINHVIEN') {
+      return res.status(403).json({ success: false, message: "Bạn không có quyền xem báo cáo này." });
+    }
     const data = await diemService.reportBangDiemTongKet(req.params.maLop);
     res.json({ success: true, message: "Success", data });
   } catch (error) { next(error); }
@@ -67,6 +77,9 @@ const reportBangDiemTongKet = async (req, res, next) => {
 
 const reportDSSVDangKy = async (req, res, next) => {
   try {
+    if (req.user.role === 'SINHVIEN') {
+      return res.status(403).json({ success: false, message: "Bạn không có quyền xem báo cáo này." });
+    }
     const data = await diemService.reportDSSVDangKy(parseInt(req.params.maLTC));
     res.json({ success: true, message: "Success", data });
   } catch (error) { next(error); }
@@ -74,6 +87,9 @@ const reportDSSVDangKy = async (req, res, next) => {
 
 const reportDSLopTinChi = async (req, res, next) => {
   try {
+    if (req.user.role === 'SINHVIEN') {
+      return res.status(403).json({ success: false, message: "Bạn không có quyền xem báo cáo này." });
+    }
     const { nienKhoa, hocKy } = req.query;
     const data = await diemService.reportDSLopTinChi(nienKhoa, parseInt(hocKy));
     res.json({ success: true, message: "Success", data });

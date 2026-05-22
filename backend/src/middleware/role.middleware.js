@@ -55,16 +55,16 @@ const PERMISSIONS = {
   // Quản lý Lớp
   LOP: {
     VIEW: ["PGV", "KHOA"],
-    CREATE: ["PGV", "KHOA"],
-    UPDATE: ["PGV", "KHOA"],
+    CREATE: ["PGV"],
+    UPDATE: ["PGV"],
     DELETE: ["PGV"],
   },
 
   // Quản lý Sinh viên
   SINHVIEN: {
     VIEW: ["PGV", "KHOA"],
-    CREATE: ["PGV", "KHOA"],
-    UPDATE: ["PGV", "KHOA"],
+    CREATE: ["PGV"],
+    UPDATE: ["PGV"],
     DELETE: ["PGV"],
   },
 
@@ -87,17 +87,17 @@ const PERMISSIONS = {
   // Quản lý Lớp tín chỉ
   LOPTINCHI: {
     VIEW: ["PGV", "KHOA"],
-    CREATE: ["PGV", "KHOA"],
-    UPDATE: ["PGV", "KHOA"],
+    CREATE: ["PGV"],
+    UPDATE: ["PGV"],
     DELETE: ["PGV"],
-    CANCEL: ["PGV", "KHOA"],
+    CANCEL: ["PGV"],
   },
 
   // Đăng ký tín chỉ
   DANGKY: {
     VIEW: ["PGV", "KHOA", "SINHVIEN"],
-    CREATE: ["PGV", "KHOA", "SINHVIEN"],
-    CANCEL: ["PGV", "KHOA", "SINHVIEN"],
+    CREATE: ["PGV", "SINHVIEN"],
+    CANCEL: ["PGV", "SINHVIEN"],
     DELETE: ["PGV"],
   },
 
@@ -109,7 +109,7 @@ const PERMISSIONS = {
 
   // Báo cáo
   REPORT: {
-    VIEW: ["PGV", "KHOA"],
+    VIEW: ["PGV", "KHOA", "SINHVIEN"],
   },
 };
 

@@ -24,7 +24,16 @@ window.KhoaModule = {
   },
 
   bindEvents() {
-    document.getElementById('btnAddKhoa').onclick = () => this.openModal();
+    const user = Auth.getUser();
+    const isPGV = user && user.role === 'PGV';
+    const btnAdd = document.getElementById('btnAddKhoa');
+    if (btnAdd) {
+      if (isPGV) {
+        btnAdd.onclick = () => this.openModal();
+      } else {
+        btnAdd.style.display = 'none';
+      }
+    }
     document.getElementById('btnCloseModal').onclick = () => this.closeModal();
     document.getElementById('btnCancelModal').onclick = () => this.closeModal();
     this.btnSave.onclick = () => this.handleSave();
@@ -56,15 +65,22 @@ window.KhoaModule = {
       return;
     }
 
+    const user = Auth.getUser();
+    const isPGV = user && user.role === 'PGV';
+
     data.forEach((item, index) => {
       const tr = document.createElement('tr');
+      const actionContent = isPGV 
+        ? `<button class="btn btn-secondary btn-sm" onclick="KhoaModule.openModal('${item.MAKHOA}', '${item.TENKHOA}')">Sửa</button>
+           <button class="btn btn-danger btn-sm" onclick="KhoaModule.handleDelete('${item.MAKHOA}')">Xoá</button>`
+        : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+
       tr.innerHTML = `
         <td>${index + 1}</td>
         <td>${item.MAKHOA}</td>
         <td>${item.TENKHOA}</td>
         <td style="text-align: center;">
-          <button class="btn btn-secondary btn-sm" onclick="KhoaModule.openModal('${item.MAKHOA}', '${item.TENKHOA}')">Sửa</button>
-          <button class="btn btn-danger btn-sm" onclick="KhoaModule.handleDelete('${item.MAKHOA}')">Xoá</button>
+          ${actionContent}
         </td>
       `;
       this.tbody.appendChild(tr);

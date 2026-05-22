@@ -1,0 +1,41 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Phiếu Điểm Cá Nhân</h1>
+    <div class="breadcrumb">
+      <span class="breadcrumb-item">Trang chủ</span>
+      <span>/</span>
+      <span class="breadcrumb-item active">Phiếu điểm</span>
+    </div>
+  </div>
+  <button class="btn btn-secondary" onclick="window.print()">🖨️ In Phiếu Điểm</button>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Kết quả học tập cá nhân</h3>
+  </div>
+  <div class="card-body">
+    <div id="studentInfoBox" style="margin-bottom: 20px; padding: 12px; background: var(--bg-hover); border-radius: var(--radius-md);">
+      <strong>Sinh viên:</strong> <span id="pdFullName">Đang tải...</span> | 
+      <strong>Mã SV:</strong> <span id="pdMaSV">Đang tải...</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table" id="tablePhieuDiem">
+        <thead>
+          <tr>
+            <th width="80">STT</th>
+            <th>Tên Môn Học</th>
+            <th width="150" style="text-align: center;">Điểm</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyPhieuDiem">
+          <tr>
+            <td colspan="3" style="text-align: center;">Đang tải dữ liệu điểm...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="js/modules/phieudiem.js"></script>

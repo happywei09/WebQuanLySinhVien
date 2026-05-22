@@ -69,8 +69,16 @@ window.GiangVienModule = {
   },
 
   bindEvents() {
+    const user = Auth.getUser();
+    const isPGV = user && user.role === 'PGV';
     const btnAdd = document.querySelector('.page-header .btn-primary');
-    if (btnAdd) btnAdd.onclick = () => this.openModal();
+    if (btnAdd) {
+      if (isPGV) {
+        btnAdd.onclick = () => this.openModal();
+      } else {
+        btnAdd.style.display = 'none';
+      }
+    }
     
     document.getElementById('btnCloseModalGV').onclick = () => this.closeModal();
     document.getElementById('btnCancelModalGV').onclick = () => this.closeModal();
@@ -86,15 +94,22 @@ window.GiangVienModule = {
       }
     } catch (e) {}
   },
-
   async loadData() {
+    const user = Auth.getUser();
+    const isPGV = user && user.role === 'PGV';
+
     try {
       this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Đang tải...</td></tr>';
       const res = await API.get('/giangvien');
       if (res.success) {
         this.tbody.innerHTML = res.data.length === 0 
           ? '<tr><td colspan="7" style="text-align:center;">Không có dữ liệu</td></tr>'
-          : res.data.map((item, index) => `
+          : res.data.map((item, index) => {
+            const actionContent = isPGV
+              ? `<button class="btn btn-secondary btn-sm" onclick="window.GiangVienModule.openModal('${item.MAGV}', '${item.HO}', '${item.TEN}', '${item.HOCVI}', '${item.HOCHAM}', '${item.MAKHOA}')">Sửa</button>
+                 <button class="btn btn-danger btn-sm" onclick="window.GiangVienModule.handleDelete('${item.MAGV}')">Xóa</button>`
+              : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+            return `
             <tr>
               <td>${index + 1}</td>
               <td>${item.MAGV}</td>
@@ -103,10 +118,10 @@ window.GiangVienModule = {
               <td>${item.HOCHAM}</td>
               <td>${item.MAKHOA}</td>
               <td style="text-align:center;">
-                <button class="btn btn-secondary btn-sm" onclick="window.GiangVienModule.openModal('${item.MAGV}', '${item.HO}', '${item.TEN}', '${item.HOCVI}', '${item.HOCHAM}', '${item.MAKHOA}')">Sửa</button>
-                <button class="btn btn-danger btn-sm" onclick="window.GiangVienModule.handleDelete('${item.MAGV}')">Xóa</button>
+                ${actionContent}
               </td>
-            </tr>`).join('');
+            </tr>`;
+          }).join('');
       }
     } catch (error) { Toast.error(error.message); }
   },

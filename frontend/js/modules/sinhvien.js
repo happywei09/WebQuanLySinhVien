@@ -28,8 +28,19 @@ window.SinhVienModule = {
   },
 
   bindEvents() {
+    const user = Auth.getUser();
+    const isPGV = user && user.role === 'PGV';
+    
     this.btnLoad.onclick = () => this.loadSinhVien();
-    this.btnAdd.onclick = () => this.openModal();
+    
+    if (this.btnAdd) {
+      if (isPGV) {
+        this.btnAdd.onclick = () => this.openModal();
+      } else {
+        this.btnAdd.style.display = 'none';
+      }
+    }
+    
     document.getElementById('btnCloseModalSV').onclick = () => this.closeModal();
     document.getElementById('btnCancelModalSV').onclick = () => this.closeModal();
     this.btnSave.onclick = () => this.handleSave();
@@ -74,8 +85,17 @@ window.SinhVienModule = {
       return;
     }
 
+    const user = Auth.getUser();
+    const isPGV = user && user.role === 'PGV';
+
     data.forEach((sv, index) => {
       const tr = document.createElement('tr');
+      
+      const actionContent = isPGV
+        ? `<button class="btn btn-secondary btn-sm" onclick="window.SinhVienModule.openModal('${sv.MASV}', '${sv.HO}', '${sv.TEN}', ${sv.PHAI ? 1 : 0})">Sửa</button>
+           <button class="btn btn-danger btn-sm" onclick="window.SinhVienModule.handleDelete('${sv.MASV}')">Xoá</button>`
+        : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+
       tr.innerHTML = `
         <td>${index + 1}</td>
         <td>${sv.MASV}</td>
@@ -84,8 +104,7 @@ window.SinhVienModule = {
         <td>${sv.MALOP}</td>
         <td>${sv.PHAI ? 'Nữ' : 'Nam'}</td>
         <td style="text-align: center;">
-          <button class="btn btn-secondary btn-sm" onclick="window.SinhVienModule.openModal('${sv.MASV}', '${sv.HO}', '${sv.TEN}', ${sv.PHAI ? 1 : 0})">Sửa</button>
-          <button class="btn btn-danger btn-sm" onclick="window.SinhVienModule.handleDelete('${sv.MASV}')">Xoá</button>
+          ${actionContent}
         </td>
       `;
       this.tbody.appendChild(tr);

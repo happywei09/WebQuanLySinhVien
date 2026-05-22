@@ -82,8 +82,16 @@ window.LopTinChiModule = {
   },
 
   bindEvents() {
+    const user = Auth.getUser();
+    const isPGV = user && user.role === 'PGV';
     const btnAdd = document.querySelector('.page-header .btn-primary');
-    if (btnAdd) btnAdd.onclick = () => this.openModal();
+    if (btnAdd) {
+      if (isPGV) {
+        btnAdd.onclick = () => this.openModal();
+      } else {
+        btnAdd.style.display = 'none';
+      }
+    }
     
     document.getElementById('btnCloseModalLTC').onclick = () => this.closeModal();
     document.getElementById('btnCancelModalLTC').onclick = () => this.closeModal();
@@ -104,15 +112,22 @@ window.LopTinChiModule = {
       }
     } catch(e) {}
   },
-
   async loadData() {
+    const user = Auth.getUser();
+    const isPGV = user && user.role === 'PGV';
+
     try {
       this.tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Đang tải...</td></tr>';
       const res = await API.get('/loptinchi');
       if (res.success) {
         this.tbody.innerHTML = res.data.length === 0 
           ? '<tr><td colspan="9" style="text-align:center;">Không có dữ liệu</td></tr>'
-          : res.data.map((item) => `
+          : res.data.map((item) => {
+            const actionBtn = isPGV
+              ? `<button class="btn btn-secondary btn-sm" onclick="window.LopTinChiModule.openModal(${item.MALTC}, '${item.NIENKHOA}', ${item.HOCKY}, '${item.MAMH}', ${item.NHOM}, '${item.MAGV}', ${item.SOSVMIN}, ${item.HUYLOP ? 1 : 0})">Sửa</button>
+                 <button class="btn btn-danger btn-sm" onclick="window.LopTinChiModule.handleDelete(${item.MALTC})">Xóa</button>`
+              : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+            return `
             <tr>
               <td>${item.MALTC}</td>
               <td>${item.NIENKHOA}</td>
@@ -123,10 +138,10 @@ window.LopTinChiModule = {
               <td>${item.SOSVMIN}</td>
               <td>${item.HUYLOP ? '<span style="color:red">Đã hủy</span>' : '<span style="color:green">Đang mở</span>'}</td>
               <td style="text-align:center;">
-                <button class="btn btn-secondary btn-sm" onclick="window.LopTinChiModule.openModal(${item.MALTC}, '${item.NIENKHOA}', ${item.HOCKY}, '${item.MAMH}', ${item.NHOM}, '${item.MAGV}', ${item.SOSVMIN}, ${item.HUYLOP ? 1 : 0})">Sửa</button>
-                <button class="btn btn-danger btn-sm" onclick="window.LopTinChiModule.handleDelete(${item.MALTC})">Xóa</button>
+                ${actionBtn}
               </td>
-            </tr>`).join('');
+            </tr>`;
+          }).join('');
       }
     } catch (error) { Toast.error(error.message); }
   },

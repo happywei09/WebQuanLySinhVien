@@ -12,6 +12,7 @@ const MENU_ITEMS = [
   { id: 'monhoc', title: 'Quản lý Môn học', icon: '📚', roles: ['PGV', 'KHOA'], file: 'monhoc.html' },
   { id: 'loptinchi', title: 'Lớp Tín Chỉ', icon: '📋', roles: ['PGV', 'KHOA'], file: 'loptinchi.html' },
   { id: 'dangky', title: 'Đăng ký Tín chỉ', icon: '✍️', roles: ['PGV', 'KHOA', 'SINHVIEN'], file: 'dangky.html' },
+  { id: 'phieudiem', title: 'Phiếu Điểm Cá Nhân', icon: '📜', roles: ['SINHVIEN'], file: 'phieudiem.html' },
   { id: 'nhapdiem', title: 'Nhập Điểm', icon: '📝', roles: ['PGV', 'KHOA'], file: 'nhapdiem.html' },
   { id: 'reports', title: 'Báo cáo Thống kê', icon: '📊', roles: ['PGV', 'KHOA'], file: 'reports.html' }
 ];

@@ -57,8 +57,16 @@ window.MonHocModule = {
   },
 
   bindEvents() {
+    const user = Auth.getUser();
+    const isPGV = user && user.role === 'PGV';
     const btnAdd = document.querySelector('.page-header .btn-primary');
-    if (btnAdd) btnAdd.onclick = () => this.openModal();
+    if (btnAdd) {
+      if (isPGV) {
+        btnAdd.onclick = () => this.openModal();
+      } else {
+        btnAdd.style.display = 'none';
+      }
+    }
     
     document.getElementById('btnCloseModalMH').onclick = () => this.closeModal();
     document.getElementById('btnCancelModalMH').onclick = () => this.closeModal();
@@ -66,13 +74,21 @@ window.MonHocModule = {
   },
 
   async loadData() {
+    const user = Auth.getUser();
+    const isPGV = user && user.role === 'PGV';
+
     try {
       this.tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Đang tải...</td></tr>';
       const res = await API.get('/monhoc');
       if (res.success) {
         this.tbody.innerHTML = res.data.length === 0 
           ? '<tr><td colspan="6" style="text-align:center;">Không có dữ liệu</td></tr>'
-          : res.data.map((item, index) => `
+          : res.data.map((item, index) => {
+            const actionContent = isPGV
+              ? `<button class="btn btn-secondary btn-sm" onclick="window.MonHocModule.openModal('${item.MAMH}', '${item.TENMH}', ${item.SOTIET_LT}, ${item.SOTIET_TH})">Sửa</button>
+                 <button class="btn btn-danger btn-sm" onclick="window.MonHocModule.handleDelete('${item.MAMH}')">Xóa</button>`
+              : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+            return `
             <tr>
               <td>${index + 1}</td>
               <td>${item.MAMH}</td>
@@ -80,10 +96,10 @@ window.MonHocModule = {
               <td>${item.SOTIET_LT}</td>
               <td>${item.SOTIET_TH}</td>
               <td style="text-align:center;">
-                <button class="btn btn-secondary btn-sm" onclick="window.MonHocModule.openModal('${item.MAMH}', '${item.TENMH}', ${item.SOTIET_LT}, ${item.SOTIET_TH})">Sửa</button>
-                <button class="btn btn-danger btn-sm" onclick="window.MonHocModule.handleDelete('${item.MAMH}')">Xóa</button>
+                ${actionContent}
               </td>
-            </tr>`).join('');
+            </tr>`;
+          }).join('');
       }
     } catch (error) { Toast.error(error.message); }
   },

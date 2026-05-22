@@ -25,17 +25,22 @@ class AuthService {
     // ====================================
     let user = null;
     
-    // Tài khoản test: admin/123, khoa/123, sv/123
+    // Tài khoản test: admin/123, khoa/123, sv/123 hoặc Mã SV bất kỳ/123
     if (username === "admin" && password === "123") {
       user = { USERNAME: "admin", ROLE: "PGV", FULLNAME: "Quản trị viên (PGV)" };
     } else if (username === "khoa" && password === "123") {
       user = { USERNAME: "khoa_cntt", ROLE: "KHOA", FULLNAME: "Giảng viên Khoa CNTT", MAKHOA: "CNTT" };
-    } else if (username === "sv" && password === "123") {
-      user = { USERNAME: "N20DCCN001", ROLE: "SINHVIEN", FULLNAME: "Nguyễn Văn A" };
+    } else if (password === "123") {
+      // Đối với sinh viên, tất cả dùng chung password '123' kết nối qua mã sinh viên nhập vào
+      user = { 
+        USERNAME: username.toUpperCase(), 
+        ROLE: "SINHVIEN", 
+        FULLNAME: "Sinh viên " + username.toUpperCase() 
+      };
     }
 
     if (!user) {
-      throw new Error("Tên đăng nhập hoặc mật khẩu không đúng. Thử: admin/123, khoa/123 hoặc sv/123");
+      throw new Error("Tên đăng nhập hoặc mật khẩu không đúng. Mật khẩu mặc định: 123");
     }
 
     // TODO: So sánh password (nếu lưu hash)
