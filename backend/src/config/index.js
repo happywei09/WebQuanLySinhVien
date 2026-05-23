@@ -10,23 +10,44 @@ module.exports = {
   },
 
   // ====================================
-  // DATABASE - SQL Server
+  // DATABASE - Dual Server Configuration
   // ====================================
-  database: {
-    server: process.env.DB_SERVER || "localhost",
-    port: parseInt(process.env.DB_PORT) || 1433,
-    database: process.env.DB_DATABASE || "QLDSV_HTC",
-    user: process.env.DB_USER || "sa",
-    password: process.env.DB_PASSWORD || "",
-    options: {
-      encrypt: process.env.DB_ENCRYPT === "true",
-      trustServerCertificate:
-        process.env.DB_TRUST_SERVER_CERTIFICATE === "true",
+  databases: {
+    server1: {
+      server: process.env.DB_SERVER_1 || "localhost",
+      port: parseInt(process.env.DB_PORT_1) || 1433,
+      database: process.env.DB_DATABASE_1 || "QLDSV_HTC",
+      user: process.env.DB_USER_1 || "sa",
+      password: process.env.DB_PASSWORD_1 || "",
+      displayName: process.env.DB_NAME_1 || "Server 1",
+      options: {
+        encrypt: process.env.DB_ENCRYPT_1 === "true",
+        trustServerCertificate:
+          process.env.DB_TRUST_SERVER_CERTIFICATE_1 === "true",
+      },
+      pool: {
+        max: 10,
+        min: 0,
+        idleTimeoutMillis: 30000,
+      },
     },
-    pool: {
-      max: 10,
-      min: 0,
-      idleTimeoutMillis: 30000,
+    server2: {
+      server: process.env.DB_SERVER_2 || "localhost",
+      port: parseInt(process.env.DB_PORT_2) || 1433,
+      database: process.env.DB_DATABASE_2 || "QLDSV",
+      user: process.env.DB_USER_2 || "sa",
+      password: process.env.DB_PASSWORD_2 || "",
+      displayName: process.env.DB_NAME_2 || "Server 2",
+      options: {
+        encrypt: process.env.DB_ENCRYPT_2 === "true",
+        trustServerCertificate:
+          process.env.DB_TRUST_SERVER_CERTIFICATE_2 === "true",
+      },
+      pool: {
+        max: 10,
+        min: 0,
+        idleTimeoutMillis: 30000,
+      },
     },
   },
 

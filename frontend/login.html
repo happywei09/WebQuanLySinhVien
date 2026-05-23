@@ -48,6 +48,65 @@
       text-align: center;
       display: none;
     }
+    /* Server selection styles */
+    .server-select-group {
+      margin-bottom: 20px;
+    }
+    .server-select-group label.form-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .server-select-group .server-icon {
+      font-size: 16px;
+    }
+    .server-select-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: var(--radius-md, 8px);
+      border: 1px solid var(--border-color);
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-size: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .server-select-group select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 59,130,246), 0.15);
+    }
+    .server-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .server-status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .server-status .dot.online {
+      background: #22c55e;
+      box-shadow: 0 0 6px rgba(34,197,94,0.5);
+    }
+    .server-status .dot.offline {
+      background: #ef4444;
+      box-shadow: 0 0 6px rgba(239,68,68,0.5);
+    }
+    .server-status .dot.loading {
+      background: #f59e0b;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
   </style>
 </head>
 <body>
@@ -61,6 +120,21 @@
     <div id="errorMsg" class="error-message"></div>
 
     <form id="loginForm">
+      <!-- Server Selection -->
+      <div class="server-select-group">
+        <label class="form-label" for="serverSelect">
+          <span class="server-icon">🖥️</span> Chọn Server
+        </label>
+        <select id="serverSelect" class="form-control">
+          <option value="server1">Server 1 (đang tải...)</option>
+          <option value="server2">Server 2 (đang tải...)</option>
+        </select>
+        <div class="server-status" id="serverStatus">
+          <span class="dot loading"></span>
+          <span>Đang kiểm tra kết nối...</span>
+        </div>
+      </div>
+
       <div class="form-group" style="display: flex; gap: 24px; justify-content: center; margin-bottom: 20px;">
         <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500; color: var(--text-main);">
           <input type="radio" name="loginType" value="giangvien" checked style="accent-color: var(--primary-color);"> GIẢNG VIÊN
@@ -89,7 +163,50 @@
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script>
+    // ====================================
+    // LOAD SERVER LIST FROM API
+    // ====================================
+    async function loadServerList() {
+      const select = document.getElementById('serverSelect');
+      const statusEl = document.getElementById('serverStatus');
+
+      try {
+        const response = await window.API.get('/servers');
+        if (response.success && response.data) {
+          select.innerHTML = '';
+          response.data.forEach(server => {
+            const option = document.createElement('option');
+            option.value = server.id;
+            const statusIcon = server.connected ? '🟢' : '🔴';
+            option.textContent = `${statusIcon} ${server.name} (${server.database})`;
+            option.disabled = !server.connected;
+            select.appendChild(option);
+          });
+
+          // Hiển thị trạng thái
+          const allConnected = response.data.every(s => s.connected);
+          const someConnected = response.data.some(s => s.connected);
+          
+          if (allConnected) {
+            statusEl.innerHTML = '<span class="dot online"></span><span>Tất cả server đang hoạt động</span>';
+          } else if (someConnected) {
+            statusEl.innerHTML = '<span class="dot online"></span><span>Một số server đang hoạt động</span>';
+          } else {
+            statusEl.innerHTML = '<span class="dot offline"></span><span>Không có server nào khả dụng</span>';
+          }
+        }
+      } catch (err) {
+        console.error('Không thể tải danh sách server:', err);
+        statusEl.innerHTML = '<span class="dot offline"></span><span>Không thể kết nối đến backend</span>';
+      }
+    }
+
+    // Load server list khi trang được tải
+    loadServerList();
+
+    // ====================================
     // Toggle label & placeholder based on radio selection
+    // ====================================
     const radioGVs = document.querySelectorAll('input[name="loginType"]');
     const lblUsername = document.getElementById('lblUsername');
     const inputUsername = document.getElementById('username');
@@ -106,15 +223,19 @@
       });
     });
 
+    // ====================================
+    // LOGIN FORM SUBMIT
+    // ====================================
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const user = document.getElementById('username').value;
       const pass = document.getElementById('password').value;
+      const serverId = document.getElementById('serverSelect').value;
       const errorMsg = document.getElementById('errorMsg');
 
       try {
         errorMsg.style.display = 'none';
-        await Auth.login(user, pass);
+        await Auth.login(user, pass, serverId);
         window.location.href = 'index.html';
       } catch (error) {
         errorMsg.textContent = error.message || 'Đăng nhập thất bại. Vui lòng thử lại.';

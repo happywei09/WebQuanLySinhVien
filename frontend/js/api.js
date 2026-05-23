@@ -19,6 +19,12 @@ class ApiClient {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
+
+    // Thêm server ID để backend biết route đến server nào
+    const serverId = localStorage.getItem('serverId');
+    if (serverId) {
+      headers['x-server-id'] = serverId;
+    }
     
     return headers;
   }

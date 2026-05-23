@@ -6,7 +6,7 @@ const authService = require("../services/auth.service");
 
 const login = async (req, res, next) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, serverId } = req.body;
 
     if (!username || !password) {
       return res.status(400).json({
@@ -15,7 +15,11 @@ const login = async (req, res, next) => {
       });
     }
 
-    const result = await authService.login(username, password);
+    const result = await authService.login(
+      username,
+      password,
+      serverId || "server1"
+    );
 
     res.json({
       success: true,

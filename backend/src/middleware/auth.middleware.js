@@ -28,6 +28,7 @@ const authenticate = (req, res, next) => {
       username: decoded.username,
       role: decoded.role,
       maKhoa: decoded.maKhoa,
+      serverId: decoded.serverId || "server1",
     };
 
     next();

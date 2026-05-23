@@ -1,10 +1,15 @@
 const express = require("express");
 const cors = require("cors");
-const morgan = require("morgan");
+const morgan = require("morgan"); // reload env trigger
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const config = require("./config");
-const { getPool, closeConnection } = require("./database/connection");
+const {
+  initAllPools,
+  closeAllConnections,
+  getAvailableServers,
+  dbStorage,
+} = require("./database/connection");
 const { errorHandler, notFound } = require("./middleware/error.middleware");
 
 // Import Routes
@@ -53,6 +58,49 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ====================================
+// SERVER CONTEXT MIDDLEWARE
+// ====================================
+// Xác định serverId cho mỗi request
+// Ưu tiên: Header x-server-id > JWT token > default "server1"
+// ====================================
+
+const jwt = require("jsonwebtoken");
+
+app.use((req, res, next) => {
+  let serverId = "server1"; // Default
+
+  // 1. Kiểm tra header x-server-id
+  if (req.headers["x-server-id"]) {
+    serverId = req.headers["x-server-id"];
+  }
+  // 2. Kiểm tra từ JWT token (nếu đã đăng nhập)
+  else {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      try {
+        const token = authHeader.split(" ")[1];
+        const decoded = jwt.verify(token, config.jwt.secret);
+        if (decoded.serverId) {
+          serverId = decoded.serverId;
+        }
+      } catch (err) {
+        // Token lỗi sẽ được xử lý bởi auth middleware sau
+      }
+    }
+  }
+
+  // Validate serverId
+  if (!["server1", "server2"].includes(serverId)) {
+    serverId = "server1";
+  }
+
+  // Lưu serverId vào AsyncLocalStorage để connection.js sử dụng
+  dbStorage.run(serverId, () => {
+    next();
+  });
+});
+
+// ====================================
 // ROUTES
 // ====================================
 
@@ -61,6 +109,12 @@ app.get("/", (req, res) => {
 });
 
 const API_PREFIX = "/api";
+
+// API lấy danh sách server khả dụng (dùng cho login page)
+app.get(`${API_PREFIX}/servers`, (req, res) => {
+  const servers = getAvailableServers();
+  res.json({ success: true, data: servers });
+});
 
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/khoa`, khoaRoutes);
@@ -85,13 +139,16 @@ app.use(errorHandler);
 
 async function startServer() {
   try {
-    // 1. Khởi tạo kết nối Database (SQL Server)
-    // Cố gắng kết nối, nếu lỗi thì thông báo nhưng vẫn chạy Server để dùng Mock Data
+    // 1. Khởi tạo kết nối cả 2 Database (SQL Server)
+    // Nếu 1 server lỗi thì vẫn chạy được với server còn lại
     try {
-      await getPool();
+      const poolResults = await initAllPools();
+      console.log("📊 Trạng thái kết nối:", poolResults);
     } catch (dbError) {
-      console.error("⚠️ Cảnh báo: Không thể kết nối SQL Server. Chế độ Mock API sẽ hoạt động.");
-      console.error("Chi tiết lỗi DB:", dbError.message);
+      console.error(
+        "⚠️ Cảnh báo: Lỗi khởi tạo database pools:",
+        dbError.message
+      );
     }
 
     // 2. Start Express server
@@ -104,7 +161,7 @@ async function startServer() {
     // Handle graceful shutdown
     process.on("SIGINT", async () => {
       console.log("Đang đóng server...");
-      await closeConnection();
+      await closeAllConnections();
       server.close(() => {
         console.log("Server đã đóng.");
         process.exit(0);

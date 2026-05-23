@@ -35,6 +35,10 @@
           <button class="btn-icon" id="toggleSidebar" title="Toggle Sidebar">☰</button>
         </div>
         <div class="topbar-right">
+          <div id="serverBadge" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; background: rgba(59,130,246,0.12); color: var(--primary-color); font-size: 12px; font-weight: 600; margin-right: 12px; border: 1px solid rgba(59,130,246,0.25);">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block;"></span>
+            <span id="displayServerName">Server 1</span>
+          </div>
           <div class="user-profile" id="userProfileBtn">
             <div class="user-info" style="text-align: right;">
               <span class="user-name" id="displayFullName">Đang tải...</span>
@@ -93,6 +97,10 @@
         document.getElementById('displayFullName').textContent = user.fullName || user.username;
         document.getElementById('displayRole').textContent = user.role;
         document.querySelector('.avatar').textContent = (user.fullName || user.username).charAt(0).toUpperCase();
+        // Hiển thị tên server đang kết nối
+        if (user.serverName) {
+          document.getElementById('displayServerName').textContent = user.serverName;
+        }
       }
 
       // Khởi tạo sidebar theo role
