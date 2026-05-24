@@ -27,7 +27,8 @@ const getLopTinChiByKhoa = async (req, res, next) => {
 
 const getLopTinChiByNienKhoaHocKy = async (req, res, next) => {
   try {
-    const { nienKhoa, hocKy } = req.query;
+    const nienKhoa = req.query.nienKhoa || req.query.nienkhoa;
+    const hocKy = req.query.hocKy || req.query.hocky;
     const data = await loptinchiService.getLopTinChiByNienKhoaHocKy(
       nienKhoa,
       parseInt(hocKy)
