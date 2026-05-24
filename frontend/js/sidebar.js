@@ -4,17 +4,27 @@
 ==================================== */
 
 const MENU_ITEMS = [
-  { id: 'dashboard', title: 'Tổng quan', icon: '🏠', roles: ['PGV', 'KHOA', 'SINHVIEN'], file: 'dashboard.html' },
-  { id: 'khoa', title: 'Quản lý Khoa', icon: '🏛️', roles: ['PGV', 'KHOA'], file: 'khoa.html' },
-  { id: 'lop', title: 'Quản lý Lớp', icon: '🏫', roles: ['PGV', 'KHOA'], file: 'lop.html' },
-  { id: 'sinhvien', title: 'Quản lý Sinh viên', icon: '🎓', roles: ['PGV', 'KHOA'], file: 'sinhvien.html' },
-  { id: 'giangvien', title: 'Quản lý Giảng viên', icon: '👨‍🏫', roles: ['PGV', 'KHOA'], file: 'giangvien.html' },
-  { id: 'monhoc', title: 'Quản lý Môn học', icon: '📚', roles: ['PGV', 'KHOA'], file: 'monhoc.html' },
-  { id: 'loptinchi', title: 'Lớp Tín Chỉ', icon: '📋', roles: ['PGV', 'KHOA'], file: 'loptinchi.html' },
-  { id: 'dangky', title: 'Đăng ký Tín chỉ', icon: '✍️', roles: ['PGV', 'KHOA', 'SINHVIEN'], file: 'dangky.html' },
-  { id: 'phieudiem', title: 'Phiếu Điểm Cá Nhân', icon: '📜', roles: ['SINHVIEN'], file: 'phieudiem.html' },
-  { id: 'nhapdiem', title: 'Nhập Điểm', icon: '📝', roles: ['PGV', 'KHOA'], file: 'nhapdiem.html' },
-  { id: 'reports', title: 'Báo cáo Thống kê', icon: '📊', roles: ['PGV', 'KHOA'], file: 'reports.html' }
+  // Tất cả các nhóm đều thấy Tổng quan
+  { id: 'dashboard',  title: 'Tổng quan',           icon: '🏠',  roles: ['PGV', 'KHOA', 'SINHVIEN'], file: 'dashboard.html'  },
+
+  // ── Chỉ PGV ─────────────────────────────────────────────────────────────
+  { id: 'khoa',       title: 'Quản lý Khoa',         icon: '🏛️', roles: ['PGV'],                    file: 'khoa.html'       },
+  { id: 'lop',        title: 'Quản lý Lớp',          icon: '🏫', roles: ['PGV'],                    file: 'lop.html'        },
+  { id: 'sinhvien',   title: 'Quản lý Sinh viên',    icon: '🎓', roles: ['PGV'],                    file: 'sinhvien.html'   },
+  { id: 'giangvien',  title: 'Quản lý Giảng viên',   icon: '👨‍🏫', roles: ['PGV'],                    file: 'giangvien.html'  },
+  { id: 'monhoc',     title: 'Quản lý Môn học',      icon: '📚', roles: ['PGV'],                    file: 'monhoc.html'     },
+  { id: 'loptinchi',  title: 'Lớp Tín Chỉ',          icon: '📋', roles: ['PGV'],                    file: 'loptinchi.html'  },
+
+  // ── PGV + SV ────────────────────────────────────────────────────────────
+  // SV dùng để đăng ký tín chỉ; PGV cũng có thể xem
+  { id: 'dangky',     title: 'Đăng ký Tín chỉ',      icon: '✍️', roles: ['PGV', 'SINHVIEN'],        file: 'dangky.html'     },
+
+  // ── Chỉ SV ──────────────────────────────────────────────────────────────
+  { id: 'phieudiem',  title: 'Phiếu Điểm Cá Nhân',   icon: '📜', roles: ['SINHVIEN'],               file: 'phieudiem.html'  },
+
+  // ── PGV + KHOA ──────────────────────────────────────────────────────────
+  { id: 'nhapdiem',   title: 'Nhập Điểm',            icon: '📝', roles: ['PGV', 'KHOA'],             file: 'nhapdiem.html'   },
+  { id: 'reports',    title: 'Báo cáo Thống kê',     icon: '📊', roles: ['PGV', 'KHOA'],             file: 'reports.html'    },
 ];
 
 class Sidebar {

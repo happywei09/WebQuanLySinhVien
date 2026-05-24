@@ -1,17 +1,35 @@
 /* ====================================
    MODULE NHẬP ĐIỂM
    File: js/modules/nhapdiem.js
+   Quyền: PGV (toàn hệ thống) | KHOA (chỉ lớp thuộc khoa của mình)
 ==================================== */
 
-window. = {
+window.NhapDiemModule = {
   state: {
     currentLTC: null,
     danhSachDiem: [],     // Dữ liệu gốc từ server
     editedDiem: {},       // Dữ liệu đã thay đổi (chưa lưu) { MASV: { DIEM_CC, DIEM_GK, DIEM_CK } }
-    hasUnsavedChanges: false
+    hasUnsavedChanges: false,
   },
 
   async init() {
+    // Kiểm tra phân quyền: chỉ PGV và KHOA mới được vào
+    const user = Auth.getUser();
+    if (!user || (user.role !== 'PGV' && user.role !== 'KHOA')) {
+      const pageContent = document.getElementById('pageContent');
+      if (pageContent) {
+        pageContent.innerHTML = `
+          <div class="card">
+            <div class="card-body" style="text-align:center; padding:60px; color:var(--danger-color);">
+              <div style="font-size:48px; margin-bottom:16px;">🚫</div>
+              <h3>Không có quyền truy cập</h3>
+              <p style="color:var(--text-muted); margin-top:8px;">Chức năng Nhập Điểm chỉ dành cho Phòng Giáo Vụ (PGV) và Khoa.</p>
+            </div>
+          </div>`;
+      }
+      return;
+    }
+
     this.cacheDOM();
     this.bindEvents();
     await this.loadLopTinChi();
@@ -19,12 +37,12 @@ window. = {
 
   cacheDOM() {
     this.selectLTC = document.getElementById('selectLopTinChi');
-    this.btnLoad = document.getElementById('btnLoadDanhSach');
-    this.btnSave = document.getElementById('btnSaveAllDiem');
+    this.btnLoad   = document.getElementById('btnLoadDanhSach');
+    this.btnSave   = document.getElementById('btnSaveAllDiem');
     this.btnRefresh = document.getElementById('btnRefreshDiem');
-    this.tbody = document.getElementById('tbodyDiem');
-    this.card = document.getElementById('bangDiemCard');
-    this.warning = document.getElementById('unsavedWarning');
+    this.tbody     = document.getElementById('tbodyDiem');
+    this.card      = document.getElementById('bangDiemCard');
+    this.warning   = document.getElementById('unsavedWarning');
   },
 
   bindEvents() {
@@ -32,7 +50,7 @@ window. = {
     this.btnRefresh.addEventListener('click', () => this.loadDanhSachSinhVien());
     this.btnSave.addEventListener('click', () => this.saveAll());
 
-    // Cảnh báo khi người dùng rời trang mà chưa lưu
+    // Cảnh báo khi rời trang mà chưa lưu
     window.addEventListener('beforeunload', (e) => {
       if (this.state.hasUnsavedChanges) {
         e.preventDefault();
@@ -40,12 +58,10 @@ window. = {
       }
     });
 
-    // Lắng nghe event khi chuyển trang qua sidebar.js
     document.addEventListener('pageLoaded', (e) => {
       if (e.detail.pageId !== 'nhapdiem' && this.state.hasUnsavedChanges) {
         if (!confirm('Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn rời đi?')) {
-          // Logic để cancel routing trong một SPA xịn sẽ phức tạp hơn,
-          // Ở đây ta chỉ cảnh báo đơn giản.
+          // Cảnh báo đơn giản; routing đầy đủ cần xử lý thêm trong SPA phức tạp
         }
       }
     });
@@ -53,19 +69,18 @@ window. = {
 
   async loadLopTinChi() {
     try {
-      // Mock API call - Thực tế sẽ gọi API.get('/loptinchi')
-      // const res = await API.get('/loptinchi');
-      const mockData = [
-        { MALTC: 1, MAMH: 'INT1306', TENMH: 'Cơ sở dữ liệu', NHOM: 1, HOCKY: 1, NIENKHOA: '2023-2024' },
-        { MALTC: 2, MAMH: 'INT1408', TENMH: 'Lập trình Web', NHOM: 2, HOCKY: 1, NIENKHOA: '2023-2024' }
-      ];
-
-      this.selectLTC.innerHTML = '<option value="">-- Chọn một lớp tín chỉ --</option>';
-      mockData.forEach(ltc => {
-        this.selectLTC.innerHTML += `<option value="${ltc.MALTC}">[${ltc.MALTC}] ${ltc.MAMH} - Nhóm ${ltc.NHOM} (HK${ltc.HOCKY} ${ltc.NIENKHOA})</option>`;
-      });
+      const res = await API.get('/loptinchi');
+      if (res.success && res.data) {
+        this.selectLTC.innerHTML = '<option value="">-- Chọn một lớp tín chỉ --</option>';
+        res.data.forEach(ltc => {
+          // Chỉ hiển thị lớp chưa bị hủy
+          if (!ltc.HUYLOP) {
+            this.selectLTC.innerHTML += `<option value="${ltc.MALTC}">[${ltc.MALTC}] ${ltc.TENMH || ltc.MAMH} - Nhóm ${ltc.NHOM} (HK${ltc.HOCKY} ${ltc.NIENKHOA})</option>`;
+          }
+        });
+      }
     } catch (error) {
-      Toast.error('Không thể tải danh sách lớp tín chỉ');
+      Toast.error('Không thể tải danh sách lớp tín chỉ: ' + error.message);
     }
   },
 
@@ -86,28 +101,24 @@ window. = {
       this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Đang tải...</td></tr>';
       this.card.style.display = 'block';
 
-      // Mock API call - Thực tế gọi API.get(`/diem/loptinchi/${maLTC}`)
-      // const res = await API.get(`/diem/loptinchi/${maLTC}`);
-      const mockDiem = [
-        { MASV: 'N20DCCN001', HOTEN: 'Nguyễn Văn A', DIEM_CC: 8.5, DIEM_GK: 7.0, DIEM_CK: 8.0 },
-        { MASV: 'N20DCCN002', HOTEN: 'Trần Thị B', DIEM_CC: null, DIEM_GK: null, DIEM_CK: null }
-      ];
+      const res = await API.get(`/diem/loptinchi/${maLTC}`);
+      if (!res.success) throw new Error(res.message || 'Lỗi tải dữ liệu');
 
       this.state.currentLTC = maLTC;
-      this.state.danhSachDiem = mockDiem;
+      this.state.danhSachDiem = res.data || [];
       this.state.editedDiem = {};
       this.updateUnsavedState(false);
       this.renderTable();
-      
+
     } catch (error) {
-      this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:red;">Lỗi tải dữ liệu</td></tr>';
+      this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:red;">Lỗi tải dữ liệu: ' + error.message + '</td></tr>';
       Toast.error(error.message);
     }
   },
 
   renderTable() {
     this.tbody.innerHTML = '';
-    
+
     if (this.state.danhSachDiem.length === 0) {
       this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Chưa có sinh viên đăng ký lớp này</td></tr>';
       return;
@@ -119,22 +130,25 @@ window. = {
       const cc = edited.DIEM_CC !== undefined ? edited.DIEM_CC : (sv.DIEM_CC !== null ? sv.DIEM_CC : '');
       const gk = edited.DIEM_GK !== undefined ? edited.DIEM_GK : (sv.DIEM_GK !== null ? sv.DIEM_GK : '');
       const ck = edited.DIEM_CK !== undefined ? edited.DIEM_CK : (sv.DIEM_CK !== null ? sv.DIEM_CK : '');
-      
+
       const diemTK = Utils.calcDiemTongKet(cc, gk, ck);
+
+      // Tên hiển thị – hỗ trợ nhiều format field name từ DB
+      const hoTen = sv.HOTEN || sv.HOTEN_SV || ((sv.HO || '') + ' ' + (sv.TEN || ''));
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${index + 1}</td>
         <td>${sv.MASV}</td>
-        <td>${sv.HOTEN}</td>
+        <td>${hoTen.trim()}</td>
         <td style="text-align: center;">
-          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CC" value="${cc}">
+          <input type="number" step="1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CC" value="${cc}" placeholder="-">
         </td>
         <td style="text-align: center;">
-          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_GK" value="${gk}">
+          <input type="number" step="0.5" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_GK" value="${gk}" placeholder="-">
         </td>
         <td style="text-align: center;">
-          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CK" value="${ck}">
+          <input type="number" step="0.5" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CK" value="${ck}" placeholder="-">
         </td>
         <td style="text-align: center; font-weight: bold; color: var(--primary-color);" id="tk_${sv.MASV}">
           ${diemTK !== '' ? diemTK : '-'}
@@ -147,12 +161,12 @@ window. = {
     const inputs = this.tbody.querySelectorAll('.inline-input');
     inputs.forEach(input => {
       input.addEventListener('change', (e) => this.handleDiemChange(e.target));
-      input.addEventListener('keyup', (e) => this.handleDiemChange(e.target)); // Update real-time for calculation
+      input.addEventListener('input',  (e) => this.handleDiemChange(e.target));
     });
   },
 
   handleDiemChange(input) {
-    const maSV = input.dataset.sv;
+    const maSV  = input.dataset.sv;
     const field = input.dataset.field;
     let val = input.value.trim();
 
@@ -164,23 +178,20 @@ window. = {
         return;
       }
     }
-    
+
     input.classList.remove('is-invalid');
 
     // Lưu vào edited state
-    if (!this.state.editedDiem[maSV]) {
-      this.state.editedDiem[maSV] = {};
-    }
-    
+    if (!this.state.editedDiem[maSV]) this.state.editedDiem[maSV] = {};
     this.state.editedDiem[maSV][field] = val === '' ? null : parseFloat(val);
     this.updateUnsavedState(true);
 
-    // Tính lại điểm TK ngay lập tức trên UI
+    // Tính lại điểm TK ngay lập tức
     const row = input.closest('tr');
     const cc = row.querySelector('[data-field="DIEM_CC"]').value;
     const gk = row.querySelector('[data-field="DIEM_GK"]').value;
     const ck = row.querySelector('[data-field="DIEM_CK"]').value;
-    
+
     const diemTK = Utils.calcDiemTongKet(cc, gk, ck);
     document.getElementById(`tk_${maSV}`).textContent = diemTK !== '' ? diemTK : '-';
   },
@@ -201,7 +212,7 @@ window. = {
       return;
     }
 
-    // Lọc ra các điểm bị lỗi validation
+    // Kiểm tra validation
     const invalidInputs = this.tbody.querySelectorAll('.is-invalid');
     if (invalidInputs.length > 0) {
       Toast.error('Vui lòng sửa các ô điểm không hợp lệ (0-10) trước khi lưu');
@@ -210,33 +221,32 @@ window. = {
 
     try {
       this.btnSave.disabled = true;
-      this.btnSave.innerHTML = 'Đang lưu...';
+      this.btnSave.innerHTML = '⏳ Đang lưu...';
 
       // Chuyển format để gửi lên API
-      const diemList = Object.keys(this.state.editedDiem).map(maSV => {
-        return {
-          MASV: maSV,
-          ...this.state.editedDiem[maSV]
-        };
+      const diemList = Object.keys(this.state.editedDiem).map(maSV => ({
+        MASV: maSV,
+        ...this.state.editedDiem[maSV],
+      }));
+
+      // Gọi API thật
+      const res = await API.put('/diem/update-batch', {
+        maLTC: this.state.currentLTC,
+        diemList,
       });
 
-      // API Call
-      // await API.put('/diem/update-batch', { maLTC: this.state.currentLTC, diemList });
-
-      // Giả lập delay
-      await new Promise(r => setTimeout(r, 1000));
+      if (!res.success) throw new Error(res.message || 'Lỗi khi lưu');
 
       Toast.success('Đã lưu bảng điểm thành công');
       this.updateUnsavedState(false);
-      
-      // Merge dữ liệu đã sửa vào dữ liệu gốc
+
+      // Merge dữ liệu đã sửa vào dữ liệu gốc để UI đồng bộ
       this.state.danhSachDiem = this.state.danhSachDiem.map(sv => {
         if (this.state.editedDiem[sv.MASV]) {
           return { ...sv, ...this.state.editedDiem[sv.MASV] };
         }
         return sv;
       });
-      
       this.state.editedDiem = {};
 
     } catch (error) {
@@ -245,8 +255,8 @@ window. = {
       this.btnSave.disabled = false;
       this.btnSave.innerHTML = '💾 Lưu tất cả thay đổi';
     }
-  }
+  },
 };
 
 // Khởi tạo module
-window..init();
+window.NhapDiemModule.init();

@@ -14,7 +14,7 @@ module.exports = {
   // ====================================
   databases: {
     server1: {
-      server: process.env.DB_SERVER_1 || "localhost",
+      server: process.env.DB_SERVER_1 || "LAPTOP-UPN5FA81",
       port: parseInt(process.env.DB_PORT_1) || 1433,
       database: process.env.DB_DATABASE_1 || "QLDSV_HTC",
       user: process.env.DB_USER_1 || "sa",
@@ -32,7 +32,7 @@ module.exports = {
       },
     },
     server2: {
-      server: process.env.DB_SERVER_2 || "localhost",
+      server: process.env.DB_SERVER_2 || "LAPTOP-UPN5FA81",
       port: parseInt(process.env.DB_PORT_2) || 1433,
       database: process.env.DB_DATABASE_2 || "QLDSV",
       user: process.env.DB_USER_2 || "sa",
@@ -65,7 +65,7 @@ module.exports = {
   // CORS
   // ====================================
   cors: {
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: process.env.CORS_ORIGIN || "*",
     credentials: true,
   },
 };

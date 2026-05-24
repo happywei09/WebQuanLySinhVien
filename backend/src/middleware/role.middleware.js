@@ -113,4 +113,46 @@ const PERMISSIONS = {
   },
 };
 
-module.exports = { authorize, PERMISSIONS };
+/**
+ * Middleware kiểm tra Sinh Viên chỉ được truy cập dữ liệu của chính mình.
+ * PGV và KHOA được bỏ qua kiểm tra này.
+ *
+ * Yêu cầu: route phải có param tên là `maSV`.
+ * Ví dụ: /diem/report/phieu-diem/:maSV
+ *
+ * Cách dùng:
+ *   router.get('/phieu-diem/:maSV', authenticate, authorize('PGV','KHOA','SINHVIEN'), checkSelfAccess, handler)
+ */
+const checkSelfAccess = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: "Chưa xác thực. Vui lòng đăng nhập.",
+    });
+  }
+
+  // PGV và KHOA được xem dữ liệu của tất cả sinh viên
+  if (req.user.role === "PGV" || req.user.role === "KHOA") {
+    return next();
+  }
+
+  // Sinh viên chỉ được xem dữ liệu của chính mình
+  const maSVParam = req.params.maSV;
+  if (!maSVParam) {
+    return res.status(400).json({
+      success: false,
+      message: "Thiếu mã sinh viên trong yêu cầu.",
+    });
+  }
+
+  if (maSVParam.toUpperCase() !== req.user.username.toUpperCase()) {
+    return res.status(403).json({
+      success: false,
+      message: "Bạn không có quyền xem dữ liệu của sinh viên khác.",
+    });
+  }
+
+  next();
+};
+
+module.exports = { authorize, PERMISSIONS, checkSelfAccess };
