@@ -27,7 +27,8 @@ const createDangKy = async (req, res, next) => {
 
 const cancelDangKy = async (req, res, next) => {
   try {
-    const { maLTC, maSV } = req.body;
+    const maLTC = req.body.maLTC || req.body.MALTC;
+    const maSV = req.body.maSV || req.body.MASV;
     await dangkyService.cancelDangKy(parseInt(maLTC), maSV);
     res.json({ success: true, message: "Huỷ đăng ký thành công" });
   } catch (error) { next(error); }
@@ -35,7 +36,8 @@ const cancelDangKy = async (req, res, next) => {
 
 const deleteDangKy = async (req, res, next) => {
   try {
-    const { maLTC, maSV } = req.body;
+    const maLTC = req.body.maLTC || req.body.MALTC;
+    const maSV = req.body.maSV || req.body.MASV;
     await dangkyService.deleteDangKy(parseInt(maLTC), maSV);
     res.json({ success: true, message: "Xoá đăng ký thành công" });
   } catch (error) { next(error); }
