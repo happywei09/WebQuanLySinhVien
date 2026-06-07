@@ -75,7 +75,7 @@ window.NhapDiemModule = {
         res.data.forEach(ltc => {
           // Chỉ hiển thị lớp chưa bị hủy
           if (!ltc.HUYLOP) {
-            this.selectLTC.innerHTML += `<option value="${ltc.MALTC}">[${ltc.MALTC}] ${ltc.TENMH || ltc.MAMH} - Nhóm ${ltc.NHOM} (HK${ltc.HOCKY} ${ltc.NIENKHOA})</option>`;
+            this.selectLTC.innerHTML += `<option value="${Utils.escapeHtml(ltc.MALTC)}">[${Utils.escapeHtml(ltc.MALTC)}] ${Utils.escapeHtml(ltc.TENMH || ltc.MAMH)} - Nhóm ${Utils.escapeHtml(ltc.NHOM)} (HK${Utils.escapeHtml(ltc.HOCKY)} ${Utils.escapeHtml(ltc.NIENKHOA)})</option>`;
           }
         });
       }
@@ -111,7 +111,7 @@ window.NhapDiemModule = {
       this.renderTable();
 
     } catch (error) {
-      this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:red;">Lỗi tải dữ liệu: ' + error.message + '</td></tr>';
+      this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:red;">Lỗi tải dữ liệu: ' + Utils.escapeHtml(error.message) + '</td></tr>';
       Toast.error(error.message);
     }
   },
@@ -139,18 +139,18 @@ window.NhapDiemModule = {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${index + 1}</td>
-        <td>${sv.MASV}</td>
-        <td>${hoTen.trim()}</td>
+        <td>${Utils.escapeHtml(sv.MASV)}</td>
+        <td>${Utils.escapeHtml(hoTen.trim())}</td>
         <td style="text-align: center;">
-          <input type="number" step="1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CC" value="${cc}" placeholder="-">
+          <input type="number" step="1" min="0" max="10" class="inline-input" data-sv="${Utils.escapeHtml(sv.MASV)}" data-field="DIEM_CC" value="${Utils.escapeHtml(cc)}" placeholder="-">
         </td>
         <td style="text-align: center;">
-          <input type="number" step="0.5" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_GK" value="${gk}" placeholder="-">
+          <input type="number" step="0.5" min="0" max="10" class="inline-input" data-sv="${Utils.escapeHtml(sv.MASV)}" data-field="DIEM_GK" value="${Utils.escapeHtml(gk)}" placeholder="-">
         </td>
         <td style="text-align: center;">
-          <input type="number" step="0.5" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CK" value="${ck}" placeholder="-">
+          <input type="number" step="0.5" min="0" max="10" class="inline-input" data-sv="${Utils.escapeHtml(sv.MASV)}" data-field="DIEM_CK" value="${Utils.escapeHtml(ck)}" placeholder="-">
         </td>
-        <td style="text-align: center; font-weight: bold; color: var(--primary-color);" id="tk_${sv.MASV}">
+        <td style="text-align: center; font-weight: bold; color: var(--primary-color);" id="tk_${Utils.escapeHtml(sv.MASV)}">
           ${diemTK !== '' ? diemTK : '-'}
         </td>
       `;

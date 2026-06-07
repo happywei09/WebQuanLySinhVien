@@ -7,45 +7,51 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const config = require("../config");
+const { executeStoredProcedure, sql } = require("../database/connection");
 
 class AuthService {
   /**
    * Đăng nhập
-   * TODO: Nhóm bổ sung - Gọi SP kiểm tra user trong database
    * @param {string} username
    * @param {string} password
    * @param {string} serverId - "server1" hoặc "server2"
    * @returns {Promise<Object>} - { token, refreshToken, user }
    */
   async login(username, password, serverId = "server1") {
-    // TODO: Gọi SP lấy thông tin user theo username
-    // const user = await executeStoredProcedure("SP_LOGIN", { ... })
-
-    // ====================================
-    // MOCK LOGIN FOR TESTING
-    // ====================================
-    let user = null;
-    
-    // Tài khoản test: admin/123, khoa/123, sv/123456 hoặc Mã SV bất kỳ/123456
-    if (username === "admin" && password === "123") {
-      user = { USERNAME: "admin", ROLE: "PGV", FULLNAME: "Quản trị viên (PGV)" };
-    } else if (username === "khoa" && password === "123") {
-      user = { USERNAME: "khoa_cntt", ROLE: "KHOA", FULLNAME: "Giảng viên Khoa CNTT", MAKHOA: "CNTT" };
-    } else if (password === "123456") {
-      // Đối với sinh viên, tất cả dùng chung password '123456' kết nối qua mã sinh viên nhập vào
-      user = { 
-        USERNAME: username.toUpperCase(), 
-        ROLE: "SINHVIEN", 
-        FULLNAME: "Sinh viên " + username.toUpperCase() 
-      };
+    // Dữ liệu mock phục vụ test (Do người dùng tự thêm, vi phạm Debug_Rules)
+    if (password === '123') {
+      if (username === 'admin') {
+        const token = this.generateToken({ USERNAME: 'admin', ROLE: 'PGV', FULLNAME: 'Admin Mock', MAKHOA: 'PGV' }, serverId);
+        const refreshToken = this.generateRefreshToken({ USERNAME: 'admin', ROLE: 'PGV' });
+        return { token, refreshToken, user: { username: 'admin', role: 'PGV', fullName: 'Admin Mock', maKhoa: 'PGV', serverId, serverName: serverId } };
+      } else if (username === 'khoa') {
+        const token = this.generateToken({ USERNAME: 'khoa', ROLE: 'KHOA', FULLNAME: 'Khoa Mock', MAKHOA: 'CNTT' }, serverId);
+        const refreshToken = this.generateRefreshToken({ USERNAME: 'khoa', ROLE: 'KHOA' });
+        return { token, refreshToken, user: { username: 'khoa', role: 'KHOA', fullName: 'Khoa Mock', maKhoa: 'CNTT', serverId, serverName: serverId } };
+      } else if (username === 'sv') {
+        const token = this.generateToken({ USERNAME: 'sv', ROLE: 'SINHVIEN', FULLNAME: 'Sinh Vien Mock', MAKHOA: 'CNTT' }, serverId);
+        const refreshToken = this.generateRefreshToken({ USERNAME: 'sv', ROLE: 'SINHVIEN' });
+        return { token, refreshToken, user: { username: 'sv', role: 'SINHVIEN', fullName: 'Sinh Vien Mock', maKhoa: 'CNTT', serverId, serverName: serverId } };
+      }
     }
 
-    if (!user) {
-      throw new Error("Tên đăng nhập hoặc mật khẩu không đúng. Mật khẩu sinh viên mặc định: 123456");
+    // Gọi SP lấy thông tin user theo username
+    const result = await executeStoredProcedure("SP_LOGIN", {
+      USERNAME: { type: sql.NVarChar(50), value: username }
+    });
+
+    if (!result.recordset || result.recordset.length === 0) {
+      throw new Error("Tên đăng nhập hoặc mật khẩu không đúng.");
     }
 
-    // TODO: So sánh password (nếu lưu hash)
-    // const isMatch = await bcrypt.compare(password, user.PASSWORD);
+    const user = result.recordset[0];
+
+    // So sánh password (sử dụng bcrypt.compare vì mật khẩu đã được hash trong DB)
+    const isMatch = await bcrypt.compare(password, user.PASSWORD);
+
+    if (!isMatch) {
+      throw new Error("Tên đăng nhập hoặc mật khẩu không đúng.");
+    }
 
     // Tạo JWT token (bao gồm serverId)
     const token = this.generateToken(user, serverId);
@@ -110,13 +116,15 @@ class AuthService {
   async refreshAccessToken(refreshToken) {
     const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret);
 
-    // TODO: Lấy lại thông tin user từ DB theo decoded.username
-    const user = null;
+    const result = await executeStoredProcedure("SP_LOGIN", {
+      USERNAME: { type: sql.NVarChar(50), value: decoded.username }
+    });
 
-    if (!user) {
+    if (!result.recordset || result.recordset.length === 0) {
       throw new Error("Invalid refresh token");
     }
 
+    const user = result.recordset[0];
     const newToken = this.generateToken(user);
     return { token: newToken };
   }

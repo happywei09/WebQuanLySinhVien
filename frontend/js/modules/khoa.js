@@ -71,14 +71,14 @@ window.KhoaModule = {
     data.forEach((item, index) => {
       const tr = document.createElement('tr');
       const actionContent = isPGV 
-        ? `<button class="btn btn-secondary btn-sm" onclick="KhoaModule.openModal('${item.MAKHOA}', '${item.TENKHOA}')">Sửa</button>
-           <button class="btn btn-danger btn-sm" onclick="KhoaModule.handleDelete('${item.MAKHOA}')">Xoá</button>`
+        ? `<button class="btn btn-secondary btn-sm" onclick="KhoaModule.openModal('${Utils.escapeHtml(item.MAKHOA)}', '${Utils.escapeHtml(item.TENKHOA)}')">Sửa</button>
+           <button class="btn btn-danger btn-sm" onclick="KhoaModule.handleDelete('${Utils.escapeHtml(item.MAKHOA)}')">Xoá</button>`
         : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
 
       tr.innerHTML = `
         <td>${index + 1}</td>
-        <td>${item.MAKHOA}</td>
-        <td>${item.TENKHOA}</td>
+        <td>${Utils.escapeHtml(item.MAKHOA)}</td>
+        <td>${Utils.escapeHtml(item.TENKHOA)}</td>
         <td style="text-align: center;">
           ${actionContent}
         </td>

@@ -41,18 +41,12 @@ class DiemRepository {
    * @param {Array} diemList - [ { MASV, DIEM_CC, DIEM_GK, DIEM_CK }, ... ]
    */
   async updateBatch(maLTC, diemList) {
-    // TODO: Nhóm bổ sung - Có thể dùng 1 SP nhận Table-Valued Parameter
-    // hoặc gọi nhiều lần SP_UPDATE_DIEM trong transaction
-    const results = [];
-    for (const diem of diemList) {
-      const result = await this.updateDiem(maLTC, diem.MASV, {
-        DIEM_CC: diem.DIEM_CC,
-        DIEM_GK: diem.DIEM_GK,
-        DIEM_CK: diem.DIEM_CK,
-      });
-      results.push(result);
-    }
-    return results;
+    const jsonList = JSON.stringify(diemList);
+    const result = await executeStoredProcedure("SP_UPDATE_DIEM_BATCH", {
+      MALTC: { type: sql.Int, value: maLTC },
+      DIEM_LIST: { type: sql.NVarChar(sql.MAX), value: jsonList }
+    });
+    return result;
   }
 
   // ====================================

@@ -23,6 +23,19 @@ class Utils {
   static getSpinner() {
     return `<div class="loading-overlay"><div class="spinner"></div></div>`;
   }
+
+  /**
+   * Sanitize HTML to prevent XSS
+   */
+  static escapeHtml(unsafe) {
+    if (unsafe === null || unsafe === undefined) return '';
+    return String(unsafe)
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+  }
 }
 
 window.Utils = Utils;

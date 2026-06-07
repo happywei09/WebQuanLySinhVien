@@ -106,7 +106,7 @@ class Sidebar {
         <div class="card">
           <div class="card-body" style="text-align: center; color: var(--danger-color); padding: 50px;">
             <h3>Lỗi tải trang</h3>
-            <p>${error.message}. Xin vui lòng tạo file pages/${filename} trước.</p>
+            <p>${Utils.escapeHtml(error.message)}. Xin vui lòng tạo file pages/${Utils.escapeHtml(filename)} trước.</p>
           </div>
         </div>
       `;

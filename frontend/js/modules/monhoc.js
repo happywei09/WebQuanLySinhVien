@@ -85,14 +85,14 @@ window.MonHocModule = {
           ? '<tr><td colspan="6" style="text-align:center;">Không có dữ liệu</td></tr>'
           : res.data.map((item, index) => {
             const actionContent = isPGV
-              ? `<button class="btn btn-secondary btn-sm" onclick="window.MonHocModule.openModal('${item.MAMH}', '${item.TENMH}', ${item.SOTIET_LT}, ${item.SOTIET_TH})">Sửa</button>
-                 <button class="btn btn-danger btn-sm" onclick="window.MonHocModule.handleDelete('${item.MAMH}')">Xóa</button>`
+              ? `<button class="btn btn-secondary btn-sm" onclick="window.MonHocModule.openModal('${Utils.escapeHtml(item.MAMH)}', '${Utils.escapeHtml(item.TENMH)}', ${item.SOTIET_LT}, ${item.SOTIET_TH})">Sửa</button>
+                 <button class="btn btn-danger btn-sm" onclick="window.MonHocModule.handleDelete('${Utils.escapeHtml(item.MAMH)}')">Xóa</button>`
               : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
             return `
             <tr>
               <td>${index + 1}</td>
-              <td>${item.MAMH}</td>
-              <td>${item.TENMH}</td>
+              <td>${Utils.escapeHtml(item.MAMH)}</td>
+              <td>${Utils.escapeHtml(item.TENMH)}</td>
               <td>${item.SOTIET_LT}</td>
               <td>${item.SOTIET_TH}</td>
               <td style="text-align:center;">

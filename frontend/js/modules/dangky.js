@@ -136,9 +136,9 @@ window.DangKyModule = {
       tr.innerHTML = `
         ${checkboxCell}
         <td>${item.MALTC}</td>
-        <td><strong>${item.TENMH || item.MAMH}</strong></td>
+        <td><strong>${Utils.escapeHtml(item.TENMH || item.MAMH)}</strong></td>
         <td style="text-align:center;">${item.NHOM}</td>
-        <td>${hoTenGV.trim()}</td>
+        <td>${Utils.escapeHtml(hoTenGV.trim())}</td>
         <td style="text-align:center;">${item.SOSVDANGKY ?? item.SO_SV_DK ?? '—'}</td>
         <td style="text-align:center;">${item.SOSVTOITHIEU ?? item.SOSVMIN ?? '—'}</td>
         <td style="text-align:center;">

@@ -103,11 +103,11 @@ window.LopTinChiModule = {
       const [resMH, resGV] = await Promise.all([API.get('/monhoc'), API.get('/giangvien')]);
       if (resMH.success) {
         this.selectMH.innerHTML = '<option value="">-- Chọn Môn --</option>' + 
-          resMH.data.map(m => `<option value="${m.MAMH}">${m.TENMH}</option>`).join('');
+          resMH.data.map(m => `<option value="${Utils.escapeHtml(m.MAMH)}">${Utils.escapeHtml(m.TENMH)}</option>`).join('');
       }
       if (resGV.success) {
         this.selectGV.innerHTML = '<option value="">-- Chọn Giảng viên --</option>' + 
-          resGV.data.map(g => `<option value="${g.MAGV}">${g.HO} ${g.TEN}</option>`).join('');
+          resGV.data.map(g => `<option value="${Utils.escapeHtml(g.MAGV)}">${Utils.escapeHtml(g.HO)} ${Utils.escapeHtml(g.TEN)}</option>`).join('');
         this.giangvienList = resGV.data; // Store for fetching MAKHOA
       }
     } catch(e) {}
@@ -124,17 +124,17 @@ window.LopTinChiModule = {
           ? '<tr><td colspan="9" style="text-align:center;">Không có dữ liệu</td></tr>'
           : res.data.map((item) => {
             const actionBtn = isPGV
-              ? `<button class="btn btn-secondary btn-sm" onclick="window.LopTinChiModule.openModal(${item.MALTC}, '${item.NIENKHOA}', ${item.HOCKY}, '${item.MAMH}', ${item.NHOM}, '${item.MAGV}', ${item.SOSVTOITHIEU}, ${item.HUYLOP ? 1 : 0})">Sửa</button>
+              ? `<button class="btn btn-secondary btn-sm" onclick="window.LopTinChiModule.openModal(${item.MALTC}, '${Utils.escapeHtml(item.NIENKHOA)}', ${item.HOCKY}, '${Utils.escapeHtml(item.MAMH)}', ${item.NHOM}, '${Utils.escapeHtml(item.MAGV)}', ${item.SOSVTOITHIEU}, ${item.HUYLOP ? 1 : 0})">Sửa</button>
                  <button class="btn btn-danger btn-sm" onclick="window.LopTinChiModule.handleDelete(${item.MALTC})">Xóa</button>`
               : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
             return `
             <tr>
               <td>${item.MALTC}</td>
-              <td>${item.NIENKHOA}</td>
+              <td>${Utils.escapeHtml(item.NIENKHOA)}</td>
               <td>${item.HOCKY}</td>
-              <td>${item.TENMH || item.MAMH}</td>
+              <td>${Utils.escapeHtml(item.TENMH || item.MAMH)}</td>
               <td>${item.NHOM}</td>
-              <td>${item.TENGV || item.MAGV}</td>
+              <td>${Utils.escapeHtml(item.TENGV || item.MAGV)}</td>
               <td>${item.SOSVTOITHIEU}</td>
               <td>${item.HUYLOP ? '<span style="color:red">Đã hủy</span>' : '<span style="color:green">Đang mở</span>'}</td>
               <td style="text-align:center;">

@@ -20,9 +20,11 @@ const errorHandler = (err, req, res, next) => {
 
   // Lỗi SQL Server
   if (err.name === "RequestError" || err.code === "EREQUEST") {
+    const originalMessage = err.originalError?.message || err.message;
+    console.error("SQL Error:", originalMessage);
     return res.status(500).json({
       success: false,
-      message: "Lỗi truy vấn cơ sở dữ liệu",
+      message: `Lỗi truy vấn: ${originalMessage}`,
     });
   }
 
