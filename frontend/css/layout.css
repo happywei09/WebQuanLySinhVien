@@ -100,8 +100,15 @@
   width: 20px;
   margin-right: 12px;
   display: flex;
+  align-items: center;
   justify-content: center;
   font-size: 18px;
+}
+
+.menu-icon img.sidebar-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
 .sidebar.collapsed .menu-item span {

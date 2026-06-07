@@ -4,17 +4,17 @@
 ==================================== */
 
 const MENU_ITEMS = [
-  { id: 'dashboard', title: 'Tổng quan', icon: '🏠', roles: ['PGV', 'KHOA', 'SINHVIEN'], file: 'dashboard.html' },
-  { id: 'khoa', title: 'Quản lý Khoa', icon: '🏛️', roles: ['PGV', 'KHOA'], file: 'khoa.html' },
-  { id: 'lop', title: 'Quản lý Lớp', icon: '🏫', roles: ['PGV', 'KHOA'], file: 'lop.html' },
-  { id: 'sinhvien', title: 'Quản lý Sinh viên', icon: '🎓', roles: ['PGV', 'KHOA'], file: 'sinhvien.html' },
-  { id: 'giangvien', title: 'Quản lý Giảng viên', icon: '👨‍🏫', roles: ['PGV', 'KHOA'], file: 'giangvien.html' },
-  { id: 'monhoc', title: 'Quản lý Môn học', icon: '📚', roles: ['PGV', 'KHOA'], file: 'monhoc.html' },
-  { id: 'loptinchi', title: 'Lớp Tín Chỉ', icon: '📋', roles: ['PGV', 'KHOA'], file: 'loptinchi.html' },
-  { id: 'dangky', title: 'Đăng ký Tín chỉ', icon: '✍️', roles: ['PGV', 'KHOA', 'SINHVIEN'], file: 'dangky.html' },
-  { id: 'phieudiem', title: 'Phiếu Điểm Cá Nhân', icon: '📜', roles: ['SINHVIEN'], file: 'phieudiem.html' },
-  { id: 'nhapdiem', title: 'Nhập Điểm', icon: '📝', roles: ['PGV', 'KHOA'], file: 'nhapdiem.html' },
-  { id: 'reports', title: 'Báo cáo Thống kê', icon: '📊', roles: ['PGV', 'KHOA'], file: 'reports.html' }
+  { id: 'dashboard', title: 'Tổng quan', icon: 'assets/images/(1).png', roles: ['PGV', 'KHOA', 'SINHVIEN'], file: 'dashboard.html' },
+  { id: 'khoa', title: 'Quản lý Khoa', icon: 'assets/images/(2).png', roles: ['PGV', 'KHOA'], file: 'khoa.html' },
+  { id: 'lop', title: 'Quản lý Lớp', icon: 'assets/images/(3).png', roles: ['PGV', 'KHOA'], file: 'lop.html' },
+  { id: 'sinhvien', title: 'Quản lý Sinh viên', icon: 'assets/images/(4).png', roles: ['PGV', 'KHOA'], file: 'sinhvien.html' },
+  { id: 'giangvien', title: 'Quản lý Giảng viên', icon: 'assets/images/(5).png', roles: ['PGV', 'KHOA'], file: 'giangvien.html' },
+  { id: 'monhoc', title: 'Quản lý Môn học', icon: 'assets/images/(6).png', roles: ['PGV', 'KHOA'], file: 'monhoc.html' },
+  { id: 'loptinchi', title: 'Lớp Tín Chỉ', icon: 'assets/images/(7).png', roles: ['PGV', 'KHOA'], file: 'loptinchi.html' },
+  { id: 'dangky', title: 'Đăng ký Tín chỉ', icon: 'assets/images/(8).png', roles: ['PGV', 'KHOA', 'SINHVIEN'], file: 'dangky.html' },
+  { id: 'phieudiem', title: 'Phiếu Điểm Cá Nhân', icon: 'assets/images/11.png', roles: ['SINHVIEN'], file: 'phieudiem.html' },
+  { id: 'nhapdiem', title: 'Nhập Điểm', icon: 'assets/images/(9).png', roles: ['PGV', 'KHOA'], file: 'nhapdiem.html' },
+  { id: 'reports', title: 'Báo cáo Thống kê', icon: 'assets/images/(10).png', roles: ['PGV', 'KHOA'], file: 'reports.html' }
 ];
 
 class Sidebar {
@@ -29,9 +29,11 @@ class Sidebar {
     MENU_ITEMS.forEach(item => {
       // Chỉ hiển thị menu mà user có quyền truy cập
       if (item.roles.includes(userRole)) {
+        const isImg = item.icon.startsWith('assets/');
+        const iconHtml = isImg ? `<img src="${item.icon}" alt="${item.title}" class="sidebar-icon-img" />` : item.icon;
         html += `
           <div class="menu-item" data-id="${item.id}" data-file="${item.file}">
-            <div class="menu-icon">${item.icon}</div>
+            <div class="menu-icon">${iconHtml}</div>
             <span>${item.title}</span>
           </div>
         `;

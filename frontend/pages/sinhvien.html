@@ -10,21 +10,29 @@
   <button class="btn btn-primary" id="btnAddSV">+ Thêm sinh viên</button>
 </div>
 
+<!-- Bộ lọc và tìm kiếm sinh viên -->
 <div class="card" style="margin-bottom: 24px;">
-  <div class="card-body">
-    <div style="display: flex; gap: 16px; align-items: flex-end;">
-      <div class="form-group" style="margin-bottom: 0; flex: 1; max-width: 300px;">
-        <label class="form-label" for="selectLopSV">Chọn Lớp học</label>
-        <select id="selectLopSV" class="form-control">
-          <option value="">-- Chọn một lớp --</option>
-        </select>
-      </div>
-      <button class="btn btn-primary" id="btnLoadSV">Hiển thị danh sách</button>
+  <div class="card-body" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
+    <div style="flex: 2; min-width: 200px;">
+      <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">TÌM KIẾM SINH VIÊN</label>
+      <input type="text" id="searchSV" class="form-control" placeholder="Nhập mã SV hoặc họ tên cần tìm..." />
+    </div>
+    <div style="flex: 1; min-width: 150px;">
+      <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">KHÓA HỌC</label>
+      <select id="filterSVKhoaHoc" class="form-control">
+        <option value="ALL">Tất cả Khóa học</option>
+      </select>
+    </div>
+    <div style="flex: 1; min-width: 150px;">
+      <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">LỚP HỌC</label>
+      <select id="filterSVLop" class="form-control">
+        <option value="ALL">Tất cả Lớp</option>
+      </select>
     </div>
   </div>
 </div>
 
-<div class="card" id="cardSV" style="display: none;">
+<div class="card" id="cardSV">
   <div class="table-responsive">
     <table class="table">
       <thead>
@@ -75,6 +83,12 @@
           <select id="phaiSV" class="form-control">
             <option value="0">Nam</option>
             <option value="1">Nữ</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label required" for="lopSV">Lớp Học</label>
+          <select id="lopSV" class="form-control" required>
+            <option value="">-- Chọn một lớp --</option>
           </select>
         </div>
       </form>

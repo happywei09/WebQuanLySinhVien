@@ -10,6 +10,28 @@
   <button class="btn btn-primary" id="btnAddLop">+ Thêm lớp mới</button>
 </div>
 
+<!-- Bộ lọc và tìm kiếm lớp học -->
+<div class="card" style="margin-bottom: 24px;">
+  <div class="card-body" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
+    <div style="flex: 2; min-width: 200px;">
+      <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">TÌM KIẾM LỚP HỌC</label>
+      <input type="text" id="searchLop" class="form-control" placeholder="Nhập mã lớp hoặc tên lớp cần tìm..." />
+    </div>
+    <div style="flex: 1; min-width: 150px;">
+      <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">KHÓA HỌC</label>
+      <select id="filterKhoaHoc" class="form-control">
+        <option value="ALL">Tất cả Khóa học</option>
+      </select>
+    </div>
+    <div style="flex: 1; min-width: 150px;">
+      <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">KHOA</label>
+      <select id="filterKhoa" class="form-control">
+        <option value="ALL">Tất cả Khoa</option>
+      </select>
+    </div>
+  </div>
+</div>
+
 <div class="card">
   <div class="table-responsive">
     <table class="table">
