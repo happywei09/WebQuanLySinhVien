@@ -62,7 +62,7 @@ const PERMISSIONS = {
 
   // Quản lý Sinh viên
   SINHVIEN: {
-    VIEW: ["PGV", "KHOA"],
+    VIEW: ["PGV", "KHOA", "SINHVIEN"],
     CREATE: ["PGV"],
     UPDATE: ["PGV"],
     DELETE: ["PGV"],
@@ -86,7 +86,7 @@ const PERMISSIONS = {
 
   // Quản lý Lớp tín chỉ
   LOPTINCHI: {
-    VIEW: ["PGV", "KHOA"],
+    VIEW: ["PGV", "KHOA", "SINHVIEN"],
     CREATE: ["PGV"],
     UPDATE: ["PGV"],
     DELETE: ["PGV"],

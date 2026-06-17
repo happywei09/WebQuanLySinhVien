@@ -11,17 +11,28 @@
 
 <div class="card" style="margin-bottom: 24px;">
   <div class="card-body">
+    <!-- Student Info Display -->
+    <div id="studentInfoBox" style="background: rgba(59,130,246,0.08); padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; color: var(--primary-color); display: none;">
+      🎓 Sinh viên: <span id="studentNameDisplay">...</span> (<span id="studentCodeDisplay">...</span>) - Lớp: <span id="studentClassDisplay">...</span>
+    </div>
+    
     <div style="display: flex; gap: 16px;">
       <div class="form-group" style="flex:1;">
-        <label class="form-label">Niên khóa</label>
-        <select class="form-control"><option>2023-2024</option></select>
+        <label class="form-label" for="regNienKhoa">Niên khóa</label>
+        <select class="form-control" id="regNienKhoa">
+          <option value="">-- Chọn niên khóa --</option>
+        </select>
       </div>
       <div class="form-group" style="flex:1;">
-        <label class="form-label">Học kỳ</label>
-        <select class="form-control"><option>1</option></select>
+        <label class="form-label" for="regHocKy">Học kỳ</label>
+        <select class="form-control" id="regHocKy">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
       </div>
       <div style="display:flex; align-items:flex-end; margin-bottom:20px;">
-        <button class="btn btn-primary">Tìm lớp mở</button>
+        <button class="btn btn-primary" id="btnSearchLop">Tìm lớp mở</button>
       </div>
     </div>
   </div>

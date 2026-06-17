@@ -39,9 +39,9 @@ class SinhVienRepository {
       TEN: { type: sql.NVarChar(50), value: data.TEN },
       MALOP: { type: sql.NVarChar(50), value: data.MALOP },
       PHAI: { type: sql.Bit, value: data.PHAI },
-      NGAYSINH: { type: sql.Date, value: data.NGAYSINH },
-      DIACHI: { type: sql.NVarChar(200), value: data.DIACHI },
-      DANGHIHOC: { type: sql.Bit, value: data.DANGHIHOC || false },
+      NGAYSINH: { type: sql.Date, value: data.NGAYSINH !== undefined ? data.NGAYSINH : null },
+      DIACHI: { type: sql.NVarChar(200), value: data.DIACHI !== undefined ? data.DIACHI : null },
+      DANGHIHOC: { type: sql.Bit, value: data.DANGHIHOC !== undefined ? data.DANGHIHOC : false },
     });
     return result;
   }
@@ -53,9 +53,9 @@ class SinhVienRepository {
       TEN: { type: sql.NVarChar(50), value: data.TEN },
       MALOP: { type: sql.NVarChar(50), value: data.MALOP },
       PHAI: { type: sql.Bit, value: data.PHAI },
-      NGAYSINH: { type: sql.Date, value: data.NGAYSINH },
-      DIACHI: { type: sql.NVarChar(200), value: data.DIACHI },
-      DANGHIHOC: { type: sql.Bit, value: data.DANGHIHOC },
+      NGAYSINH: { type: sql.Date, value: data.NGAYSINH !== undefined ? data.NGAYSINH : null },
+      DIACHI: { type: sql.NVarChar(200), value: data.DIACHI !== undefined ? data.DIACHI : null },
+      DANGHIHOC: { type: sql.Bit, value: data.DANGHIHOC !== undefined ? data.DANGHIHOC : false },
     });
     return result;
   }

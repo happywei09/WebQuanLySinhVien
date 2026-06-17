@@ -23,6 +23,7 @@ const lopTinChiRoutes = require("./routes/loptinchi.routes");
 const dangKyRoutes = require("./routes/dangky.routes");
 const diemRoutes = require("./routes/diem.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
+const accountRoutes = require("./routes/account.routes");
 
 const app = express();
 
@@ -127,6 +128,7 @@ app.use(`${API_PREFIX}/loptinchi`, lopTinChiRoutes);
 app.use(`${API_PREFIX}/dangky`, dangKyRoutes);
 app.use(`${API_PREFIX}/diem`, diemRoutes);
 app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
+app.use(`${API_PREFIX}/accounts`, accountRoutes);
 
 // ====================================
 // ERROR HANDLING

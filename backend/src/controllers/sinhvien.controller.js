@@ -13,7 +13,14 @@ const getAllSinhVien = async (req, res, next) => {
 
 const getSinhVienById = async (req, res, next) => {
   try {
-    const data = await sinhvienService.getSinhVienById(req.params.id);
+    const { id } = req.params;
+    if (req.user.role === 'SINHVIEN' && req.user.username.toUpperCase() !== id.toUpperCase()) {
+      return res.status(403).json({ 
+        success: false, 
+        message: "Bạn chỉ được phép xem thông tin cá nhân của chính mình." 
+      });
+    }
+    const data = await sinhvienService.getSinhVienById(id);
     res.json({ success: true, message: "Success", data });
   } catch (error) { next(error); }
 };

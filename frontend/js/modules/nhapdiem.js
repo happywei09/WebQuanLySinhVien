@@ -3,7 +3,7 @@
    File: js/modules/nhapdiem.js
 ==================================== */
 
-window. = {
+window.NhapDiemModule = {
   state: {
     currentLTC: null,
     danhSachDiem: [],     // Dữ liệu gốc từ server
@@ -249,4 +249,4 @@ window. = {
 };
 
 // Khởi tạo module
-window..init();
+window.NhapDiemModule.init();
