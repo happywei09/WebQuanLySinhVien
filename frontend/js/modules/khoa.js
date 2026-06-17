@@ -10,6 +10,8 @@ window.KhoaModule = {
     history: [],
     searchKeyword: '',
     isAddingRow: false,
+    editingKhoaId: null,
+    editingDraft: null,
     draftKhoa: {
       MAKHOA: '',
       TENKHOA: ''
@@ -24,18 +26,11 @@ window.KhoaModule = {
 
   cacheDOM() {
     this.tbody = document.getElementById('tbodyKhoa');
-    this.modal = document.getElementById('modalKhoa');
-    this.form = document.getElementById('formKhoa');
-    this.btnSave = document.getElementById('btnSaveKhoa');
     this.btnSearch = document.getElementById('btnSearchKhoa');
     this.btnCommit = document.getElementById('btnCommitKhoa');
     this.btnUndo = document.getElementById('btnUndoKhoa');
     this.searchInput = document.getElementById('searchKhoa');
     this.pendingStatus = document.getElementById('khoaPendingStatus');
-    
-    // Inputs
-    this.inputMa = document.getElementById('maKhoa');
-    this.inputTen = document.getElementById('tenKhoa');
   },
 
   bindEvents() {
@@ -49,9 +44,6 @@ window.KhoaModule = {
         btnAdd.style.display = 'none';
       }
     }
-    document.getElementById('btnCloseModal').onclick = () => this.closeModal();
-    document.getElementById('btnCancelModal').onclick = () => this.closeModal();
-    this.btnSave.onclick = () => this.handleSave();
     this.btnSearch.onclick = () => this.loadData();
     this.btnCommit.onclick = () => this.handleCommit();
     this.btnUndo.onclick = () => this.handleUndo();
@@ -106,11 +98,16 @@ window.KhoaModule = {
     const isPGV = user && user.role === 'PGV';
 
     data.forEach((item, index) => {
+      if (this.state.editingKhoaId === item.MAKHOA) {
+        this.renderEditingRow(index + 1, item);
+        return;
+      }
+
       const tr = document.createElement('tr');
       const pendingOp = this.state.pendingOperations[item.MAKHOA];
       const statusBadge = this.getStatusBadge(pendingOp);
       const actionContent = isPGV 
-        ? `<button class="btn btn-secondary btn-sm" onclick="KhoaModule.openModal('${item.MAKHOA}', '${item.TENKHOA}')">Sửa</button>
+        ? `<button class="btn btn-secondary btn-sm" onclick="KhoaModule.startEditRow('${item.MAKHOA}')">Sửa</button>
            <button class="btn btn-danger btn-sm" onclick="KhoaModule.handleDelete('${item.MAKHOA}')">Xoá</button>`
         : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
 
@@ -131,6 +128,27 @@ window.KhoaModule = {
     if (isPGV && this.state.isAddingRow) {
       this.renderDraftRow(data.length + 1);
     }
+  },
+
+  renderEditingRow(index, item) {
+    const draft = this.state.editingDraft || { MAKHOA: item.MAKHOA, TENKHOA: item.TENKHOA || '' };
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${index}</td>
+      <td>${item.MAKHOA}</td>
+      <td><input type="text" id="editTenKhoa" class="form-control" value="${this.escapeHtml(draft.TENKHOA)}"></td>
+      <td style="text-align: center;">
+        <button class="btn btn-primary btn-sm" id="btnConfirmEditKhoa">Xác nhận</button>
+        <button class="btn btn-secondary btn-sm" id="btnCancelEditKhoa">Huỷ</button>
+      </td>
+    `;
+    this.tbody.appendChild(tr);
+
+    document.getElementById('editTenKhoa')?.addEventListener('input', (e) => {
+      this.state.editingDraft.TENKHOA = e.target.value;
+    });
+    document.getElementById('btnConfirmEditKhoa')?.addEventListener('click', () => this.confirmEditRow());
+    document.getElementById('btnCancelEditKhoa')?.addEventListener('click', () => this.cancelEditRow());
   },
 
   renderDraftRow(index) {
@@ -229,13 +247,13 @@ window.KhoaModule = {
     this.btnUndo.disabled = this.state.history.length === 0;
     const btnAdd = document.getElementById('btnAddKhoa');
     if (btnAdd) {
-      btnAdd.disabled = this.state.isAddingRow;
+      btnAdd.disabled = this.state.isAddingRow || !!this.state.editingKhoaId;
     }
     this.pendingStatus.textContent = count > 0 ? `${count} thay đổi đang chờ ghi` : '';
   },
 
   startAddRow() {
-    if (this.state.isAddingRow) {
+    if (this.state.isAddingRow || this.state.editingKhoaId) {
       const inputMa = document.getElementById('draftMaKhoa');
       inputMa?.focus();
       return;
@@ -254,18 +272,24 @@ window.KhoaModule = {
     this.updateActionState();
   },
 
-  openModal(ma = '', ten = '') {
-    this.isEdit = true;
-    document.getElementById('modalTitle').textContent = 'Sửa Khoa';
-    this.inputMa.value = ma;
-    this.inputMa.readOnly = true;
-    this.inputTen.value = ten;
-    this.modal.classList.add('active');
+  startEditRow(ma) {
+    if (this.state.isAddingRow) return;
+    const item = this.getCurrentData().find(x => x.MAKHOA === ma);
+    if (!item) {
+      Toast.error('Không tìm thấy khoa để sửa');
+      return;
+    }
+    this.state.editingKhoaId = ma;
+    this.state.editingDraft = { MAKHOA: ma, TENKHOA: item.TENKHOA || '' };
+    this.renderTable();
+    this.updateActionState();
   },
 
-  closeModal() {
-    this.modal.classList.remove('active');
-    this.form.reset();
+  cancelEditRow() {
+    this.state.editingKhoaId = null;
+    this.state.editingDraft = null;
+    this.renderTable();
+    this.updateActionState();
   },
 
   async handleSaveDraftRow() {
@@ -297,57 +321,52 @@ window.KhoaModule = {
     Toast.success('Đã thêm bản ghi vào danh sách chờ ghi');
   },
 
-  async handleSave() {
-    const ma = this.inputMa.value.trim();
-    const ten = this.inputTen.value.trim();
+  confirmEditRow() {
+    const draft = this.state.editingDraft;
+    if (!draft) return;
 
-    if (!ma || !ten) {
+    const ma = draft.MAKHOA;
+    const ten = String(draft.TENKHOA || '').trim();
+
+    if (!ten) {
       Toast.warning('Vui lòng nhập đầy đủ thông tin');
       return;
     }
 
-    try {
-      this.btnSave.disabled = true;
-      const currentDataMap = new Map(this.getCurrentData().map(item => [item.MAKHOA, item]));
-      const originalItem = this.state.originalData.find(item => item.MAKHOA === ma);
+    const originalItem = this.state.originalData.find(item => item.MAKHOA === ma);
+    const existingPending = this.state.pendingOperations[ma];
 
-      this.pushHistory();
-
-      const existingPending = this.state.pendingOperations[ma];
-      if (existingPending && existingPending.type === 'delete') {
-        Toast.warning('Khoa này đang chờ xoá, không thể sửa');
-        this.state.history.pop();
-        return;
-      }
-
-      if (existingPending && existingPending.type === 'create') {
-        this.state.pendingOperations[ma] = {
-          ...existingPending,
-          newValue: { MAKHOA: ma, TENKHOA: ten }
-        };
-      } else {
-        this.state.pendingOperations[ma] = {
-          type: 'update',
-          key: ma,
-          oldValue: originalItem ? { ...originalItem } : { MAKHOA: ma, TENKHOA: '' },
-          newValue: { MAKHOA: ma, TENKHOA: ten }
-        };
-      }
-
-      const pending = this.state.pendingOperations[ma];
-      if (pending && pending.type === 'update' && pending.oldValue && pending.oldValue.TENKHOA === ten) {
-        delete this.state.pendingOperations[ma];
-      }
-
-      this.closeModal();
-      this.renderTable();
-      this.updateActionState();
-      Toast.success('Đã đưa thay đổi vào danh sách chờ ghi');
-    } catch (error) {
-      Toast.error(error.message);
-    } finally {
-      this.btnSave.disabled = false;
+    if (existingPending && existingPending.type === 'delete') {
+      Toast.warning('Khoa này đang chờ xoá, không thể sửa');
+      return;
     }
+
+    this.pushHistory();
+
+    if (existingPending && existingPending.type === 'create') {
+      this.state.pendingOperations[ma] = {
+        ...existingPending,
+        newValue: { MAKHOA: ma, TENKHOA: ten }
+      };
+    } else {
+      this.state.pendingOperations[ma] = {
+        type: 'update',
+        key: ma,
+        oldValue: originalItem ? { ...originalItem } : { MAKHOA: ma, TENKHOA: '' },
+        newValue: { MAKHOA: ma, TENKHOA: ten }
+      };
+    }
+
+    const pending = this.state.pendingOperations[ma];
+    if (pending && pending.type === 'update' && pending.oldValue && pending.oldValue.TENKHOA === ten) {
+      delete this.state.pendingOperations[ma];
+    }
+
+    this.state.editingKhoaId = null;
+    this.state.editingDraft = null;
+    this.renderTable();
+    this.updateActionState();
+    Toast.success('Đã đưa thay đổi vào danh sách chờ ghi');
   },
 
   async handleDelete(ma) {
@@ -444,6 +463,8 @@ window.KhoaModule = {
     this.state.pendingOperations = {};
     this.state.history = [];
     this.state.isAddingRow = false;
+    this.state.editingKhoaId = null;
+    this.state.editingDraft = null;
     this.state.draftKhoa = { MAKHOA: '', TENKHOA: '' };
     this.renderTable();
     this.updateActionState();

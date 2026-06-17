@@ -354,29 +354,7 @@ DROP LOGIN IF EXISTS pgv_admin;
 */
 
 -- ===================================
--- PART 5A: CREATE ACCOUNTS TABLE
--- ===================================
--- Table to store account information (audit log)
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ACCOUNTS')
-BEGIN
-    CREATE TABLE ACCOUNTS (
-        ACCOUNT_ID INT PRIMARY KEY IDENTITY(1,1),
-        USERNAME NVARCHAR(128) UNIQUE NOT NULL,
-        FULLNAME NVARCHAR(255) NOT NULL,
-        ROLE NVARCHAR(50) NOT NULL,
-        CREATED_DATE DATETIME DEFAULT GETDATE(),
-        IS_ACTIVE BIT DEFAULT 1
-    );
-    PRINT 'Table ACCOUNTS created successfully';
-END
-ELSE
-BEGIN
-    PRINT 'Table ACCOUNTS already exists';
-END
-GO
-
--- ===================================
--- PART 5B: CREATE ACCOUNT WITH ROLE STORED PROCEDURE
+-- PART 5A: CREATE ACCOUNT WITH ROLE STORED PROCEDURE
 -- ===================================
 -- Purpose: Create login, user, and assign role in one procedure
 -- Parameters:
@@ -475,12 +453,7 @@ BEGIN
             PRINT 'Thành công: Gán role db_datareader cho ' + @Username;
         END
         
-        -- 7. Insert into ACCOUNTS table for audit log
-        INSERT INTO ACCOUNTS (USERNAME, FULLNAME, ROLE, CREATED_DATE, IS_ACTIVE)
-        VALUES (@Username, @FullName, @Role, GETDATE(), 1);
-        PRINT 'Thành công: Ghi nhận tài khoản ' + @Username + ' trong hệ thống';
-        
-        -- 8. Return success message
+        -- 7. Return success message
         PRINT '=====================================';
         PRINT 'TẠO TÀI KHOẢN THÀNH CÔNG';
         PRINT '=====================================';
@@ -508,32 +481,6 @@ END
 GO
 
 PRINT 'Stored Procedure SP_CREATE_ACCOUNT_WITH_ROLE created successfully';
-
--- ===================================
--- PART 5C: VIEW ACCOUNTS STORED PROCEDURE
--- ===================================
-IF OBJECT_ID('SP_VIEW_ACCOUNTS', 'P') IS NOT NULL
-    DROP PROCEDURE SP_VIEW_ACCOUNTS;
-GO
-
-CREATE PROCEDURE SP_VIEW_ACCOUNTS
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    SELECT 
-        ACCOUNT_ID,
-        USERNAME,
-        FULLNAME,
-        ROLE,
-        CREATED_DATE,
-        CASE WHEN IS_ACTIVE = 1 THEN 'Hoạt động' ELSE 'Vô hiệu hóa' END AS STATUS
-    FROM ACCOUNTS
-    ORDER BY CREATED_DATE DESC;
-END
-GO
-
-PRINT 'Stored Procedure SP_VIEW_ACCOUNTS created successfully';
 
 -- ===================================
 -- EXECUTION EXAMPLES
@@ -566,9 +513,6 @@ PRINT '========================================';
 --     @Username = 'levanc',
 --     @Password = 'Password789012',
 --     @Role = 'SV';
-
--- View all accounts
--- EXEC SP_VIEW_ACCOUNTS;
 
 -- Test the SPs:
 -- EXEC SP_GET_SERVER_LOGINS;

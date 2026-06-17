@@ -7,7 +7,11 @@
       <span class="breadcrumb-item active">Lớp</span>
     </div>
   </div>
-  <button class="btn btn-primary" id="btnAddLop">+ Thêm lớp mới</button>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+    <button class="btn btn-secondary" id="btnUndoLop">Phục hồi</button>
+    <button class="btn btn-success" id="btnCommitLop">Ghi</button>
+    <button class="btn btn-primary" id="btnAddLop">+ Thêm lớp mới</button>
+  </div>
 </div>
 
 <!-- Bộ lọc và tìm kiếm lớp học -->
@@ -29,6 +33,9 @@
         <option value="ALL">Tất cả Khoa</option>
       </select>
     </div>
+    <div style="min-width: 220px;">
+      <span id="lopPendingStatus" style="font-size: 13px; color: var(--text-muted);"></span>
+    </div>
   </div>
 </div>
 
@@ -45,12 +52,69 @@
           <th>Thao tác</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="tbodyLop">
         <tr>
           <td colspan="6" style="text-align:center;">Dữ liệu sẽ được tải từ SP_GET_ALL_LOP</td>
         </tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalLopDetail">
+  <div class="modal" style="max-width: 1240px; width: min(1240px, 98vw);">
+    <div class="modal-header">
+      <h3 class="modal-title">Chi tiết Lớp</h3>
+      <button class="btn-close" id="btnCloseModalLopDetail">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
+        <div><strong>Mã lớp:</strong> <span id="detailMaLop">-</span></div>
+        <div><strong>Tên lớp:</strong> <span id="detailTenLop">-</span></div>
+        <div><strong>Khóa học:</strong> <span id="detailKhoaHoc">-</span></div>
+        <div><strong>Mã khoa:</strong> <span id="detailMaKhoa">-</span></div>
+      </div>
+
+      <div class="no-print" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-primary" id="btnAddStudentInClass">+ Thêm sinh viên</button>
+          <button class="btn btn-secondary" id="btnUndoStudentInClass">Phục hồi</button>
+          <button class="btn btn-success" id="btnCommitStudentInClass">Ghi</button>
+        </div>
+        <span id="studentInClassPendingStatus" style="font-size: 13px; color: var(--text-muted);"></span>
+      </div>
+
+      <div class="card" style="box-shadow: none; border: 1px solid var(--border-color);">
+        <div class="card-header">
+          <h4 class="card-title" style="margin: 0;">Danh sách sinh viên</h4>
+        </div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th width="80">STT</th>
+                <th width="150">Mã SV</th>
+                <th>Họ</th>
+                <th>Tên</th>
+                <th width="100">Phái</th>
+                <th width="140">Ngày sinh</th>
+                <th>Địa chỉ</th>
+                <th width="120">Đã nghỉ học</th>
+                <th width="180">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyLopDetail">
+              <tr>
+                <td colspan="9" style="text-align:center;">Chọn một lớp để xem chi tiết</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnCloseFooterModalLopDetail">Đóng</button>
+    </div>
   </div>
 </div>
 <script src="js/modules/lop.js"></script>
