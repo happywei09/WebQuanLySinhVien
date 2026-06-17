@@ -7,16 +7,25 @@
       <span class="breadcrumb-item active">Khoa</span>
     </div>
   </div>
-  <button class="btn btn-primary" id="btnAddKhoa">
-    + Thêm khoa mới
-  </button>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+    <button class="btn btn-secondary" id="btnUndoKhoa">
+      Phục hồi
+    </button>
+    <button class="btn btn-success" id="btnCommitKhoa">
+      Ghi
+    </button>
+    <button class="btn btn-primary" id="btnAddKhoa">
+      + Thêm khoa mới
+    </button>
+  </div>
 </div>
 
 <div class="card">
   <div class="card-header">
-    <div style="display: flex; gap: 12px; align-items: center; width: 100%; max-width: 400px;">
+    <div style="display: flex; gap: 12px; align-items: center; width: 100%; max-width: 520px; flex-wrap: wrap;">
       <input type="text" id="searchKhoa" class="form-control" placeholder="Tìm kiếm khoa...">
       <button class="btn btn-secondary" id="btnSearchKhoa">Tìm</button>
+      <span id="khoaPendingStatus" style="font-size: 13px; color: var(--text-muted);"></span>
     </div>
   </div>
   <div class="table-responsive">
@@ -35,12 +44,11 @@
     </table>
   </div>
 </div>
-
-<!-- Modal thêm/sửa -->
+<!-- Modal sửa -->
 <div class="modal-overlay" id="modalKhoa">
   <div class="modal">
     <div class="modal-header">
-      <h3 class="modal-title" id="modalTitle">Thêm Khoa</h3>
+      <h3 class="modal-title" id="modalTitle">Sửa Khoa</h3>
       <button class="btn-close" id="btnCloseModal">&times;</button>
     </div>
     <div class="modal-body">
@@ -57,7 +65,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" id="btnCancelModal">Huỷ</button>
-      <button class="btn btn-primary" id="btnSaveKhoa">Lưu</button>
+      <button class="btn btn-primary" id="btnSaveKhoa">Lưu sửa</button>
     </div>
   </div>
 </div>

@@ -6,8 +6,8 @@ const { authorize, PERMISSIONS } = require("../middleware/role.middleware");
 const { validateRequired } = require("../middleware/validate.middleware");
 
 router.get("/", authenticate, authorize(...PERMISSIONS.GIANGVIEN.VIEW), gvController.getAllGiangVien);
-router.get("/:id", authenticate, authorize(...PERMISSIONS.GIANGVIEN.VIEW), gvController.getGiangVienById);
 router.get("/khoa/:maKhoa", authenticate, authorize(...PERMISSIONS.GIANGVIEN.VIEW), gvController.getGiangVienByKhoa);
+router.get("/:id", authenticate, authorize(...PERMISSIONS.GIANGVIEN.VIEW), gvController.getGiangVienById);
 router.post("/create", authenticate, authorize(...PERMISSIONS.GIANGVIEN.CREATE), validateRequired(["MAGV", "HO", "TEN", "MAKHOA"]), gvController.createGiangVien);
 router.put("/update/:id", authenticate, authorize(...PERMISSIONS.GIANGVIEN.UPDATE), gvController.updateGiangVien);
 router.delete("/delete/:id", authenticate, authorize(...PERMISSIONS.GIANGVIEN.DELETE), gvController.deleteGiangVien);
