@@ -6,7 +6,7 @@ const loptinchiService = require("../services/loptinchi.service");
 
 const getAllLopTinChi = async (req, res, next) => {
   try {
-    const data = await loptinchiService.getAllLopTinChi();
+    const data = await loptinchiService.getLopTinChiForUser(req.user);
     res.json({ success: true, message: "Success", data });
   } catch (error) { next(error); }
 };

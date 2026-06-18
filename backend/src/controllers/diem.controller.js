@@ -10,7 +10,7 @@ const diemService = require("../services/diem.service");
 
 const getDiemByLopTinChi = async (req, res, next) => {
   try {
-    const data = await diemService.getDiemByLopTinChi(parseInt(req.params.maLTC));
+    const data = await diemService.getDiemByLopTinChi(parseInt(req.params.maLTC), req.user);
     res.json({ success: true, message: "Success", data });
   } catch (error) { next(error); }
 };
@@ -27,7 +27,7 @@ const updateDiem = async (req, res, next) => {
     const { maLTC, maSV, DIEM_CC, DIEM_GK, DIEM_CK } = req.body;
     await diemService.updateDiem(parseInt(maLTC), maSV, {
       DIEM_CC, DIEM_GK, DIEM_CK,
-    });
+    }, req.user);
     res.json({ success: true, message: "Cập nhật điểm thành công" });
   } catch (error) { next(error); }
 };
@@ -35,7 +35,7 @@ const updateDiem = async (req, res, next) => {
 const updateBatchDiem = async (req, res, next) => {
   try {
     const { maLTC, diemList } = req.body;
-    await diemService.updateBatchDiem(parseInt(maLTC), diemList);
+    await diemService.updateBatchDiem(parseInt(maLTC), diemList, req.user);
     res.json({ success: true, message: "Cập nhật điểm hàng loạt thành công" });
   } catch (error) { next(error); }
 };

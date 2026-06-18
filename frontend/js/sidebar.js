@@ -11,7 +11,7 @@ const MENU_ITEMS = [
   { id: 'giangvien', title: 'Quản lý Giảng viên', icon: 'assets/images/(5).png', roles: ['PGV', 'KHOA'], file: 'giangvien.html' },
   { id: 'monhoc', title: 'Quản lý Môn học', icon: 'assets/images/(6).png', roles: ['PGV', 'KHOA'], file: 'monhoc.html' },
   { id: 'loptinchi', title: 'Lớp Tín Chỉ', icon: 'assets/images/(7).png', roles: ['PGV', 'KHOA'], file: 'loptinchi.html' },
-  { id: 'dangky', title: 'Đăng ký Tín chỉ', icon: 'assets/images/(8).png', roles: ['PGV', 'KHOA', 'SINHVIEN'], file: 'dangky.html' },
+  { id: 'dangky', title: 'Đăng ký Tín chỉ', icon: 'assets/images/(8).png', roles: ['SINHVIEN'], file: 'dangky.html' },
   { id: 'phieudiem', title: 'Phiếu Điểm Cá Nhân', icon: 'assets/images/11.png', roles: ['SINHVIEN'], file: 'phieudiem.html' },
   { id: 'nhapdiem', title: 'Nhập Điểm', icon: 'assets/images/(9).png', roles: ['PGV', 'KHOA'], file: 'nhapdiem.html' },
   { id: 'reports', title: 'Báo cáo Thống kê', icon: 'assets/images/(10).png', roles: ['PGV', 'KHOA'], file: 'reports.html' },
@@ -21,7 +21,7 @@ const MENU_ITEMS = [
 class Sidebar {
   static init(userRole) {
     if (!userRole) return;
-    
+
     const menuContainer = document.getElementById('sidebarMenu');
     if (!menuContainer) return;
 
@@ -52,7 +52,7 @@ class Sidebar {
         items.forEach(i => i.classList.remove('active'));
         // Add active class
         el.classList.add('active');
-        
+
         // Load page content
         const file = el.getAttribute('data-file');
         this.loadPage(file, el.innerText);
@@ -69,13 +69,13 @@ class Sidebar {
 
     try {
       pageContent.innerHTML = Utils.getSpinner();
-      
+
       // Update breadcrumb & title
       // The real implementation would fetch HTML partials
-      
+
       const response = await fetch(`pages/${filename}`);
       if (!response.ok) throw new Error('Cannot load page');
-      
+
       const html = await response.text();
       pageContent.innerHTML = html;
 

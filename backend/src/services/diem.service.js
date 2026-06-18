@@ -3,13 +3,15 @@
 // ====================================
 
 const diemRepository = require("../repositories/diem.repository");
+const loptinchiRepository = require("../repositories/loptinchi.repository");
 
 class DiemService {
   // ====================================
   // NHẬP ĐIỂM
   // ====================================
 
-  async getDiemByLopTinChi(maLTC) {
+  async getDiemByLopTinChi(maLTC, user = null) {
+    await this.assertCanAccessLopTinChi(user, maLTC);
     return diemRepository.getByLopTinChi(maLTC);
   }
 
@@ -17,7 +19,8 @@ class DiemService {
     return diemRepository.getBySinhVien(maSV);
   }
 
-  async updateDiem(maLTC, maSV, data) {
+  async updateDiem(maLTC, maSV, data, user = null) {
+    await this.assertCanAccessLopTinChi(user, maLTC);
     // Validate điểm 0-10
     this.validateDiem(data);
     return diemRepository.updateDiem(maLTC, maSV, data);
@@ -28,12 +31,39 @@ class DiemService {
    * @param {number} maLTC
    * @param {Array} diemList
    */
-  async updateBatchDiem(maLTC, diemList) {
+  async updateBatchDiem(maLTC, diemList, user = null) {
+    await this.assertCanAccessLopTinChi(user, maLTC);
     // Validate từng dòng điểm
     for (const diem of diemList) {
       this.validateDiem(diem);
     }
     return diemRepository.updateBatch(maLTC, diemList);
+  }
+
+  async assertCanAccessLopTinChi(user, maLTC) {
+    const ltc = await loptinchiRepository.getById(maLTC);
+    if (!ltc) {
+      throw new Error("Không tìm thấy lớp tín chỉ");
+    }
+
+    if (!user) {
+      throw new Error("Chưa xác thực người dùng");
+    }
+
+    if (user.role === "PGV") {
+      return ltc;
+    }
+
+    if (user.role === "KHOA") {
+      const maKhoaLTC = (ltc.MAKHOA || "").trim();
+      const maKhoaUser = (user.maKhoa || "").trim();
+      if (!maKhoaUser || maKhoaLTC !== maKhoaUser) {
+        throw new Error("Bạn không có quyền thao tác với lớp tín chỉ này");
+      }
+      return ltc;
+    }
+
+    throw new Error("Bạn không có quyền thao tác với chức năng này");
   }
 
   /**

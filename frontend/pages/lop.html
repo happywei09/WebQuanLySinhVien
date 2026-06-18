@@ -18,17 +18,21 @@
 <div class="card" style="margin-bottom: 24px;">
   <div class="card-body" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
     <div style="flex: 2; min-width: 200px;">
-      <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">TÌM KIẾM LỚP HỌC</label>
+      <label class="form-label"
+        style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">TÌM KIẾM LỚP
+        HỌC</label>
       <input type="text" id="searchLop" class="form-control" placeholder="Nhập mã lớp hoặc tên lớp cần tìm..." />
     </div>
     <div style="flex: 1; min-width: 150px;">
-      <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">KHÓA HỌC</label>
+      <label class="form-label"
+        style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">KHÓA HỌC</label>
       <select id="filterKhoaHoc" class="form-control">
         <option value="ALL">Tất cả Khóa học</option>
       </select>
     </div>
     <div style="flex: 1; min-width: 150px;">
-      <label class="form-label" style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">KHOA</label>
+      <label class="form-label"
+        style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">KHOA</label>
       <select id="filterKhoa" class="form-control">
         <option value="ALL">Tất cả Khoa</option>
       </select>
@@ -61,60 +65,105 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="modalLopDetail">
-  <div class="modal" style="max-width: 1240px; width: min(1240px, 98vw);">
-    <div class="modal-header">
-      <h3 class="modal-title">Chi tiết Lớp</h3>
-      <button class="btn-close" id="btnCloseModalLopDetail">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
-        <div><strong>Mã lớp:</strong> <span id="detailMaLop">-</span></div>
-        <div><strong>Tên lớp:</strong> <span id="detailTenLop">-</span></div>
-        <div><strong>Khóa học:</strong> <span id="detailKhoaHoc">-</span></div>
-        <div><strong>Mã khoa:</strong> <span id="detailMaKhoa">-</span></div>
-      </div>
-
-      <div class="no-print" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button class="btn btn-primary" id="btnAddStudentInClass">+ Thêm sinh viên</button>
-          <button class="btn btn-secondary" id="btnUndoStudentInClass">Phục hồi</button>
-          <button class="btn btn-success" id="btnCommitStudentInClass">Ghi</button>
-        </div>
-        <span id="studentInClassPendingStatus" style="font-size: 13px; color: var(--text-muted);"></span>
-      </div>
-
-      <div class="card" style="box-shadow: none; border: 1px solid var(--border-color);">
-        <div class="card-header">
-          <h4 class="card-title" style="margin: 0;">Danh sách sinh viên</h4>
-        </div>
-        <div class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr>
-                <th width="80">STT</th>
-                <th width="150">Mã SV</th>
-                <th>Họ</th>
-                <th>Tên</th>
-                <th width="100">Phái</th>
-                <th width="140">Ngày sinh</th>
-                <th>Địa chỉ</th>
-                <th width="120">Đã nghỉ học</th>
-                <th width="180">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody id="tbodyLopDetail">
-              <tr>
-                <td colspan="9" style="text-align:center;">Chọn một lớp để xem chi tiết</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+<div class="card" id="lopDetailSection" style="margin-top: 24px; display:none;">
+  <div class="card-header"
+    style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+    <div>
+      <h3 class="card-title" style="margin:0;">Danh sách sinh viên lớp</h3>
+      <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">
+        <strong>Mã lớp:</strong> <span id="detailMaLop">-</span> |
+        <strong>Tên lớp:</strong> <span id="detailTenLop">-</span> |
+        <strong>Khóa học:</strong> <span id="detailKhoaHoc">-</span> |
+        <strong>Mã khoa:</strong> <span id="detailMaKhoa">-</span>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" id="btnCloseFooterModalLopDetail">Đóng</button>
+    <span id="studentInClassPendingStatus" style="font-size:13px; color:var(--text-muted);"></span>
+  </div>
+  <div class="card-body">
+    <div class="no-print"
+      style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-primary" id="btnAddStudentInClass">+ Thêm sinh viên</button>
+        <button class="btn btn-secondary" id="btnUndoStudentInClass">Phục hồi</button>
+        <button class="btn btn-success" id="btnCommitStudentInClass">Ghi</button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th width="80">STT</th>
+            <th width="150">Mã SV</th>
+            <th>Họ</th>
+            <th>Tên</th>
+            <th width="100">Phái</th>
+            <th width="140">Ngày sinh</th>
+            <th>Địa chỉ</th>
+            <th width="120">Đã nghỉ học</th>
+            <th width="180">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyLopDetail">
+          <tr>
+            <td colspan="9" style="text-align:center;">Chọn một lớp để xem sinh viên</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
+
+
+<!-- Modal Sinh Vien -->
+<div class="modal-overlay" id="studentModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="studentModalTitle">Them sinh vien</h3>
+      <button class="btn-close" id="btnCloseStudentModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label required" for="studentFormMasv">Ma sinh vien</label>
+        <input type="text" id="studentFormMasv" class="form-control" placeholder="VD: N19DCCN001">
+      </div>
+      <div style="display:flex; gap:16px; flex-wrap:wrap;">
+        <div class="form-group" style="flex:2; min-width:220px;">
+          <label class="form-label required" for="studentFormHo">Ho</label>
+          <input type="text" id="studentFormHo" class="form-control" placeholder="Nguyen Van">
+        </div>
+        <div class="form-group" style="flex:1; min-width:120px;">
+          <label class="form-label required" for="studentFormTen">Ten</label>
+          <input type="text" id="studentFormTen" class="form-control" placeholder="A">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label required" for="studentFormPhai">Phai</label>
+        <select id="studentFormPhai" class="form-control">
+          <option value="0">Nam</option>
+          <option value="1">Nu</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="studentFormNgaySinh">Ngay sinh</label>
+        <input type="date" id="studentFormNgaySinh" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="studentFormDiaChi">Dia chi</label>
+        <input type="text" id="studentFormDiaChi" class="form-control" placeholder="Dia chi sinh vien">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="studentFormDangNghiHoc">Dang nghi hoc</label>
+        <select id="studentFormDangNghiHoc" class="form-control">
+          <option value="0">Dang hoc</option>
+          <option value="1">Da nghi</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnCancelStudentModal">Huy</button>
+      <button class="btn btn-primary" id="btnSaveStudentModal">Luu</button>
+    </div>
+  </div>
+</div>
+
 <script src="js/modules/lop.js"></script>

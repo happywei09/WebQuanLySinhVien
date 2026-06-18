@@ -9,6 +9,14 @@ class LopTinChiService {
     return loptinchiRepository.getAll();
   }
 
+  async getLopTinChiForUser(user) {
+    if (user && user.role === 'KHOA' && user.maKhoa) {
+      return loptinchiRepository.getByKhoa(user.maKhoa);
+    }
+
+    return loptinchiRepository.getAll();
+  }
+
   async getLopTinChiById(maLTC) {
     const ltc = await loptinchiRepository.getById(maLTC);
     if (!ltc) throw new Error("Không tìm thấy lớp tín chỉ");

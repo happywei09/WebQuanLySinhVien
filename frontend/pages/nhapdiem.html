@@ -1,4 +1,4 @@
-<div class="page-header">
+﻿<div class="page-header">
   <div>
     <h1 class="page-title">Nhập Điểm Lớp Tín Chỉ</h1>
     <div class="breadcrumb">
@@ -7,11 +7,11 @@
       <span class="breadcrumb-item active">Nhập Điểm</span>
     </div>
   </div>
-  <div style="display: flex; gap: 12px;">
-    <button class="btn btn-secondary" id="btnRefreshDiem">
-      ↻ Làm mới
+  <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+    <button class="btn btn-secondary" id="btnResetFilter">
+      ↺ Đặt lại
     </button>
-    <button class="btn btn-primary" id="btnSaveAllDiem">
+    <button class="btn btn-primary" id="btnSaveAllDiem" disabled>
       💾 Lưu tất cả thay đổi
     </button>
   </div>
@@ -19,22 +19,49 @@
 
 <div class="card" style="margin-bottom: 24px;">
   <div class="card-body">
-    <div style="display: flex; gap: 16px; align-items: flex-end;">
-      <div class="form-group" style="margin-bottom: 0; flex: 1; max-width: 300px;">
-        <label class="form-label" for="selectLopTinChi">Chọn Lớp Tín Chỉ</label>
-        <select id="selectLopTinChi" class="form-control">
-          <option value="">-- Chọn một lớp tín chỉ --</option>
-          <!-- Sẽ được fill bằng JS -->
+    <div class="form-row" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: end;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="inputNienKhoa">Niên khóa</label>
+        <input type="text" id="inputNienKhoa" class="form-control" placeholder="VD: 2023-2024">
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="selectHocKy">Học kỳ</label>
+        <select id="selectHocKy" class="form-control">
+          <option value="">-- Chọn học kỳ --</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
         </select>
       </div>
-      <button class="btn btn-primary" id="btnLoadDanhSach">Tải danh sách</button>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="selectMonHoc">Môn học</label>
+        <select id="selectMonHoc" class="form-control" disabled>
+          <option value="">-- Chọn môn học --</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="selectNhom">Nhóm</label>
+        <select id="selectNhom" class="form-control" disabled>
+          <option value="">-- Chọn nhóm --</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
+      <button class="btn btn-primary" id="btnStartDiem">Bắt đầu</button>
+      <button class="btn btn-secondary" id="btnRefreshDiem" disabled>
+        ↻ Làm mới
+      </button>
     </div>
   </div>
 </div>
 
 <div class="card" id="bangDiemCard" style="display: none;">
-  <div class="card-header">
-    <h3 class="card-title">Bảng điểm sinh viên</h3>
+  <div class="card-header" style="display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center;">
+    <div>
+      <h3 class="card-title">Bảng điểm sinh viên</h3>
+      <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;" id="selectionSummary"></div>
+    </div>
     <span style="font-size: 13px; color: var(--text-muted);" id="unsavedWarning"></span>
   </div>
   <div class="table-responsive">
@@ -43,7 +70,7 @@
         <tr>
           <th width="50">STT</th>
           <th width="150">Mã SV</th>
-          <th>Họ và Tên</th>
+          <th>Họ và tên</th>
           <th width="100" style="text-align: center;">Điểm CC (10%)</th>
           <th width="100" style="text-align: center;">Điểm GK (30%)</th>
           <th width="100" style="text-align: center;">Điểm CK (60%)</th>
@@ -51,11 +78,12 @@
         </tr>
       </thead>
       <tbody id="tbodyDiem">
-        <!-- JS sẽ render ở đây -->
+        <tr>
+          <td colspan="7" style="text-align:center; color: var(--text-muted);">Chọn thông tin và bấm Bắt đầu để tải danh sách sinh viên</td>
+        </tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<!-- Import script riêng cho trang này -->
 <script src="js/modules/nhapdiem.js"></script>

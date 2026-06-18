@@ -46,7 +46,18 @@ window.LopModule = {
     this.btnUndo = document.getElementById('btnUndoLop');
     this.pendingStatus = document.getElementById('lopPendingStatus');
 
-    this.detailModal = document.getElementById('modalLopDetail');
+    this.detailSection = document.getElementById('lopDetailSection');
+    this.studentModal = document.getElementById('studentModal');
+    this.studentModalTitle = document.getElementById('studentModalTitle');
+    this.studentFormMasv = document.getElementById('studentFormMasv');
+    this.studentFormHo = document.getElementById('studentFormHo');
+    this.studentFormTen = document.getElementById('studentFormTen');
+    this.studentFormPhai = document.getElementById('studentFormPhai');
+    this.studentFormNgaySinh = document.getElementById('studentFormNgaySinh');
+    this.studentFormDiaChi = document.getElementById('studentFormDiaChi');
+    this.studentFormDangNghiHoc = document.getElementById('studentFormDangNghiHoc');
+    this.btnSaveStudentModal = document.getElementById('btnSaveStudentModal');
+    this.btnCloseStudentModal = document.getElementById('btnCloseStudentModal');
     this.detailMaLop = document.getElementById('detailMaLop');
     this.detailTenLop = document.getElementById('detailTenLop');
     this.detailKhoaHoc = document.getElementById('detailKhoaHoc');
@@ -72,11 +83,13 @@ window.LopModule = {
 
     this.btnCommit.onclick = () => this.handleCommit();
     this.btnUndo.onclick = () => this.handleUndo();
-    document.getElementById('btnCloseModalLopDetail').onclick = () => this.closeDetailModal();
-    document.getElementById('btnCloseFooterModalLopDetail').onclick = () => this.closeDetailModal();
-    this.btnAddStudentInClass.onclick = () => this.startAddStudentRow();
-    this.btnUndoStudentInClass.onclick = () => this.handleUndoDetailStudent();
-    this.btnCommitStudentInClass.onclick = () => this.handleCommitDetailStudents();
+    if (this.btnAddStudentInClass) {
+      this.btnAddStudentInClass.onclick = () => this.openStudentModal('create');
+    }
+    if (this.btnUndoStudentInClass) this.btnUndoStudentInClass.onclick = () => this.handleUndoDetailStudent();
+    if (this.btnCommitStudentInClass) this.btnCommitStudentInClass.onclick = () => this.handleCommitDetailStudents();
+    if (this.btnSaveStudentModal) this.btnSaveStudentModal.onclick = () => this.saveStudentModal();
+    if (this.btnCloseStudentModal) this.btnCloseStudentModal.onclick = () => this.closeStudentModal();
 
     if (this.searchLop) {
       this.searchLop.addEventListener('input', () => this.renderTable());
@@ -405,7 +418,7 @@ window.LopModule = {
       this.detailKhoaHoc.textContent = 'Dang tai...';
       this.detailMaKhoa.textContent = 'Dang tai...';
       this.detailTbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Dang tai danh sach sinh vien...</td></tr>';
-      this.detailModal.classList.add('active');
+      if (this.detailSection) this.detailSection.style.display = 'block';
       this.updateDetailActionState();
 
       const [lopRes, svRes] = await Promise.all([
@@ -436,7 +449,7 @@ window.LopModule = {
   },
 
   closeDetailModal() {
-    this.detailModal.classList.remove('active');
+    if (this.detailSection) this.detailSection.style.display = 'none';
     this.resetDetailStudentState();
   },
 
@@ -444,8 +457,6 @@ window.LopModule = {
     this.state.detailOriginalStudents = [];
     this.state.detailPendingOperations = {};
     this.state.detailHistory = [];
-    this.state.detailIsAddingRow = false;
-    this.state.detailDraftStudent = { MASV: '', HO: '', TEN: '', PHAI: false, NGAYSINH: '', DIACHI: '', DANGHIHOC: false };
     this.state.detailEditingStudentId = null;
     this.state.detailEditingDraft = null;
     this.state.currentDetailLop = null;
@@ -477,10 +488,6 @@ window.LopModule = {
     }
 
     students.forEach((sv, index) => {
-      if (this.state.detailEditingStudentId === sv.MASV) {
-        this.renderEditingStudentRow(index + 1, sv);
-        return;
-      }
 
       const pendingOp = this.state.detailPendingOperations[sv.MASV];
       const actionLabel = pendingOp?.type === 'delete' ? 'Cho xoa' : '';
@@ -495,7 +502,7 @@ window.LopModule = {
         <td>${sv.DIACHI || ''}</td>
         <td>${sv.DANGHIHOC ? 'Da nghi' : 'Dang hoc'}</td>
         <td>
-          <button class="btn btn-secondary btn-sm" onclick="LopModule.startEditStudentRow('${this.escapeJs(sv.MASV)}')">Sua</button>
+          <button class="btn btn-secondary btn-sm" onclick="LopModule.openStudentModal('edit','${this.escapeJs(sv.MASV)}')">Sua</button>
           <button class="btn btn-danger btn-sm" onclick="LopModule.handleDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Xoa</button>
           ${actionLabel ? `<span style="margin-left:8px; font-size:12px; color:var(--danger-color); font-weight:600;">${actionLabel}</span>` : ''}
         </td>
@@ -508,6 +515,77 @@ window.LopModule = {
     }
 
     this.updateDetailActionState();
+  },
+
+
+  openStudentModal(mode = 'create', maSV = '') {
+    if (!this.state.currentDetailLop) {
+      Toast.warning('Vui l?ng ch?n m?t l?p tr??c');
+      return;
+    }
+
+    this.state.studentModalMode = mode;
+    this.state.studentModalEditingId = maSV || null;
+    const student = mode === 'edit' ? this.getCurrentDetailStudents().find(x => x.MASV === maSV) : null;
+    this.studentModalTitle.textContent = mode === 'edit' ? 'S?a sinh vi?n' : 'Th?m sinh vi?n';
+    this.studentFormMasv.value = student?.MASV || '';
+    this.studentFormHo.value = student?.HO || '';
+    this.studentFormTen.value = student?.TEN || '';
+    this.studentFormPhai.value = student?.PHAI ? '1' : '0';
+    this.studentFormNgaySinh.value = this.formatDateForInput(student?.NGAYSINH || '');
+    this.studentFormDiaChi.value = student?.DIACHI || '';
+    this.studentFormDangNghiHoc.value = student?.DANGHIHOC ? '1' : '0';
+    if (mode === 'edit') this.studentFormMasv.disabled = true; else this.studentFormMasv.disabled = false;
+    this.studentModal.classList.add('active');
+  },
+
+  closeStudentModal() {
+    this.studentModal.classList.remove('active');
+  },
+
+  saveStudentModal() {
+    const payload = {
+      MASV: String(this.studentFormMasv.value || '').trim(),
+      HO: String(this.studentFormHo.value || '').trim(),
+      TEN: String(this.studentFormTen.value || '').trim(),
+      PHAI: this.studentFormPhai.value === '1',
+      NGAYSINH: this.normalizeDateForApi(this.studentFormNgaySinh.value),
+      DIACHI: String(this.studentFormDiaChi.value || '').trim(),
+      DANGHIHOC: this.studentFormDangNghiHoc.value === '1',
+      MALOP: this.state.currentDetailLop
+    };
+
+    if (!payload.MASV || !payload.HO || !payload.TEN) {
+      Toast.warning('Vui l?ng nh?p ??y ?? th?ng tin sinh vi?n');
+      return;
+    }
+
+    if (this.state.studentModalMode === 'create') {
+      this.handleSaveDraftStudentRowFromPayload(payload);
+    } else {
+      this.confirmEditStudentRowFromPayload(payload);
+    }
+    this.closeStudentModal();
+  },
+
+  handleSaveDraftStudentRowFromPayload(payload) {
+    const currentMap = new Map(this.getCurrentDetailStudents().map(item => [item.MASV, item]));
+    if (currentMap.has(payload.MASV)) {
+      Toast.warning('Ma sinh vien da ton tai trong lop nay');
+      return;
+    }
+    this.pushDetailHistory();
+    this.state.detailPendingOperations[payload.MASV] = { type: 'create', key: payload.MASV, newValue: payload };
+    this.renderDetailStudentTable();
+    Toast.success('Da them sinh vien vao danh sach cho ghi');
+  },
+
+  confirmEditStudentRowFromPayload(payload) {
+    const originalItem = this.state.detailOriginalStudents.find(item => item.MASV === payload.MASV);
+    this.pushDetailHistory();
+    this.state.detailPendingOperations[payload.MASV] = { type: 'update', key: payload.MASV, oldValue: originalItem ? { ...originalItem } : null, newValue: payload };
+    this.renderDetailStudentTable();
+    Toast.success('Da xac nhan thay doi cua sinh vien');
   },
 
   renderEditingStudentRow(index, sv) {
@@ -637,15 +715,11 @@ window.LopModule = {
   },
 
   startAddStudentRow() {
-    if (!this.state.currentDetailLop || this.state.detailIsAddingRow || this.state.detailEditingStudentId) return;
-    this.state.detailIsAddingRow = true;
-    this.state.detailDraftStudent = { MASV: '', HO: '', TEN: '', PHAI: false, NGAYSINH: '', DIACHI: '', DANGHIHOC: false };
-    this.renderDetailStudentTable();
+    if (!this.state.currentDetailLop) return;
+    this.openStudentModal('create');
   },
 
   cancelAddStudentRow() {
-    this.state.detailIsAddingRow = false;
-    this.state.detailDraftStudent = { MASV: '', HO: '', TEN: '', PHAI: false, NGAYSINH: '', DIACHI: '', DANGHIHOC: false };
     this.renderDetailStudentTable();
   },
 
@@ -679,8 +753,6 @@ window.LopModule = {
       newValue: payload
     };
 
-    this.state.detailIsAddingRow = false;
-    this.state.detailDraftStudent = { MASV: '', HO: '', TEN: '', PHAI: false, NGAYSINH: '', DIACHI: '', DANGHIHOC: false };
     this.renderDetailStudentTable();
     Toast.success('Da them sinh vien vao danh sach cho ghi');
   },
@@ -825,8 +897,6 @@ window.LopModule = {
     this.state.detailPendingOperations = this.state.detailHistory.pop();
     this.state.detailEditingStudentId = null;
     this.state.detailEditingDraft = null;
-    this.state.detailIsAddingRow = false;
-    this.state.detailDraftStudent = { MASV: '', HO: '', TEN: '', PHAI: false, NGAYSINH: '', DIACHI: '', DANGHIHOC: false };
     this.renderDetailStudentTable();
     Toast.success('Da phuc hoi thay doi sinh vien gan nhat');
   },
