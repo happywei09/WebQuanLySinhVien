@@ -228,7 +228,7 @@ window.ReportsModule = {
       this.reportFooter.innerHTML = 'Số sinh viên: ' + data.length;
     } else if (type === 'phieu_diem') {
       this.thead.innerHTML = '<tr><th width="60">STT</th><th>Tên môn học</th><th width="150" style="text-align:center; font-weight:bold; color:var(--primary-color);">Điểm</th></tr>';
-      data.forEach((row, index) => this.tbody.insertAdjacentHTML('beforeend', '<tr><td>' + (index + 1) + '</td><td style="font-weight:600;">' + (row.TENMH || '') + '</td><td style="text-align:center; font-weight:700; color:var(--primary-color);">' + this.formatScore(row.DIEM_KTHP) + '</td></tr>'));
+      data.forEach((row, index) => this.tbody.insertAdjacentHTML('beforeend', '<tr><td>' + (row.STT || (index + 1)) + '</td><td style="font-weight:600;">' + (row.TENMH || '') + '</td><td style="text-align:center; font-weight:700; color:var(--primary-color);">' + this.formatScore(row.DIEM) + '</td></tr>'));
       this.reportFooter.innerHTML = 'Số môn học: ' + data.length;
     } else if (type === 'bang_diem_tk') {
       const sample = data[0];

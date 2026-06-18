@@ -825,17 +825,27 @@ CREATE OR ALTER PROCEDURE SP_REPORT_PHIEUDIEM
     @MASV NCHAR(10)
 AS
 BEGIN
-    SELECT 
-        mh.TENMH,
-        dk.DIEM_CC,
-        dk.DIEM_GK,
-        dk.DIEM_CK,
-        (ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + ISNULL(dk.DIEM_CK, 0) * 0.6) AS DIEM_KTHP
-    FROM DANGKY dk
-    INNER JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
-    INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
-    WHERE dk.MASV = @MASV AND (dk.HUYDANGKY = 0 OR dk.HUYDANGKY IS NULL)
-    ORDER BY mh.TENMH;
+    ;WITH ScoreBySubject AS (
+        SELECT
+            mh.MAMH,
+            mh.TENMH,
+            MAX(
+                ISNULL(dk.DIEM_CC, 0) * 0.1 +
+                ISNULL(dk.DIEM_GK, 0) * 0.3 +
+                ISNULL(dk.DIEM_CK, 0) * 0.6
+            ) AS DIEM
+        FROM DANGKY dk
+        INNER JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
+        INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
+        WHERE dk.MASV = @MASV AND (dk.HUYDANGKY = 0 OR dk.HUYDANGKY IS NULL)
+        GROUP BY mh.MAMH, mh.TENMH
+    )
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY TENMH) AS STT,
+        TENMH,
+        DIEM
+    FROM ScoreBySubject
+    ORDER BY TENMH;
 END;
 GO
 
@@ -1008,4 +1018,3 @@ BEGIN
     ORDER BY ltc.MALTC;
 END;
 GO
-

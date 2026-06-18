@@ -48,31 +48,13 @@ window.PhieuDiemModule = {
       return;
     }
 
-    // Sort by Subject Name (tên môn học) alphabetically as required
-    // Find the subject name field (TENMH or TEN_MH or MAMH) and the mark field (DIEM, DIEM_TK, etc.)
-    const firstRow = data[0];
-    const keyTenMH = 'TENMH' in firstRow ? 'TENMH' : ('TEN_MH' in firstRow ? 'TEN_MH' : 'MAMH');
-    
-    // Sort
-    data.sort((a, b) => {
-      const nameA = String(a[keyTenMH] || '').toUpperCase();
-      const nameB = String(b[keyTenMH] || '').toUpperCase();
-      return nameA.localeCompare(nameB);
-    });
-
     data.forEach((row, index) => {
-      const tenMH = row[keyTenMH] || 'Không xác định';
-      
-      // Determine the score column (could be DIEM, DIEM_TK, DIEM_CK)
-      let diem = '-';
-      if ('DIEM' in row && row.DIEM !== null) diem = row.DIEM;
-      else if ('DIEM_TK' in row && row.DIEM_TK !== null) diem = row.DIEM_TK;
-      else if ('DIEM_CK' in row && row.DIEM_CK !== null) diem = row.DIEM_CK;
-      else if ('DIEM_HE_10' in row && row.DIEM_HE_10 !== null) diem = row.DIEM_HE_10;
+      const tenMH = row.TENMH || 'Không xác định';
+      const diem = row.DIEM !== null && row.DIEM !== undefined ? row.DIEM : '-';
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${index + 1}</td>
+        <td>${row.STT || index + 1}</td>
         <td><strong>${tenMH}</strong></td>
         <td style="text-align: center; font-weight: bold; color: var(--primary-color);">${diem}</td>
       `;
