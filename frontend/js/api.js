@@ -42,11 +42,47 @@ class ApiClient {
       if (!response.ok) {
         // Handle token expired logic
         if (response.status === 401 && data.code === 'TOKEN_EXPIRED') {
-          // TODO: Implement refresh token logic here if needed
-          // Hoặc logout luôn
+          const refreshToken = localStorage.getItem('refreshToken');
+          if (refreshToken) {
+            try {
+              // Gọi API refresh token trực tiếp bằng fetch
+              const refreshRes = await fetch(`${API_CONFIG.baseURL}/auth/refresh-token`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ refreshToken }),
+              });
+              const refreshData = await refreshRes.json();
+              
+              if (refreshRes.ok && refreshData.success && refreshData.data?.token) {
+                // Lưu token mới
+                localStorage.setItem('token', refreshData.data.token);
+                
+                // Gửi lại request gốc với header Authorization mới
+                const retryResponse = await fetch(url, {
+                  ...options,
+                  headers: this.getHeaders(),
+                });
+                
+                const retryData = await retryResponse.json();
+                if (!retryResponse.ok) {
+                  throw new Error(retryData.message || 'Có lỗi xảy ra từ máy chủ');
+                }
+                return retryData;
+              }
+            } catch (refreshErr) {
+              console.error('Error refreshing token:', refreshErr);
+            }
+          }
+          
+          // Hoặc logout luôn nếu không thể refresh
           localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
           localStorage.removeItem('user');
+          localStorage.removeItem('serverId');
           window.location.href = 'login.html';
+          throw new Error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
         }
         throw new Error(data.message || 'Có lỗi xảy ra từ máy chủ');
       }

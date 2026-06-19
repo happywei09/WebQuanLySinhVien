@@ -15,7 +15,8 @@ const MENU_ITEMS = [
   { id: 'phieudiem', title: 'Phiếu Điểm Cá Nhân', icon: 'assets/images/11.png', roles: ['SINHVIEN'], file: 'phieudiem.html' },
   { id: 'nhapdiem', title: 'Nhập Điểm', icon: 'assets/images/(9).png', roles: ['PGV', 'KHOA'], file: 'nhapdiem.html' },
   { id: 'reports', title: 'Báo cáo Thống kê', icon: 'assets/images/(10).png', roles: ['PGV', 'KHOA'], file: 'reports.html' },
-  { id: 'taikhoan', title: 'Quản lý Tài khoản', icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon-svg" style="width:20px;height:20px;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>', roles: ['PGV', 'KHOA'], file: 'taikhoan.html' }
+  { id: 'taikhoan', title: 'Quản lý Tài khoản', icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon-svg" style="width:20px;height:20px;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>', roles: ['PGV', 'KHOA'], file: 'taikhoan.html' },
+  { id: 'doimatkhau', title: 'Đổi mật khẩu', icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon-svg" style="width:20px;height:20px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>', roles: ['PGV', 'KHOA', 'SINHVIEN'], file: 'doimatkhau.html' }
 ];
 
 class Sidebar {

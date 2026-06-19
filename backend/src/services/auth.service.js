@@ -160,7 +160,7 @@ class AuthService {
 
     // Tạo JWT token (bao gồm serverId)
     const token = this.generateToken(user, serverId);
-    const refreshToken = this.generateRefreshToken(user);
+    const refreshToken = this.generateRefreshToken(user, serverId);
 
     // Lấy tên server hiển thị
     const serverDisplayName = config.databases[serverId]
@@ -187,9 +187,9 @@ class AuthService {
   generateToken(user, serverId = "server1") {
     return jwt.sign(
       {
-        username: user.USERNAME,
-        role: user.ROLE,
-        maKhoa: user.MAKHOA || null,
+        username: user.USERNAME || user.username,
+        role: user.ROLE || user.role,
+        maKhoa: user.MAKHOA || user.maKhoa || null,
         serverId: serverId,
       },
       config.jwt.secret,
@@ -200,9 +200,14 @@ class AuthService {
   /**
    * Tạo JWT Refresh Token
    */
-  generateRefreshToken(user) {
+  generateRefreshToken(user, serverId = "server1") {
     return jwt.sign(
-      { username: user.USERNAME },
+      {
+        username: user.USERNAME || user.username,
+        role: user.ROLE || user.role,
+        maKhoa: user.MAKHOA || user.maKhoa || null,
+        serverId: serverId,
+      },
       config.jwt.refreshSecret,
       { expiresIn: config.jwt.refreshExpiresIn }
     );
@@ -219,17 +224,42 @@ class AuthService {
    * Refresh access token
    */
   async refreshAccessToken(refreshToken) {
-    const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret);
+    try {
+      const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret);
 
-    // TODO: Lấy lại thông tin user từ DB theo decoded.username
-    const user = null;
+      const user = {
+        username: decoded.username,
+        role: decoded.role,
+        maKhoa: decoded.maKhoa || null,
+      };
 
-    if (!user) {
-      throw new Error("Invalid refresh token");
+      const newToken = this.generateToken(user, decoded.serverId || "server1");
+      return { token: newToken };
+    } catch (error) {
+      throw new Error("Invalid or expired refresh token");
     }
+  }
 
-    const newToken = this.generateToken(user);
-    return { token: newToken };
+  /**
+   * Đổi mật khẩu
+   * @param {string} username - Mã SV hoặc Mã GV
+   * @param {string} oldPassword
+   * @param {string} newPassword
+   * @param {string} role - "SINHVIEN", "KHOA", "PGV"
+   * @returns {Promise<boolean>}
+   */
+  async changePassword(username, oldPassword, newPassword, role) {
+    const isStudent = role === "SINHVIEN" ? 1 : 0;
+    
+    // Thực thi stored procedure SP_CHANGE_PASSWORD
+    await executeStoredProcedure("SP_CHANGE_PASSWORD", {
+      UserName: { type: sql.NVarChar(50), value: username },
+      OldPassword: { type: sql.NVarChar(50), value: oldPassword },
+      NewPassword: { type: sql.NVarChar(50), value: newPassword },
+      IsStudent: { type: sql.Bit, value: isStudent },
+    });
+    
+    return true;
   }
 }
 

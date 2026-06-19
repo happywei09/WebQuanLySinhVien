@@ -67,8 +67,39 @@ const getProfile = async (req, res, next) => {
   }
 };
 
+const changePassword = async (req, res, next) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const { username, role } = req.user;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng nhập đầy đủ mật khẩu cũ và mật khẩu mới",
+      });
+    }
+
+    if (newPassword.length < 3) {
+      return res.status(400).json({
+        success: false,
+        message: "Mật khẩu mới phải có tối thiểu 3 ký tự",
+      });
+    }
+
+    await authService.changePassword(username, oldPassword, newPassword, role);
+
+    res.json({
+      success: true,
+      message: "Đổi mật khẩu thành công",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   login,
   refreshToken,
   getProfile,
+  changePassword,
 };

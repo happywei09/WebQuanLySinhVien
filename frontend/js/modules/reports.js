@@ -72,8 +72,8 @@ window.ReportsModule = {
         });
       }
     } catch (error) {
-      console.error('Kh?ng th? t?i b? l?c ban ??u:', error);
-      Toast.error('L?i khi t?i b? l?c');
+      console.error('Không thể tải bộ lọc ban đầu:', error);
+      Toast.error('Lỗi khi tải bộ lọc');
     }
   },
 
@@ -200,7 +200,7 @@ window.ReportsModule = {
       this.reportHeader.innerHTML = '<h2 style="font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">' + titles[type] + '</h2><p style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">' + this.buildSubtitle(meta) + '</p>';
       this.renderReportTable(type);
     } catch (error) {
-      this.tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:red;">L?i: ' + error.message + '</td></tr>';
+      this.tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:red;">Lỗi: ' + error.message + '</td></tr>';
       Toast.error(error.message);
     }
   },
@@ -215,7 +215,7 @@ window.ReportsModule = {
     }
 
     if (type === 'ds_ltc') {
-      this.thead.innerHTML = '<tr><th width="60">STT</th><th>Tên môn học</th><th width="80" style="text-align:center;">Nhóm</th><th>Họ tên GV gi?ng</th><th width="120" style="text-align:center;">Số SV tối thiểu</th><th width="120" style="text-align:center;">Số SV đã đăng ký</th></tr>';
+      this.thead.innerHTML = '<tr><th width="60">STT</th><th>Tên môn học</th><th width="80" style="text-align:center;">Nhóm</th><th>Họ tên GV giảng</th><th width="120" style="text-align:center;">Số SV tối thiểu</th><th width="120" style="text-align:center;">Số SV đã đăng ký</th></tr>';
       data.forEach((row, index) => this.tbody.insertAdjacentHTML('beforeend', '<tr><td>' + (index + 1) + '</td><td style="font-weight:600;">' + (row.TENMH || row.MAMH || '') + '</td><td style="text-align:center;">' + (row.NHOM ?? '') + '</td><td>' + (row.HOTEN_GV || '') + '</td><td style="text-align:center;">' + (row.SOSVTOITHIEU ?? 0) + '</td><td style="text-align:center; font-weight:700; color:var(--primary-color);">' + (row.SOSV_DANGKY ?? 0) + '</td></tr>'));
       this.reportFooter.innerHTML = 'Số lượng lớp đã mở: ' + data.length;
     } else if (type === 'dssv_ltc') {
@@ -223,7 +223,7 @@ window.ReportsModule = {
       data.forEach((row, index) => this.tbody.insertAdjacentHTML('beforeend', '<tr><td>' + (index + 1) + '</td><td style="font-weight:600;">' + (row.MASV || '') + '</td><td>' + (row.HO || '') + '</td><td>' + (row.TEN || '') + '</td><td style="text-align:center;">' + (row.PHAI ? 'Nữ' : 'Nam') + '</td><td>' + (row.MALOP || '') + '</td></tr>'));
       this.reportFooter.innerHTML = 'Số sinh viên đã đăng ký: ' + data.length;
     } else if (type === 'bang_diem_mh') {
-      this.thead.innerHTML = '<tr><th width="60">STT</th><th width="150">Mã SV</th><th>Họ</th><th>Tên</th><th width="100" style="text-align:center;">Điểm chuyên cần</th><th width="100" style="text-align:center;">Điêm giữa kỳ</th><th width="100" style="text-align:center;">Điểm cuối kỳ</th><th width="120" style="text-align:center; font-weight:bold; color:var(--primary-color);">Điểm hết môn</th></tr>';
+      this.thead.innerHTML = '<tr><th width="60">STT</th><th width="150">Mã SV</th><th>Họ</th><th>Tên</th><th width="100" style="text-align:center;">Điểm chuyên cần</th><th width="100" style="text-align:center;">Điểm giữa kỳ</th><th width="100" style="text-align:center;">Điểm cuối kỳ</th><th width="120" style="text-align:center; font-weight:bold; color:var(--primary-color);">Điểm hết môn</th></tr>';
       data.forEach((row, index) => this.tbody.insertAdjacentHTML('beforeend', '<tr><td>' + (index + 1) + '</td><td style="font-weight:600;">' + (row.MASV || '') + '</td><td>' + (row.HO || '') + '</td><td>' + (row.TEN || '') + '</td><td style="text-align:center;">' + this.formatScore(row.DIEM_CC) + '</td><td style="text-align:center;">' + this.formatScore(row.DIEM_GK) + '</td><td style="text-align:center;">' + this.formatScore(row.DIEM_CK) + '</td><td style="text-align:center; font-weight:700; color:var(--primary-color);">' + this.formatScore(row.DIEM_KTHP) + '</td></tr>'));
       this.reportFooter.innerHTML = 'Số sinh viên: ' + data.length;
     } else if (type === 'phieu_diem') {
@@ -265,7 +265,7 @@ window.ReportsModule = {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    Toast.success('?? t?i xu?ng file CSV');
+    Toast.success('Đã tải xuống file CSV');
   }
 };
 
