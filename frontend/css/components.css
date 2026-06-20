@@ -49,6 +49,62 @@
   filter: brightness(0.9);
 }
 
+.btn-cancel-ltc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  background-color: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-cancel-ltc:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.15);
+}
+
+.btn-cancel-ltc:active {
+  transform: translateY(0);
+}
+
+.badge-registered-ltc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  background-color: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+  white-space: nowrap;
+}
+
+.badge-viewonly-ltc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  background-color: rgba(100, 116, 139, 0.08);
+  color: #64748b;
+  white-space: nowrap;
+}
+
 /* ====================================
    CARDS
 ==================================== */

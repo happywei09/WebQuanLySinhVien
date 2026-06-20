@@ -722,9 +722,25 @@ CREATE OR ALTER PROCEDURE SP_GET_DANGKY_BY_SINHVIEN
     @MASV NCHAR(10)
 AS
 BEGIN
-    SELECT MALTC, MASV, DIEM_CC, DIEM_GK, DIEM_CK, HUYDANGKY
-    FROM DANGKY
-    WHERE MASV = @MASV AND HUYDANGKY = 0;
+    SELECT 
+        dk.MALTC, 
+        dk.MASV, 
+        dk.DIEM_CC, 
+        dk.DIEM_GK, 
+        dk.DIEM_CK, 
+        dk.HUYDANGKY,
+        ltc.MAMH,
+        mh.TENMH,
+        ltc.NHOM,
+        ltc.MAGV,
+        gv.HO + ' ' + gv.TEN AS TENGV,
+        ltc.NIENKHOA,
+        ltc.HOCKY
+    FROM DANGKY dk
+    INNER JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
+    INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
+    INNER JOIN GIANGVIEN gv ON ltc.MAGV = gv.MAGV
+    WHERE dk.MASV = @MASV AND (dk.HUYDANGKY = 0 OR dk.HUYDANGKY IS NULL);
 END;
 GO
 

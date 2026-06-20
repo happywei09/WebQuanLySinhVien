@@ -1,61 +1,163 @@
+<style>
+  /* Custom styled checkboxes */
+  .custom-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border: 2px solid #3b82f6;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.2s ease-in-out;
+    background-color: #fff;
+    vertical-align: middle;
+  }
+
+  .custom-checkbox:hover {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+
+  .custom-checkbox:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    transform: scale(1.05);
+  }
+
+  .custom-checkbox:checked::after {
+    content: '✓';
+    color: #fff;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  /* Highlighted register button styling */
+  #btnRegisterSelected {
+    font-weight: 600;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 8px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+  }
+
+  #btnRegisterSelected:not(:disabled) {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    cursor: pointer;
+  }
+
+  #btnRegisterSelected:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.45);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  }
+
+  #btnRegisterSelected:not(:disabled):active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
+  }
+
+  #btnRegisterSelected:disabled {
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    border: 1px solid #e2e8f0;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+</style>
+
 <div class="page-header">
   <div>
-    <h1 class="page-title">Đăng ký Tín chỉ</h1>
+    <h1 class="page-title" id="registrationTitle">Đăng ký Môn học</h1>
     <div class="breadcrumb">
       <span class="breadcrumb-item">Trang chủ</span>
       <span>/</span>
-      <span class="breadcrumb-item active">Đăng ký</span>
+      <span class="breadcrumb-item active">Đăng ký môn học</span>
     </div>
   </div>
 </div>
 
+<!-- Student Info Display -->
+<div id="studentInfoBox" style="background: rgba(59,130,246,0.08); padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; font-weight: 600; color: var(--primary-color); display: none;">
+  🎓 Sinh viên: <span id="studentNameDisplay">...</span> (<span id="studentCodeDisplay">...</span>) - Lớp: <span id="studentClassDisplay">...</span>
+</div>
+
+<!-- Filter Section -->
 <div class="card" style="margin-bottom: 24px;">
-  <div class="card-body">
-    <!-- Student Info Display -->
-    <div id="studentInfoBox" style="background: rgba(59,130,246,0.08); padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; color: var(--primary-color); display: none;">
-      🎓 Sinh viên: <span id="studentNameDisplay">...</span> (<span id="studentCodeDisplay">...</span>) - Lớp: <span id="studentClassDisplay">...</span>
-    </div>
-    
-    <div style="display: flex; gap: 16px;">
-      <div class="form-group" style="flex:1;">
-        <label class="form-label" for="regNienKhoa">Niên khóa</label>
-        <select class="form-control" id="regNienKhoa">
+  <div class="card-body" style="padding: 16px 20px;">
+    <div style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+      <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+        <label class="form-label" for="regNienKhoa" style="font-weight: 600; margin-bottom: 6px; display: block;">Niên khóa</label>
+        <select class="form-control" id="regNienKhoa" style="width: 100%;">
           <option value="">-- Chọn niên khóa --</option>
         </select>
       </div>
-      <div class="form-group" style="flex:1;">
-        <label class="form-label" for="regHocKy">Học kỳ</label>
-        <select class="form-control" id="regHocKy">
+      <div class="form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
+        <label class="form-label" for="regHocKy" style="font-weight: 600; margin-bottom: 6px; display: block;">Học kỳ</label>
+        <select class="form-control" id="regHocKy" style="width: 100%;">
           <option value="1">1</option>
           <option value="2">2</option>
           <option value="3">3</option>
         </select>
-      </div>
-      <div style="display:flex; align-items:flex-end; margin-bottom:20px;">
-        <button class="btn btn-primary" id="btnSearchLop">Tìm lớp mở</button>
-      </div>
     </div>
   </div>
 </div>
 
-<div class="card">
-  <div class="card-header"><h3 class="card-title">Danh sách lớp tín chỉ có thể đăng ký</h3></div>
+<!-- Available Classes Section -->
+<div class="card" style="margin-bottom: 24px;">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <h3 class="card-title" style="color: var(--text-color); font-weight: 600;">Danh sách môn học mở cho đăng ký</h3>
+    <button id="btnRegisterSelected" disabled>Đăng ký môn đã chọn</button>
+  </div>
   <div class="table-responsive">
-    <table class="table">
+    <table class="table" id="tableAvailable">
       <thead>
         <tr>
-          <th>Chọn</th>
+          <th style="width: 120px; text-align: center;">Chọn</th>
           <th>Mã LTC</th>
           <th>Môn học</th>
+          <th style="width: 100px; text-align: center;">Nhóm</th>
           <th>Giảng viên</th>
-          <th>Số SV đã ĐK</th>
-          <th>Số SV tối thiểu</th>
+          <th style="width: 130px; text-align: center;">Số SV đã ĐK</th>
+          <th style="width: 140px; text-align: center;">Số SV tối thiểu</th>
         </tr>
       </thead>
-      <tbody>
-        <tr><td colspan="6" style="text-align:center;">Dữ liệu từ SP_GET_LTC_FOR_DANGKY</td></tr>
+      <tbody id="tbodyAvailable">
+        <tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 20px;">Đang tải danh sách lớp mở...</td></tr>
       </tbody>
     </table>
   </div>
 </div>
+
+<!-- Registered Classes Section -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title" style="color: var(--text-color); font-weight: 600;">Danh sách môn học đã đăng ký</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="table" id="tableRegistered">
+      <thead>
+        <tr>
+          <th style="width: 120px; text-align: center; white-space: nowrap;">Hành động</th>
+          <th>Mã LTC</th>
+          <th>Môn học</th>
+          <th style="width: 100px; text-align: center;">Nhóm</th>
+          <th>Giảng viên</th>
+          <th style="width: 150px; text-align: center;">Trạng thái</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyRegistered">
+        <tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 20px;">Chưa đăng ký môn học nào</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 <script src="js/modules/dangky.js"></script>
