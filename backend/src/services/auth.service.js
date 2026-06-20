@@ -126,6 +126,7 @@ class AuthService {
 
           // Chuẩn hóa role
           if (role === "db_owner") role = "PGV";
+          if (role === "SV") role = "SINHVIEN";
 
           user = {
             USERNAME: dbUser,

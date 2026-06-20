@@ -4,6 +4,7 @@
 
 const dangkyRepository = require("../repositories/dangky.repository");
 const loptinchiRepository = require("../repositories/loptinchi.repository");
+const { getCurrentSemester, getNextSemester, isSameSemester } = require("../utils/academic.helper");
 
 class DangKyService {
   async getAllDangKy() {
@@ -28,6 +29,13 @@ class DangKyService {
     const ltc = await loptinchiRepository.getById(data.MALTC);
     if (!ltc) {
       throw new Error("Lớp tín chỉ không tồn tại");
+    }
+
+    // 1.5) Chặn đăng ký lớp ngoài học kỳ kế tiếp (Tính theo Server Time)
+    const currentSem = getCurrentSemester();
+    const nextSem = getNextSemester(currentSem.nienKhoa, currentSem.hocKy);
+    if (!isSameSemester(ltc, nextSem)) {
+      throw new Error(`Chỉ cho phép đăng ký lớp tín chỉ ở học kỳ kế tiếp (${nextSem ? `${nextSem.nienKhoa} - Học kỳ ${nextSem.hocKy}` : "N/A"})`);
     }
 
     // 2) Prevent registration to cancelled class
