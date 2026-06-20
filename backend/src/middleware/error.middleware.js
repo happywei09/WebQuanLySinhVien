@@ -20,9 +20,20 @@ const errorHandler = (err, req, res, next) => {
 
   // Lỗi SQL Server
   if (err.name === "RequestError" || err.code === "EREQUEST") {
+    let userMessage = "Lỗi truy vấn cơ sở dữ liệu";
+    
+    if (err.number === 2627 || err.number === 2601) {
+      userMessage = "Dữ liệu bị trùng lặp (Mã khoá chính hoặc giá trị duy nhất đã tồn tại)";
+    } else if (err.number === 547) {
+      userMessage = "Ràng buộc dữ liệu không hợp lệ (Không thể xoá dữ liệu đang được liên kết, hoặc vi phạm điều kiện kiểm tra)";
+    } else if (err.message) {
+      userMessage = err.message.replace(/^RequestError:\s*/i, "");
+    }
+
     return res.status(500).json({
       success: false,
-      message: "Lỗi truy vấn cơ sở dữ liệu",
+      message: userMessage,
+      sqlErrorNumber: err.number,
     });
   }
 
