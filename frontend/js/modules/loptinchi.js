@@ -22,7 +22,9 @@ window.LopTinChiModule = {
               <div style="display: flex; gap: 16px;">
                 <div class="form-group" style="flex: 1;">
                   <label class="form-label required">Niên khóa</label>
-                  <input type="text" id="nienkhoaLTC" class="form-control" required placeholder="VD: 2023-2024">
+                  <select id="nienkhoaLTC" class="form-control" required>
+                    <option value="">-- Chọn Niên khóa --</option>
+                  </select>
                 </div>
                 <div class="form-group" style="flex: 1;">
                   <label class="form-label required">Học kỳ</label>
@@ -100,6 +102,19 @@ window.LopTinChiModule = {
 
   async loadDropdowns() {
     try {
+      // Tự động sinh danh sách Niên khóa (từ niên khóa hiện tại đến 5 năm sau)
+      const date = new Date();
+      const currentYear = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const startYear = (month >= 8 && month <= 12) ? currentYear : (currentYear - 1);
+
+      let nkOptions = '<option value="">-- Chọn Niên khóa --</option>';
+      for (let y = startYear; y <= startYear + 5; y++) {
+        const nkStr = `${y}-${y + 1}`;
+        nkOptions += `<option value="${nkStr}">${nkStr}</option>`;
+      }
+      this.inputNK.innerHTML = nkOptions;
+
       const [resMH, resGV] = await Promise.all([API.get('/monhoc'), API.get('/giangvien')]);
       if (resMH.success) {
         this.selectMH.innerHTML = '<option value="">-- Chọn Môn --</option>' + 
@@ -152,8 +167,48 @@ window.LopTinChiModule = {
     this.groupHuy.style.display = this.isEdit ? 'block' : 'none';
     
     this.inputMa.value = ma;
-    this.inputNK.value = nk;
-    this.selectHK.value = hk;
+    if (!this.isEdit) {
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      let currentNK = "";
+      let currentHK = 1;
+
+      if (month >= 8 && month <= 12) {
+        currentNK = `${year}-${year + 1}`;
+        currentHK = 1;
+      } else if (month >= 1 && month <= 6) {
+        currentNK = `${year - 1}-${year}`;
+        currentHK = 2;
+      } else if (month === 7) {
+        currentNK = `${year - 1}-${year}`;
+        currentHK = 3;
+      }
+
+      const years = currentNK.split("-").map(Number);
+      const startYear = years[0];
+      const endYear = years[1];
+      
+      let nextNK = "";
+      let nextHK = "1";
+
+      if (currentHK === 1) {
+        nextNK = `${startYear}-${endYear}`;
+        nextHK = "2";
+      } else if (currentHK === 2) {
+        nextNK = `${startYear}-${endYear}`;
+        nextHK = "3";
+      } else if (currentHK === 3) {
+        nextNK = `${startYear + 1}-${endYear + 1}`;
+        nextHK = "1";
+      }
+
+      this.inputNK.value = nextNK;
+      this.selectHK.value = nextHK;
+    } else {
+      this.inputNK.value = nk;
+      this.selectHK.value = hk;
+    }
     this.selectMH.value = mh;
     this.inputNhom.value = nhom;
     this.selectGV.value = gv;
