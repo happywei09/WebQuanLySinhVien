@@ -58,10 +58,26 @@ class LopTinChiService {
     const existing = await this.getLopTinChiById(maLTC);
     const updatedNienKhoa = data.NIENKHOA !== undefined ? data.NIENKHOA : existing.NIENKHOA;
     const updatedHocKy = data.HOCKY !== undefined ? data.HOCKY : existing.HOCKY;
-    if (updatedNienKhoa && updatedHocKy) {
+    
+    // Chỉ kiểm tra ràng buộc thời gian nếu có sự thay đổi thực tế về Niên khóa hoặc Học kỳ
+    const isSemesterChanged = (data.NIENKHOA !== undefined && data.NIENKHOA !== existing.NIENKHOA) ||
+                              (data.HOCKY !== undefined && Number(data.HOCKY) !== Number(existing.HOCKY));
+
+    if (isSemesterChanged && updatedNienKhoa && updatedHocKy) {
       this.validateSemesterConstraint(updatedNienKhoa, updatedHocKy);
     }
-    return loptinchiRepository.update(maLTC, data);
+    
+    const result = await loptinchiRepository.update(maLTC, data);
+
+    if (data.HUYLOP !== undefined) {
+      if (data.HUYLOP) {
+        await loptinchiRepository.cancel(maLTC);
+      } else {
+        await loptinchiRepository.restore(maLTC);
+      }
+    }
+
+    return result;
   }
 
   async deleteLopTinChi(maLTC) {

@@ -20,7 +20,10 @@ class DiemService {
   }
 
   async updateDiem(maLTC, maSV, data, user = null) {
-    await this.assertCanAccessLopTinChi(user, maLTC);
+    const ltc = await this.assertCanAccessLopTinChi(user, maLTC);
+    if (this.isFutureSemester(ltc.NIENKHOA, ltc.HOCKY)) {
+      throw new Error("Không thể nhập hoặc sửa điểm cho lớp tín chỉ thuộc học kỳ tương lai");
+    }
     // Validate điểm 0-10
     this.validateDiem(data);
     return diemRepository.updateDiem(maLTC, maSV, data);
@@ -32,7 +35,10 @@ class DiemService {
    * @param {Array} diemList
    */
   async updateBatchDiem(maLTC, diemList, user = null) {
-    await this.assertCanAccessLopTinChi(user, maLTC);
+    const ltc = await this.assertCanAccessLopTinChi(user, maLTC);
+    if (this.isFutureSemester(ltc.NIENKHOA, ltc.HOCKY)) {
+      throw new Error("Không thể nhập hoặc sửa điểm cho lớp tín chỉ thuộc học kỳ tương lai");
+    }
     // Validate từng dòng điểm
     for (const diem of diemList) {
       this.validateDiem(diem);
@@ -114,6 +120,46 @@ class DiemService {
 
   async reportDSLopTinChi(nienKhoa, hocKy) {
     return diemRepository.reportDSLopTinChi(nienKhoa, hocKy);
+  }
+
+  /**
+   * Kiểm tra xem học kỳ target có phải là tương lai hay không
+   */
+  isFutureSemester(nienKhoa, hocKy) {
+    if (!nienKhoa || !hocKy) return false;
+
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    let currentNK = "";
+    let currentHK = 1;
+
+    if (month >= 8 && month <= 12) {
+      currentNK = `${year}-${year + 1}`;
+      currentHK = 1;
+    } else if (month >= 1 && month <= 6) {
+      currentNK = `${year - 1}-${year}`;
+      currentHK = 2;
+    } else if (month === 7) {
+      currentNK = `${year - 1}-${year}`;
+      currentHK = 3;
+    }
+
+    const partsCur = currentNK.split('-').map(Number);
+    const partsTarget = nienKhoa.split('-').map(Number);
+    if (partsCur.length < 2 || partsTarget.length < 2) return false;
+
+    const startYearCur = partsCur[0];
+    const startYearTarget = partsTarget[0];
+
+    if (startYearTarget > startYearCur) {
+      return true;
+    }
+    if (startYearTarget < startYearCur) {
+      return false;
+    }
+
+    return Number(hocKy) > Number(currentHK);
   }
 }
 

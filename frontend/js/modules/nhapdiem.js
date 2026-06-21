@@ -19,7 +19,35 @@ window.NhapDiemModule = {
   async init() {
     this.cacheDOM();
     this.bindEvents();
+
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    let currentNK = "";
+    let currentHK = "";
+
+    if (month >= 8 && month <= 12) {
+      currentNK = `${year}-${year + 1}`;
+      currentHK = "1";
+    } else if (month >= 1 && month <= 6) {
+      currentNK = `${year - 1}-${year}`;
+      currentHK = "2";
+    } else if (month === 7) {
+      currentNK = `${year - 1}-${year}`;
+      currentHK = "3";
+    }
+
+    if (this.inputNienKhoa) {
+      this.inputNienKhoa.value = currentNK;
+      this.state.selectedNienKhoa = currentNK;
+    }
+    if (this.selectHocKy) {
+      this.selectHocKy.value = currentHK;
+      this.state.selectedHocKy = currentHK;
+    }
+
     await this.loadLopTinChi();
+    this.loadDanhSachLopTinChi();
     this.toggleDependentControls();
   },
 
@@ -28,15 +56,17 @@ window.NhapDiemModule = {
     this.selectHocKy = document.getElementById('selectHocKy');
     this.selectMonHoc = document.getElementById('selectMonHoc');
     this.selectNhom = document.getElementById('selectNhom');
-    this.btnStart = document.getElementById('btnStartDiem');
-    this.btnLoad = document.getElementById('btnStartDiem');
     this.btnSave = document.getElementById('btnSaveAllDiem');
-    this.btnRefresh = document.getElementById('btnRefreshDiem');
+    this.btnRefresh = document.getElementById('btnRefreshGradeSheet');
     this.btnReset = document.getElementById('btnResetFilter');
     this.tbody = document.getElementById('tbodyDiem');
     this.card = document.getElementById('bangDiemCard');
     this.warning = document.getElementById('unsavedWarning');
     this.summary = document.getElementById('selectionSummary');
+
+    this.btnBackToLopList = document.getElementById('btnBackToLopList');
+    this.danhSachLopCard = document.getElementById('danhSachLopCard');
+    this.tbodyLopTinChi = document.getElementById('tbodyLopTinChi');
   },
 
   bindEvents() {
@@ -44,29 +74,34 @@ window.NhapDiemModule = {
       this.state.selectedHocKy = this.selectHocKy.value;
       this.toggleDependentControls();
       this.renderMonHocOptions();
+      this.loadDanhSachLopTinChi();
     });
 
-    this.inputNienKhoa.addEventListener('input', () => {
-      this.state.selectedNienKhoa = this.inputNienKhoa.value.trim();
+    this.inputNienKhoa.addEventListener('change', () => {
+      this.state.selectedNienKhoa = this.inputNienKhoa.value;
       this.toggleDependentControls();
       this.renderMonHocOptions();
+      this.loadDanhSachLopTinChi();
     });
 
     this.selectMonHoc.addEventListener('change', () => {
       this.state.selectedMonHoc = this.selectMonHoc.value;
       this.renderNhomOptions();
+      this.loadDanhSachLopTinChi();
     });
 
     this.selectNhom.addEventListener('change', () => {
       this.state.selectedNhom = this.selectNhom.value;
-      this.updateSelectionSummary();
       this.toggleDependentControls();
+      this.loadDanhSachLopTinChi();
     });
 
-    this.btnStart.addEventListener('click', () => this.loadDanhSachSinhVien());
-    this.btnRefresh.addEventListener('click', () => this.loadDanhSachSinhVien());
+    this.btnRefresh.addEventListener('click', () => this.state.currentLTC && this.selectLopForDiem(this.state.currentLTC));
     this.btnSave.addEventListener('click', () => this.saveAll());
     this.btnReset.addEventListener('click', () => this.resetFilters());
+    if (this.btnBackToLopList) {
+      this.btnBackToLopList.addEventListener('click', () => this.showLopList());
+    }
 
     window.addEventListener('beforeunload', (e) => {
       if (this.state.hasUnsavedChanges) {
@@ -89,6 +124,7 @@ window.NhapDiemModule = {
       const res = await API.get('/loptinchi');
       if (res.success) {
         this.state.lopTinChiList = res.data || [];
+        this.renderNienKhoaOptions();
         this.renderMonHocOptions();
       }
     } catch (error) {
@@ -97,11 +133,8 @@ window.NhapDiemModule = {
   },
 
   toggleDependentControls() {
-    const hasNienKhoa = !!this.inputNienKhoa.value.trim();
-    const hasHocKy = !!this.selectHocKy.value;
-    this.selectMonHoc.disabled = !(hasNienKhoa && hasHocKy);
-    this.selectNhom.disabled = !this.selectMonHoc.value;
-    this.btnStart.disabled = !(hasNienKhoa && hasHocKy && this.selectMonHoc.value && this.selectNhom.value);
+    this.selectMonHoc.disabled = false;
+    this.selectNhom.disabled = false;
     this.btnRefresh.disabled = !this.state.currentLTC;
     this.btnSave.disabled = !this.state.hasUnsavedChanges;
   },
@@ -110,34 +143,60 @@ window.NhapDiemModule = {
     return String(value || '').trim().toLowerCase();
   },
 
+  renderNienKhoaOptions() {
+    const uniqueNK = [...new Set(this.state.lopTinChiList.map(item => item.NIENKHOA))]
+      .filter(Boolean)
+      .sort((a, b) => {
+        const yA = parseInt(a.split('-')[0]);
+        const yB = parseInt(b.split('-')[0]);
+        return yA - yB;
+      });
+
+    this.inputNienKhoa.innerHTML = '<option value="">Tất cả Niên khóa</option>' +
+      uniqueNK.map(nk => `<option value="${nk}">${nk}</option>`).join('');
+
+    const targetVal = this.state.selectedNienKhoa;
+    if (targetVal && uniqueNK.includes(targetVal)) {
+      this.inputNienKhoa.value = targetVal;
+    } else {
+      this.state.selectedNienKhoa = this.inputNienKhoa.value;
+    }
+  },
+
   renderMonHocOptions() {
     const nienKhoa = this.normalizeText(this.inputNienKhoa.value);
     const hocKy = this.selectHocKy.value;
 
-    this.selectMonHoc.innerHTML = '<option value="">-- Chọn môn học --</option>';
-    this.selectNhom.innerHTML = '<option value="">-- Chọn nhóm --</option>';
-    this.selectNhom.disabled = true;
-    this.state.selectedMonHoc = '';
-    this.state.selectedNhom = '';
-
-    if (!nienKhoa || !hocKy) {
-      this.toggleDependentControls();
-      return;
-    }
+    this.selectMonHoc.innerHTML = '<option value="">Tất cả Môn học</option>';
+    const prevSubject = this.selectMonHoc.value;
 
     const uniqueSubjects = new Map();
-    this.state.lopTinChiList
-      .filter(item => this.normalizeText(item.NIENKHOA) === nienKhoa && String(item.HOCKY) === String(hocKy) && !item.HUYLOP)
-      .forEach(item => {
-        if (!uniqueSubjects.has(item.MAMH)) {
-          uniqueSubjects.set(item.MAMH, item.TENMH || item.MAMH);
-        }
-      });
+    let filtered = this.state.lopTinChiList;
+    if (nienKhoa) {
+      filtered = filtered.filter(item => this.normalizeText(item.NIENKHOA) === nienKhoa);
+    }
+    if (hocKy) {
+      filtered = filtered.filter(item => String(item.HOCKY) === String(hocKy));
+    }
+
+    filtered.filter(item => !item.HUYLOP).forEach(item => {
+      if (!uniqueSubjects.has(item.MAMH)) {
+        uniqueSubjects.set(item.MAMH, item.TENMH || item.MAMH);
+      }
+    });
 
     uniqueSubjects.forEach((tenMH, mamh) => {
       this.selectMonHoc.innerHTML += `<option value="${mamh}">${tenMH}</option>`;
     });
 
+    if (prevSubject && uniqueSubjects.has(prevSubject)) {
+      this.selectMonHoc.value = prevSubject;
+      this.state.selectedMonHoc = prevSubject;
+    } else {
+      this.state.selectedMonHoc = this.selectMonHoc.value;
+    }
+
+    this.renderNhomOptions();
     this.toggleDependentControls();
   },
 
@@ -146,40 +205,42 @@ window.NhapDiemModule = {
     const hocKy = this.selectHocKy.value;
     const mamh = this.selectMonHoc.value;
 
-    this.selectNhom.innerHTML = '<option value="">-- Chọn nhóm --</option>';
-    this.state.selectedNhom = '';
+    this.selectNhom.innerHTML = '<option value="">Tất cả Nhóm</option>';
+    const prevNhom = this.selectNhom.value;
 
-    if (!nienKhoa || !hocKy || !mamh) {
-      this.toggleDependentControls();
-      return;
+    let filtered = this.state.lopTinChiList;
+    if (nienKhoa) {
+      filtered = filtered.filter(item => this.normalizeText(item.NIENKHOA) === nienKhoa);
+    }
+    if (hocKy) {
+      filtered = filtered.filter(item => String(item.HOCKY) === String(hocKy));
+    }
+    if (mamh) {
+      filtered = filtered.filter(item => item.MAMH === mamh);
     }
 
-    const groups = this.state.lopTinChiList
-      .filter(item => this.normalizeText(item.NIENKHOA) === nienKhoa && String(item.HOCKY) === String(hocKy) && item.MAMH === mamh && !item.HUYLOP)
-      .sort((a, b) => Number(a.NHOM) - Number(b.NHOM));
+    const uniqueGroups = [...new Set(filtered.filter(item => !item.HUYLOP).map(item => Number(item.NHOM)))]
+      .sort((a, b) => a - b);
 
-    groups.forEach(item => {
-      this.selectNhom.innerHTML += `<option value="${item.NHOM}">Nhóm ${item.NHOM}</option>`;
+    uniqueGroups.forEach(nhom => {
+      this.selectNhom.innerHTML += `<option value="${nhom}">Nhóm ${nhom}</option>`;
     });
+
+    if (prevNhom && uniqueGroups.map(String).includes(String(prevNhom))) {
+      this.selectNhom.value = prevNhom;
+      this.state.selectedNhom = prevNhom;
+    } else {
+      this.state.selectedNhom = this.selectNhom.value;
+    }
 
     this.toggleDependentControls();
   },
 
   getSelectedLopTinChi() {
-    const nienKhoa = this.normalizeText(this.inputNienKhoa.value);
-    const hocKy = this.selectHocKy.value;
-    const mamh = this.selectMonHoc.value;
-    const nhom = this.selectNhom.value;
-
-    if (!nienKhoa || !hocKy || !mamh || !nhom) return null;
-
-    return this.state.lopTinChiList.find(item =>
-      this.normalizeText(item.NIENKHOA) === nienKhoa &&
-      String(item.HOCKY) === String(hocKy) &&
-      item.MAMH === mamh &&
-      String(item.NHOM) === String(nhom) &&
-      !item.HUYLOP
-    ) || null;
+    if (this.state.currentLTC) {
+      return this.state.lopTinChiList.find(item => item.MALTC === this.state.currentLTC) || null;
+    }
+    return null;
   },
 
   updateSelectionSummary() {
@@ -196,14 +257,31 @@ window.NhapDiemModule = {
       return;
     }
 
-    this.inputNienKhoa.value = '';
-    this.selectHocKy.value = '';
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    let currentNK = "";
+    let currentHK = "";
+
+    if (month >= 8 && month <= 12) {
+      currentNK = `${year}-${year + 1}`;
+      currentHK = "1";
+    } else if (month >= 1 && month <= 6) {
+      currentNK = `${year - 1}-${year}`;
+      currentHK = "2";
+    } else if (month === 7) {
+      currentNK = `${year - 1}-${year}`;
+      currentHK = "3";
+    }
+
+    this.inputNienKhoa.value = currentNK;
+    this.selectHocKy.value = currentHK;
     this.selectMonHoc.innerHTML = '<option value="">-- Chọn môn học --</option>';
     this.selectNhom.innerHTML = '<option value="">-- Chọn nhóm --</option>';
     this.selectMonHoc.disabled = true;
     this.selectNhom.disabled = true;
-    this.state.selectedNienKhoa = '';
-    this.state.selectedHocKy = '';
+    this.state.selectedNienKhoa = currentNK;
+    this.state.selectedHocKy = currentHK;
     this.state.selectedMonHoc = '';
     this.state.selectedNhom = '';
     this.state.currentLTC = null;
@@ -211,29 +289,99 @@ window.NhapDiemModule = {
     this.state.editedDiem = {};
     this.updateUnsavedState(false);
     this.card.style.display = 'none';
-    this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted);">Chọn thông tin và bấm Bắt đầu để tải danh sách sinh viên</td></tr>';
+    if (this.danhSachLopCard) {
+      this.danhSachLopCard.style.display = 'none';
+    }
+    this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted);">Vui lòng chọn thông tin để xem lớp tín chỉ</td></tr>';
     this.summary.textContent = '';
+    this.renderMonHocOptions();
     this.toggleDependentControls();
+    this.loadDanhSachLopTinChi();
   },
 
-  async loadDanhSachSinhVien() {
-    const ltc = this.getSelectedLopTinChi();
-    if (!ltc) {
-      this.card.style.display = 'block';
-      this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color: var(--text-muted);">Vui lòng chọn đủ Niên khóa, Học kỳ, Môn học và Nhóm</td></tr>';
-      Toast.warning('Vui lòng chọn đủ Niên khóa, Học kỳ, Môn học và Nhóm');
-      return;
-    }
+  async loadDanhSachLopTinChi() {
+    if (!this.state.lopTinChiList || this.state.lopTinChiList.length === 0) return;
 
     if (this.state.hasUnsavedChanges) {
-      if (!confirm('Bạn có thay đổi chưa lưu. Làm mới sẽ mất dữ liệu chưa lưu. Tiếp tục?')) {
+      if (!confirm('Bạn có thay đổi chưa lưu. Tiếp tục sẽ mất dữ liệu chưa lưu. Tiếp tục?')) {
         return;
       }
     }
 
     try {
+      this.card.style.display = 'none';
+      this.danhSachLopCard.style.display = 'block';
+      this.tbodyLopTinChi.innerHTML = '<tr><td colspan="8" style="text-align:center;">Đang tải...</td></tr>';
+
+      const nienKhoa = this.normalizeText(this.inputNienKhoa.value);
+      const hocKy = this.selectHocKy.value;
+      const selectedMonHoc = this.selectMonHoc.value;
+      const selectedNhom = this.selectNhom.value;
+
+      let filteredClasses = this.state.lopTinChiList.filter(item => !item.HUYLOP);
+
+      if (nienKhoa) {
+        filteredClasses = filteredClasses.filter(item => this.normalizeText(item.NIENKHOA) === nienKhoa);
+      }
+      if (hocKy) {
+        filteredClasses = filteredClasses.filter(item => String(item.HOCKY) === String(hocKy));
+      }
+
+      if (selectedMonHoc) {
+        filteredClasses = filteredClasses.filter(item => item.MAMH === selectedMonHoc);
+      }
+      if (selectedNhom) {
+        filteredClasses = filteredClasses.filter(item => String(item.NHOM) === String(selectedNhom));
+      }
+
+      if (filteredClasses.length === 0) {
+        this.tbodyLopTinChi.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-muted);">Không tìm thấy lớp tín chỉ nào</td></tr>';
+        return;
+      }
+
+      this.tbodyLopTinChi.innerHTML = '';
+      filteredClasses.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align: center;">${index + 1}</td>
+          <td style="text-align: center; font-weight: 500;">${item.MALTC}</td>
+          <td style="font-weight: 600;">${item.TENMH || item.MAMH}</td>
+          <td style="text-align: center;">${item.NHOM}</td>
+          <td>${item.TENGV || item.MAGV}</td>
+          <td style="text-align: center;">${item.SOSVMIN || item.SOSVTOITHIEU || ''}</td>
+          <td style="text-align: center;">
+            <span style="display: inline-flex; align-items: center; justify-content: center; background-color: rgba(16,185,129,0.12); color: var(--success-color); padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; border: 1px solid rgba(16,185,129,0.25);">Đang mở</span>
+          </td>
+          <td style="text-align: center;">
+            <button class="btn btn-primary btn-sm" style="white-space: nowrap; padding: 6px 14px; font-size: 13px;" onclick="window.NhapDiemModule.selectLopForDiem(${item.MALTC})">Nhập điểm</button>
+          </td>
+        `;
+        this.tbodyLopTinChi.appendChild(tr);
+      });
+
+    } catch (error) {
+      this.tbodyLopTinChi.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Lỗi tải dữ liệu</td></tr>';
+      Toast.error('Không thể tải danh sách lớp tín chỉ');
+    }
+  },
+
+  async selectLopForDiem(maLTC) {
+    if (this.state.hasUnsavedChanges) {
+      if (!confirm('Bạn có thay đổi chưa lưu. Thay đổi lớp sẽ mất dữ liệu chưa lưu. Tiếp tục?')) {
+        return;
+      }
+    }
+
+    const ltc = this.state.lopTinChiList.find(item => item.MALTC === maLTC);
+    if (!ltc) {
+      Toast.error('Không tìm thấy lớp tín chỉ');
+      return;
+    }
+
+    try {
       this.card.style.display = 'block';
-      this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Đang tải...</td></tr>';
+      this.tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Đang tải...</td></tr>';
+      this.danhSachLopCard.style.display = 'none';
 
       const res = await API.get(`/diem/loptinchi/${ltc.MALTC}`);
       if (!res.success) {
@@ -260,6 +408,19 @@ window.NhapDiemModule = {
     }
   },
 
+  showLopList() {
+    if (this.state.hasUnsavedChanges && !confirm('Bạn có thay đổi chưa lưu. Quay lại sẽ mất dữ liệu chưa lưu. Tiếp tục?')) {
+      return;
+    }
+    this.card.style.display = 'none';
+    this.danhSachLopCard.style.display = 'block';
+    this.state.currentLTC = null;
+    this.state.danhSachDiem = [];
+    this.state.editedDiem = {};
+    this.updateUnsavedState(false);
+    this.toggleDependentControls();
+  },
+
   renderTable() {
     this.tbody.innerHTML = '';
 
@@ -267,6 +428,9 @@ window.NhapDiemModule = {
       this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Chưa có sinh viên đăng ký lớp này. Vẫn có thể nhập điểm khi lớp có sinh viên đăng ký.</td></tr>';
       return;
     }
+
+    const ltc = this.getSelectedLopTinChi();
+    const isFuture = ltc ? Utils.isFutureSemester(ltc.NIENKHOA, ltc.HOCKY) : false;
 
     this.state.danhSachDiem.forEach((sv, index) => {
       const edited = this.state.editedDiem[sv.MASV] || {};
@@ -281,13 +445,13 @@ window.NhapDiemModule = {
         <td>${sv.MASV}</td>
         <td>${sv.HOTEN}</td>
         <td style="text-align: center;">
-          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CC" value="${cc}">
+          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CC" value="${cc}" ${isFuture ? 'disabled' : ''}>
         </td>
         <td style="text-align: center;">
-          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_GK" value="${gk}">
+          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_GK" value="${gk}" ${isFuture ? 'disabled' : ''}>
         </td>
         <td style="text-align: center;">
-          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CK" value="${ck}">
+          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CK" value="${ck}" ${isFuture ? 'disabled' : ''}>
         </td>
         <td style="text-align: center; font-weight: bold; color: var(--primary-color);" id="tk_${sv.MASV}">
           ${diemTK !== '' ? diemTK : '-'}
@@ -342,7 +506,14 @@ window.NhapDiemModule = {
       this.warning.textContent = '⚠️ Có thay đổi chưa lưu';
       this.warning.style.color = 'var(--warning-color)';
     } else {
-      this.warning.textContent = '';
+      const ltc = this.getSelectedLopTinChi();
+      const isFuture = ltc ? Utils.isFutureSemester(ltc.NIENKHOA, ltc.HOCKY) : false;
+      if (isFuture) {
+        this.warning.textContent = '🔒 Lớp thuộc học kỳ tương lai. Chỉ xem, không thể nhập/sửa điểm.';
+        this.warning.style.color = 'var(--danger-color)';
+      } else {
+        this.warning.textContent = '';
+      }
     }
   },
 

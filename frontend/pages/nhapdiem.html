@@ -1,4 +1,4 @@
-﻿<div class="page-header">
+<div class="page-header">
   <div>
     <h1 class="page-title">Nhập Điểm Lớp Tín Chỉ</h1>
     <div class="breadcrumb">
@@ -22,12 +22,14 @@
     <div class="form-row" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: end;">
       <div class="form-group" style="margin-bottom: 0;">
         <label class="form-label" for="inputNienKhoa">Niên khóa</label>
-        <input type="text" id="inputNienKhoa" class="form-control" placeholder="VD: 2023-2024">
+        <select id="inputNienKhoa" class="form-control">
+          <option value="">Tất cả Niên khóa</option>
+        </select>
       </div>
       <div class="form-group" style="margin-bottom: 0;">
         <label class="form-label" for="selectHocKy">Học kỳ</label>
         <select id="selectHocKy" class="form-control">
-          <option value="">-- Chọn học kỳ --</option>
+          <option value="">Tất cả Học kỳ</option>
           <option value="1">1</option>
           <option value="2">2</option>
           <option value="3">3</option>
@@ -35,34 +37,66 @@
       </div>
       <div class="form-group" style="margin-bottom: 0;">
         <label class="form-label" for="selectMonHoc">Môn học</label>
-        <select id="selectMonHoc" class="form-control" disabled>
-          <option value="">-- Chọn môn học --</option>
+        <select id="selectMonHoc" class="form-control">
+          <option value="">Tất cả Môn học</option>
         </select>
       </div>
       <div class="form-group" style="margin-bottom: 0;">
         <label class="form-label" for="selectNhom">Nhóm</label>
-        <select id="selectNhom" class="form-control" disabled>
-          <option value="">-- Chọn nhóm --</option>
+        <select id="selectNhom" class="form-control">
+          <option value="">Tất cả Nhóm</option>
         </select>
       </div>
     </div>
 
-    <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
-      <button class="btn btn-primary" id="btnStartDiem">Bắt đầu</button>
-      <button class="btn btn-secondary" id="btnRefreshDiem" disabled>
-        ↻ Làm mới
-      </button>
-    </div>
+
   </div>
 </div>
 
+<!-- DANH SÁCH LỚP TÍN CHỈ -->
+<div class="card" id="danhSachLopCard" style="display: none; margin-bottom: 24px;">
+  <div class="card-header">
+    <h3 class="card-title">Danh sách Lớp Tín Chỉ</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="table" id="tableLopTinChi">
+      <thead>
+        <tr>
+          <th width="50" style="text-align: center;">STT</th>
+          <th width="100" style="text-align: center;">Mã LTC</th>
+          <th>Môn học</th>
+          <th width="80" style="text-align: center;">Nhóm</th>
+          <th>Giảng viên</th>
+          <th width="120" style="text-align: center;">SV tối thiểu</th>
+          <th width="120" style="text-align: center;">Trạng thái</th>
+          <th width="120" style="text-align: center;">Hành động</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyLopTinChi">
+        <!-- Will be populated dynamically -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- BẢNG ĐIỂM CHI TIẾT -->
 <div class="card" id="bangDiemCard" style="display: none;">
   <div class="card-header" style="display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center;">
-    <div>
-      <h3 class="card-title">Bảng điểm sinh viên</h3>
-      <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;" id="selectionSummary"></div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button class="btn btn-secondary" id="btnBackToLopList" style="padding: 6px 12px; font-size: 13px;">
+        ⬅ Quay lại
+      </button>
+      <div>
+        <h3 class="card-title">Bảng điểm sinh viên</h3>
+        <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;" id="selectionSummary"></div>
+      </div>
     </div>
-    <span style="font-size: 13px; color: var(--text-muted);" id="unsavedWarning"></span>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <button class="btn btn-secondary btn-sm" id="btnRefreshGradeSheet" style="padding: 6px 12px; font-size: 13px;">
+        ↻ Làm mới
+      </button>
+      <span style="font-size: 13px; color: var(--text-muted);" id="unsavedWarning"></span>
+    </div>
   </div>
   <div class="table-responsive">
     <table class="table" id="tableDiem">

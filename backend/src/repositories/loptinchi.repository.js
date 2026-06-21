@@ -88,6 +88,13 @@ class LopTinChiRepository {
     return result;
   }
 
+  async restore(maLTC) {
+    const result = await executeStoredProcedure(LOPTINCHI_PROCEDURES.RESTORE, {
+      MALTC: { type: sql.Int, value: maLTC },
+    });
+    return result;
+  }
+
   async search(keyword) {
     const result = await executeStoredProcedure(LOPTINCHI_PROCEDURES.SEARCH, {
       KEYWORD: { type: sql.NVarChar(100), value: keyword },

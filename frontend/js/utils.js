@@ -23,6 +23,46 @@ class Utils {
   static getSpinner() {
     return `<div class="loading-overlay"><div class="spinner"></div></div>`;
   }
+
+  /**
+   * Kiểm tra học kỳ truyền vào có phải ở tương lai so với hiện tại hay không
+   */
+  static isFutureSemester(nienKhoa, hocKy) {
+    if (!nienKhoa || !hocKy) return false;
+
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    let currentNK = "";
+    let currentHK = 1;
+
+    if (month >= 8 && month <= 12) {
+      currentNK = `${year}-${year + 1}`;
+      currentHK = 1;
+    } else if (month >= 1 && month <= 6) {
+      currentNK = `${year - 1}-${year}`;
+      currentHK = 2;
+    } else if (month === 7) {
+      currentNK = `${year - 1}-${year}`;
+      currentHK = 3;
+    }
+
+    const partsCur = currentNK.split('-').map(Number);
+    const partsTarget = nienKhoa.split('-').map(Number);
+    if (partsCur.length < 2 || partsTarget.length < 2) return false;
+
+    const startYearCur = partsCur[0];
+    const startYearTarget = partsTarget[0];
+
+    if (startYearTarget > startYearCur) {
+      return true;
+    }
+    if (startYearTarget < startYearCur) {
+      return false;
+    }
+
+    return Number(hocKy) > Number(currentHK);
+  }
 }
 
 window.Utils = Utils;

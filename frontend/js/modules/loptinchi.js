@@ -139,7 +139,7 @@ window.LopTinChiModule = {
           ? '<tr><td colspan="9" style="text-align:center;">Không có dữ liệu</td></tr>'
           : res.data.map((item) => {
             const actionBtn = isPGV
-              ? `<button class="btn btn-secondary btn-sm" onclick="window.LopTinChiModule.openModal(${item.MALTC}, '${item.NIENKHOA}', ${item.HOCKY}, '${item.MAMH}', ${item.NHOM}, '${item.MAGV}', ${item.SOSVMIN}, ${item.HUYLOP ? 1 : 0})">Sửa</button>
+              ? `<button class="btn btn-secondary btn-sm" onclick="window.LopTinChiModule.openModal(${item.MALTC}, '${item.NIENKHOA}', ${item.HOCKY}, '${item.MAMH}', ${item.NHOM}, '${item.MAGV}', ${item.SOSVTOITHIEU}, ${item.HUYLOP ? 1 : 0})">Sửa</button>
                  <button class="btn btn-danger btn-sm" onclick="window.LopTinChiModule.handleDelete(${item.MALTC})">Xóa</button>`
               : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
             return `
@@ -150,7 +150,7 @@ window.LopTinChiModule = {
               <td>${item.TENMH || item.MAMH}</td>
               <td>${item.NHOM}</td>
               <td>${item.TENGV || item.MAGV}</td>
-              <td>${item.SOSVMIN}</td>
+              <td>${item.SOSVTOITHIEU}</td>
               <td>${item.HUYLOP ? '<span style="color:red">Đã hủy</span>' : '<span style="color:green">Đang mở</span>'}</td>
               <td style="text-align:center;">
                 ${actionBtn}
@@ -206,6 +206,21 @@ window.LopTinChiModule = {
       this.inputNK.value = nextNK;
       this.selectHK.value = nextHK;
     } else {
+      if (nk) {
+        let exists = false;
+        for (let option of this.inputNK.options) {
+          if (option.value === nk) {
+            exists = true;
+            break;
+          }
+        }
+        if (!exists) {
+          const opt = document.createElement('option');
+          opt.value = nk;
+          opt.textContent = nk;
+          this.inputNK.appendChild(opt);
+        }
+      }
       this.inputNK.value = nk;
       this.selectHK.value = hk;
     }
