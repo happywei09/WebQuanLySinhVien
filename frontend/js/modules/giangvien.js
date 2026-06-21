@@ -71,7 +71,7 @@ window.GiangVienModule = {
   bindEvents() {
     const user = Auth.getUser();
     const isPGV = user && user.role === 'PGV';
-    const btnAdd = document.querySelector('.page-header .btn-primary');
+    const btnAdd = document.querySelector('.page-header .btn-success');
     if (btnAdd) {
       if (isPGV) {
         btnAdd.onclick = () => this.openModal();
@@ -106,7 +106,7 @@ window.GiangVienModule = {
           ? '<tr><td colspan="7" style="text-align:center;">Không có dữ liệu</td></tr>'
           : res.data.map((item, index) => {
             const actionContent = isPGV
-              ? `<button class="btn btn-secondary btn-sm" onclick="window.GiangVienModule.openModal('${item.MAGV}', '${item.HO}', '${item.TEN}', '${item.HOCVI}', '${item.HOCHAM}', '${item.MAKHOA}')">Sửa</button>
+              ? `<button class="btn btn-primary btn-sm" onclick="window.GiangVienModule.openModal('${item.MAGV}', '${item.HO}', '${item.TEN}', '${item.HOCVI}', '${item.HOCHAM}', '${item.MAKHOA}')">Sửa</button>
                  <button class="btn btn-danger btn-sm" onclick="window.GiangVienModule.handleDelete('${item.MAGV}')">Xóa</button>`
               : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
             return `
@@ -117,8 +117,10 @@ window.GiangVienModule = {
               <td>${item.HOCVI}</td>
               <td>${item.HOCHAM}</td>
               <td>${item.MAKHOA}</td>
-              <td style="text-align:center;">
-                ${actionContent}
+              <td>
+                <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                  ${actionContent}
+                </div>
               </td>
             </tr>`;
           }).join('');

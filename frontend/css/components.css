@@ -7,53 +7,181 @@
    BUTTONS
 ==================================== */
 .btn {
+  background-color: transparent;
+  padding: 0 18px;
+  height: 30px;
+  box-sizing: border-box;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 5px;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
+}
+
+/* Button Ghost Classes */
+.button-ghost {
+  background-color: transparent;
+  padding: 0 25px;
+  height: 46px;
+  box-sizing: border-box;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 5px;
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  font-family: inherit;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.button-ghost-showcase {
+  background-color: #333;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+/* Primary Ghost / btn-primary */
+.button-ghost.primary,
 .btn-primary {
-  background-color: var(--primary-color);
-  color: white;
+  color: #007bff;
+  border-color: #007bff;
+  background-color: transparent;
 }
 
+.button-ghost.primary:hover,
 .btn-primary:hover {
-  background-color: var(--primary-hover);
-}
-
-.btn-secondary {
-  background-color: var(--bg-surface);
-  border-color: var(--border-color);
-  color: var(--text-main);
-}
-
-.btn-secondary:hover {
-  background-color: var(--bg-hover);
-}
-
-.btn-danger {
-  background-color: var(--danger-color);
+  background-color: #007bff;
   color: white;
 }
 
+.button-ghost.primary:active,
+.btn-primary:active {
+  background-color: #0056b3;
+  color: white;
+}
+
+/* Success Ghost / btn-success */
+.button-ghost.success,
+.btn-success {
+  color: #28a745;
+  border-color: #28a745;
+  background-color: transparent;
+}
+
+.button-ghost.success:hover,
+.btn-success:hover {
+  background-color: #28a745;
+  color: white;
+}
+
+.button-ghost.success:active,
+.btn-success:active {
+  background-color: #218838;
+  color: white;
+}
+
+/* Info Ghost / btn-info */
+.button-ghost.info,
+.btn-info {
+  color: #17a2b8;
+  border-color: #17a2b8;
+  background-color: transparent;
+}
+
+.button-ghost.info:hover,
+.btn-info:hover {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.button-ghost.info:active,
+.btn-info:active {
+  background-color: #138496;
+  color: white;
+}
+
+/* Warning Ghost / btn-warning */
+.button-ghost.warning,
+.btn-warning {
+  color: #ffda6a;
+  border-color: #ffda6a;
+  background-color: transparent;
+}
+
+.button-ghost.warning:hover,
+.btn-warning:hover {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.button-ghost.warning:active,
+.btn-warning:active {
+  background-color: #e0a800;
+  color: #333;
+}
+
+/* Danger Ghost / btn-danger */
+.button-ghost.danger,
+.btn-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+  background-color: transparent;
+}
+
+.button-ghost.danger:hover,
 .btn-danger:hover {
-  filter: brightness(0.9);
+  background-color: #dc3545;
+  color: white;
+}
+
+.button-ghost.danger:active,
+.btn-danger:active {
+  background-color: #c82333;
+  color: white;
+}
+
+/* Secondary Ghost / btn-secondary */
+.button-ghost.secondary,
+.btn-secondary {
+  color: #aeb5bd;
+  border-color: #aeb5bd;
+  background-color: transparent;
+}
+
+.button-ghost.secondary:hover,
+.btn-secondary:hover {
+  background-color: #6c757d;
+  color: white;
+}
+
+.button-ghost.secondary:active,
+.btn-secondary:active {
+  background-color: #5a6268;
+  color: white;
 }
 
 .btn-cancel-ltc {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 12px;
+  padding: 0 12px;
+  height: 28px;
+  box-sizing: border-box;
   font-size: 12px;
   font-weight: 600;
   border-radius: 4px;
@@ -74,6 +202,64 @@
 }
 
 .btn-cancel-ltc:active {
+  transform: translateY(0);
+}
+
+.btn-edit-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  height: 28px;
+  box-sizing: border-box;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 2px solid #007bff;
+  background-color: transparent;
+  color: #007bff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-edit-sm:hover {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+  transform: translateY(-1px);
+}
+
+.btn-edit-sm:active {
+  transform: translateY(0);
+}
+
+.btn-delete-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  height: 28px;
+  box-sizing: border-box;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 2px solid #dc3545;
+  background-color: transparent;
+  color: #dc3545;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-delete-sm:hover {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+  transform: translateY(-1px);
+}
+
+.btn-delete-sm:active {
   transform: translateY(0);
 }
 
@@ -231,17 +417,35 @@
   animation: slideIn 0.3s ease forwards;
 }
 
-.toast.success { border-color: var(--success-color); }
-.toast.error { border-color: var(--danger-color); }
-.toast.warning { border-color: var(--warning-color); }
+.toast.success {
+  border-color: var(--success-color);
+}
+
+.toast.error {
+  border-color: var(--danger-color);
+}
+
+.toast.warning {
+  border-color: var(--warning-color);
+}
 
 @keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 @keyframes fadeOut {
-  to { opacity: 0; margin-top: -80px; }
+  to {
+    opacity: 0;
+    margin-top: -80px;
+  }
 }
 
 /* ====================================
@@ -257,12 +461,17 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-overlay {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: rgba(255, 255, 255, 0.7);
   display: flex;
   align-items: center;

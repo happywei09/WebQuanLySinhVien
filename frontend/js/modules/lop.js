@@ -207,7 +207,7 @@ window.LopModule = {
       const pendingOp = this.state.pendingOperations[item.MALOP];
       const statusBadge = this.getStatusBadge(pendingOp);
       const actionBtn = isPGV
-        ? `<button class="btn btn-secondary btn-sm" onclick="LopModule.startEditLopRow('${this.escapeJs(item.MALOP)}')">Sua</button>
+        ? `<button class="btn btn-primary btn-sm" onclick="LopModule.startEditLopRow('${this.escapeJs(item.MALOP)}')">Sửa</button>
            <button class="btn btn-danger btn-sm" onclick="LopModule.handleDelete('${this.escapeJs(item.MALOP)}')">Xoa</button>`
         : `<span style="color: var(--text-muted); font-size: 13px;">Chi xem</span>`;
 
@@ -225,7 +225,11 @@ window.LopModule = {
         <td>${item.TENLOP} ${statusBadge}</td>
         <td>${item.KHOAHOC}</td>
         <td>${item.MAKHOA}</td>
-        <td>${actionBtn}</td>
+        <td>
+          <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+            ${actionBtn}
+          </div>
+        </td>
       `;
       this.tbody.appendChild(tr);
     });
@@ -305,9 +309,9 @@ window.LopModule = {
   getStatusBadge(pendingOp) {
     if (!pendingOp) return '';
     const labelMap = {
-      create: 'Cho them',
-      update: 'Cho cap nhat',
-      delete: 'Cho xoa'
+      create: 'Cho thêm',
+      update: 'Cho cập nhật',
+      delete: 'Cho xóa'
     };
     return `<span style="display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; background:rgba(59,130,246,0.12); color:var(--primary-color); font-size:12px; font-weight:600;">${labelMap[pendingOp.type] || 'Cho ghi'}</span>`;
   },
@@ -490,7 +494,7 @@ window.LopModule = {
     students.forEach((sv, index) => {
 
       const pendingOp = this.state.detailPendingOperations[sv.MASV];
-      const actionLabel = pendingOp?.type === 'delete' ? 'Cho xoa' : '';
+      const actionLabel = pendingOp?.type === 'delete' ? 'Cho xoá' : '';
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${index + 1}</td>
@@ -502,9 +506,11 @@ window.LopModule = {
         <td>${sv.DIACHI || ''}</td>
         <td>${sv.DANGHIHOC ? 'Da nghi' : 'Dang hoc'}</td>
         <td>
-          <button class="btn btn-secondary btn-sm" onclick="LopModule.openStudentModal('edit','${this.escapeJs(sv.MASV)}')">Sua</button>
-          <button class="btn btn-danger btn-sm" onclick="LopModule.handleDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Xoa</button>
-          ${actionLabel ? `<span style="margin-left:8px; font-size:12px; color:var(--danger-color); font-weight:600;">${actionLabel}</span>` : ''}
+          <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+            <button class="btn btn-primary btn-sm" onclick="LopModule.openStudentModal('edit','${this.escapeJs(sv.MASV)}')">Sửa</button>
+            <button class="btn btn-danger btn-sm" onclick="LopModule.handleDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Xoá</button>
+            ${actionLabel ? `<span style="margin-left:8px; font-size:12px; color:var(--danger-color); font-weight:600;">${actionLabel}</span>` : ''}
+          </div>
         </td>
       `;
       this.detailTbody.appendChild(tr);
@@ -809,7 +815,7 @@ window.LopModule = {
     const existingPending = this.state.detailPendingOperations[payload.MASV];
 
     if (existingPending && existingPending.type === 'delete') {
-      Toast.warning('Sinh vien nay dang cho xoa, khong the sua');
+      Toast.warning('Sinh vien nay dang cho xoa, khong the sửa');
       return;
     }
 
@@ -848,15 +854,15 @@ window.LopModule = {
     this.state.detailEditingStudentId = null;
     this.state.detailEditingDraft = null;
     this.renderDetailStudentTable();
-    Toast.success('Da xac nhan thay doi cua sinh vien');
+    Toast.success('Đã xác nhận thay đổi của sinh viên');
   },
 
   handleDeleteStudentRow(maSV) {
-    if (!confirm(`Ban co chac chan muon xoa sinh vien ${maSV} khoi danh sach nay?`)) return;
+    if (!confirm(`Bạn có chắc chắn muốn xoá sinh viên ${maSV} khỏi danh sách này?`)) return;
 
     const existingPending = this.state.detailPendingOperations[maSV];
     if (existingPending && existingPending.type === 'delete') {
-      Toast.info('Sinh vien nay da nam trong danh sach cho xoa');
+      Toast.info('Sinh viên này đã nằm trong danh sách chờ xoá');
       return;
     }
 
@@ -868,7 +874,7 @@ window.LopModule = {
       const originalItem = this.state.detailOriginalStudents.find(item => item.MASV === maSV);
       if (!originalItem) {
         this.state.detailHistory.pop();
-        Toast.error('Khong tim thay sinh vien de xoa');
+        Toast.error('Không tìm thấy sinh viên để xoá');
         return;
       }
 
@@ -885,12 +891,12 @@ window.LopModule = {
     }
 
     this.renderDetailStudentTable();
-    Toast.success('Da dua thao tac xoa sinh vien vao danh sach cho ghi');
+    Toast.success('Đã đưa thao tác xoá sinh viên vào danh sách chờ ghi');
   },
 
   handleUndoDetailStudent() {
     if (this.state.detailHistory.length === 0) {
-      Toast.info('Khong co thay doi nao de phuc hoi');
+      Toast.info('Không có thay đổi nào để phục hồi');
       return;
     }
 
@@ -898,19 +904,19 @@ window.LopModule = {
     this.state.detailEditingStudentId = null;
     this.state.detailEditingDraft = null;
     this.renderDetailStudentTable();
-    Toast.success('Da phuc hoi thay doi sinh vien gan nhat');
+    Toast.success('Đã phục hồi thay đổi sinh viên gần nhất');
   },
 
   async handleCommitDetailStudents() {
     const operations = Object.values(this.state.detailPendingOperations);
     if (operations.length === 0) {
-      Toast.info('Khong co thay doi sinh vien nao de ghi');
+      Toast.info('Không có thay đổi sinh viên nào để ghi');
       return;
     }
 
     try {
       this.btnCommitStudentInClass.disabled = true;
-      this.btnCommitStudentInClass.textContent = 'Dang ghi...';
+      this.btnCommitStudentInClass.textContent = 'Đang ghi...';
 
       const sortedOperations = [
         ...operations.filter(op => op.type === 'create'),
@@ -945,9 +951,9 @@ window.LopModule = {
       this.state.detailEditingStudentId = null;
       this.state.detailEditingDraft = null;
       this.renderDetailStudentTable();
-      Toast.success('Da ghi tat ca thay doi sinh vien thanh cong');
+      Toast.success('Đã ghi tất cả thay đổi sinh viên thành công');
     } catch (error) {
-      Toast.error(`Ghi du lieu sinh vien that bai: ${error.message}`);
+      Toast.error(`Ghi dữ liệu sinh viên thất bại: ${error.message}`);
     } finally {
       this.btnCommitStudentInClass.textContent = 'Ghi';
       this.updateDetailActionState();
@@ -966,7 +972,7 @@ window.LopModule = {
     };
 
     if (!payload.MALOP || !payload.TENLOP || !payload.KHOAHOC || !payload.MAKHOA) {
-      Toast.warning('Vui long nhap day du thong tin lop hoc');
+      Toast.warning('Vui lòng nhập đầy đủ thông tin lớp học');
       return;
     }
 
@@ -974,7 +980,7 @@ window.LopModule = {
     const existingPending = this.state.pendingOperations[payload.MALOP];
 
     if (existingPending && existingPending.type === 'delete') {
-      Toast.warning('Lop nay dang cho xoa, khong the sua');
+      Toast.warning('Lớp này đang chờ xoá, không thể sửa');
       return;
     }
 
@@ -1011,11 +1017,11 @@ window.LopModule = {
     this.state.editingDraft = null;
     this.renderTable();
     this.updateActionState();
-    Toast.success('Da dua thay doi vao danh sach cho ghi');
+    Toast.success('Đã đưa thay đổi vào danh sách chờ ghi');
   },
 
   handleDelete(maLop) {
-    if (!confirm(`Ban co chac chan muon xoa lop ${maLop}?`)) return;
+    if (!confirm(`Bạn có chắc chắn muốn xoá lớp ${maLop}?`)) return;
 
     const existingPending = this.state.pendingOperations[maLop];
     if (existingPending && existingPending.type === 'delete') {
@@ -1031,7 +1037,7 @@ window.LopModule = {
       const originalItem = this.state.originalData.find(item => item.MALOP === maLop);
       if (!originalItem) {
         this.state.history.pop();
-        Toast.error('Khong tim thay lop de xoa');
+        Toast.error('Không tìm thấy lớp để xoá');
         return;
       }
 
@@ -1045,12 +1051,12 @@ window.LopModule = {
     this.initFilterOptions();
     this.renderTable();
     this.updateActionState();
-    Toast.success('Da dua thao tac xoa vao danh sach cho ghi');
+    Toast.success('Đã đưa thao tác xoá vào danh sách chờ ghi');
   },
 
   handleUndo() {
     if (this.state.history.length === 0) {
-      Toast.info('Khong co thay doi nao de phuc hoi');
+      Toast.info('Không có thay đổi nào để phục hồi');
       return;
     }
 
@@ -1058,19 +1064,19 @@ window.LopModule = {
     this.initFilterOptions();
     this.renderTable();
     this.updateActionState();
-    Toast.success('Da phuc hoi thay doi gan nhat');
+    Toast.success('Đã phục hồi thay đổi gần nhất');
   },
 
   async handleCommit() {
     const operations = Object.values(this.state.pendingOperations);
     if (operations.length === 0) {
-      Toast.info('Khong co thay doi nao de ghi');
+      Toast.info('Không có thay đổi nào để ghi');
       return;
     }
 
     try {
       this.btnCommit.disabled = true;
-      this.btnCommit.textContent = 'Dang ghi...';
+      this.btnCommit.textContent = 'Đang ghi...';
 
       const sortedOperations = [
         ...operations.filter(op => op.type === 'create'),
@@ -1092,10 +1098,10 @@ window.LopModule = {
         }
       }
 
-      Toast.success('Da ghi tat ca thay doi thanh cong');
+      Toast.success('Đã ghi tất cả thay đổi thành công');
       await this.loadData();
     } catch (error) {
-      Toast.error(`Ghi du lieu that bai: ${error.message}`);
+      Toast.error(`Ghi dữ liệu thất bại: ${error.message}`);
     } finally {
       this.btnCommit.textContent = 'Ghi';
       this.updateActionState();

@@ -552,8 +552,21 @@ GO
 CREATE OR ALTER PROCEDURE SP_GET_ALL_LOPTINCHI
 AS
 BEGIN
-    SELECT MALTC, NIENKHOA, HOCKY, MAMH, NHOM, MAGV, MAKHOA, SOSVTOITHIEU, HUYLOP
-    FROM LOPTINCHI;
+    SELECT 
+        ltc.MALTC, 
+        ltc.NIENKHOA, 
+        ltc.HOCKY, 
+        ltc.MAMH, 
+        mh.TENMH,
+        ltc.NHOM, 
+        ltc.MAGV, 
+        gv.HO + ' ' + gv.TEN AS TENGV,
+        ltc.MAKHOA, 
+        ltc.SOSVTOITHIEU, 
+        ltc.HUYLOP
+    FROM LOPTINCHI ltc
+    INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
+    INNER JOIN GIANGVIEN gv ON ltc.MAGV = gv.MAGV;
 END;
 GO
 

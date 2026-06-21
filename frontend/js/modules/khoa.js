@@ -107,7 +107,7 @@ window.KhoaModule = {
       const pendingOp = this.state.pendingOperations[item.MAKHOA];
       const statusBadge = this.getStatusBadge(pendingOp);
       const actionContent = isPGV 
-        ? `<button class="btn btn-secondary btn-sm" onclick="KhoaModule.startEditRow('${item.MAKHOA}')">Sửa</button>
+        ? `<button class="btn btn-primary btn-sm" onclick="KhoaModule.startEditRow('${item.MAKHOA}')">Sửa</button>
            <button class="btn btn-danger btn-sm" onclick="KhoaModule.handleDelete('${item.MAKHOA}')">Xoá</button>`
         : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
 
@@ -118,8 +118,10 @@ window.KhoaModule = {
           ${item.TENKHOA}
           ${statusBadge}
         </td>
-        <td style="text-align: center;">
-          ${actionContent}
+        <td>
+          <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+            ${actionContent}
+          </div>
         </td>
       `;
       this.tbody.appendChild(tr);

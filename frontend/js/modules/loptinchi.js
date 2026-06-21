@@ -8,6 +8,11 @@ window.LopTinChiModule = {
 
   cacheDOM() {
     this.tbody = document.querySelector('#pageContent tbody');
+    this.filterNK = document.getElementById('filterNienKhoa');
+    this.filterHK = document.getElementById('filterHocKy');
+    this.filterMH = document.getElementById('filterMonHoc');
+    this.filterTT = document.getElementById('filterTrangThai');
+
     if (!document.getElementById('modalLTC')) {
       const modalHTML = `
       <div class="modal-overlay" id="modalLTC">
@@ -86,7 +91,7 @@ window.LopTinChiModule = {
   bindEvents() {
     const user = Auth.getUser();
     const isPGV = user && user.role === 'PGV';
-    const btnAdd = document.querySelector('.page-header .btn-primary');
+    const btnAdd = document.querySelector('.page-header .btn-success');
     if (btnAdd) {
       if (isPGV) {
         btnAdd.onclick = () => this.openModal();
@@ -94,10 +99,16 @@ window.LopTinChiModule = {
         btnAdd.style.display = 'none';
       }
     }
-    
+
     document.getElementById('btnCloseModalLTC').onclick = () => this.closeModal();
     document.getElementById('btnCancelModalLTC').onclick = () => this.closeModal();
     this.btnSave.onclick = () => this.handleSave();
+
+    // Bind event listeners for search filters
+    if (this.filterNK) this.filterNK.onchange = () => this.renderData();
+    if (this.filterHK) this.filterHK.onchange = () => this.renderData();
+    if (this.filterMH) this.filterMH.onchange = () => this.renderData();
+    if (this.filterTT) this.filterTT.onchange = () => this.renderData();
   },
 
   async loadDropdowns() {
@@ -117,46 +128,117 @@ window.LopTinChiModule = {
 
       const [resMH, resGV] = await Promise.all([API.get('/monhoc'), API.get('/giangvien')]);
       if (resMH.success) {
-        this.selectMH.innerHTML = '<option value="">-- Chọn Môn --</option>' + 
+        this.selectMH.innerHTML = '<option value="">-- Chọn Môn --</option>' +
           resMH.data.map(m => `<option value="${m.MAMH}">${m.TENMH}</option>`).join('');
       }
       if (resGV.success) {
-        this.selectGV.innerHTML = '<option value="">-- Chọn Giảng viên --</option>' + 
+        this.selectGV.innerHTML = '<option value="">-- Chọn Giảng viên --</option>' +
           resGV.data.map(g => `<option value="${g.MAGV}">${g.HO} ${g.TEN}</option>`).join('');
         this.giangvienList = resGV.data; // Store for fetching MAKHOA
       }
-    } catch(e) {}
+    } catch (e) { }
   },
+
+  normalizeText(str) {
+    if (!str) return '';
+    return str.toString().trim().replace(/\s+/g, ' ');
+  },
+
+  populateFilters() {
+    const prevNK = this.filterNK.value;
+    const prevMH = this.filterMH.value;
+
+    // 1. Niên khóa
+    const uniqueNK = [...new Set(this.lopTinChiListAll.map(item => this.normalizeText(item.NIENKHOA)))]
+      .filter(Boolean)
+      .sort((a, b) => b.localeCompare(a));
+
+    this.filterNK.innerHTML = '<option value="">Tất cả Niên khóa</option>' +
+      uniqueNK.map(nk => `<option value="${nk}">${nk}</option>`).join('');
+
+    if (prevNK && uniqueNK.includes(prevNK)) {
+      this.filterNK.value = prevNK;
+    }
+
+    // 2. Môn học
+    const uniqueMH = new Map();
+    this.lopTinChiListAll.forEach(item => {
+      if (item.MAMH) {
+        const mamh = this.normalizeText(item.MAMH);
+        if (!uniqueMH.has(mamh)) {
+          uniqueMH.set(mamh, item.TENMH || item.MAMH);
+        }
+      }
+    });
+
+    let mhOptions = '<option value="">Tất cả Môn học</option>';
+    uniqueMH.forEach((tenMH, mamh) => {
+      mhOptions += `<option value="${mamh}">${tenMH}</option>`;
+    });
+    this.filterMH.innerHTML = mhOptions;
+
+    if (prevMH && uniqueMH.has(prevMH)) {
+      this.filterMH.value = prevMH;
+    }
+  },
+
+  renderData() {
+    const nk = this.normalizeText(this.filterNK.value);
+    const hk = this.filterHK.value;
+    const mh = this.filterMH.value;
+    const tt = this.filterTT.value;
+
+    let filtered = this.lopTinChiListAll;
+
+    if (nk) {
+      filtered = filtered.filter(item => this.normalizeText(item.NIENKHOA) === nk);
+    }
+    if (hk) {
+      filtered = filtered.filter(item => String(item.HOCKY) === String(hk));
+    }
+    if (mh) {
+      filtered = filtered.filter(item => this.normalizeText(item.MAMH) === mh);
+    }
+    if (tt !== '') {
+      const isHuy = tt === '1';
+      filtered = filtered.filter(item => !!item.HUYLOP === isHuy);
+    }
+
+    this.tbody.innerHTML = filtered.length === 0
+      ? '<tr><td colspan="9" style="text-align:center;">Không tìm thấy lớp tín chỉ phù hợp</td></tr>'
+      : filtered.map((item) => {
+        const actionBtn = this.isPGV
+          ? `<button class="btn btn-primary btn-sm" onclick="window.LopTinChiModule.openModal(${item.MALTC}, '${item.NIENKHOA}', ${item.HOCKY}, '${item.MAMH}', ${item.NHOM}, '${item.MAGV}', ${item.SOSVTOITHIEU}, ${item.HUYLOP ? 1 : 0})">Sửa</button>
+               <button class="btn btn-danger btn-sm" onclick="window.LopTinChiModule.handleDelete(${item.MALTC})">Xóa</button>`
+          : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+        return `
+          <tr>
+            <td>${item.MALTC}</td>
+            <td>${item.NIENKHOA}</td>
+            <td>${item.HOCKY}</td>
+            <td>${item.TENMH || item.MAMH}</td>
+            <td>${item.NHOM}</td>
+            <td>${item.TENGV || item.MAGV}</td>
+            <td>${item.SOSVTOITHIEU}</td>
+            <td>${item.HUYLOP ? '<span style="color:red">Đã hủy</span>' : '<span style="color:green">Đang mở</span>'}</td>
+            <td style="text-align:center;">
+              ${actionBtn}
+            </td>
+          </tr>`;
+      }).join('');
+  },
+
   async loadData() {
     const user = Auth.getUser();
-    const isPGV = user && user.role === 'PGV';
+    this.isPGV = user && user.role === 'PGV';
 
     try {
       this.tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Đang tải...</td></tr>';
       const res = await API.get('/loptinchi');
       if (res.success) {
-        this.tbody.innerHTML = res.data.length === 0 
-          ? '<tr><td colspan="9" style="text-align:center;">Không có dữ liệu</td></tr>'
-          : res.data.map((item) => {
-            const actionBtn = isPGV
-              ? `<button class="btn btn-secondary btn-sm" onclick="window.LopTinChiModule.openModal(${item.MALTC}, '${item.NIENKHOA}', ${item.HOCKY}, '${item.MAMH}', ${item.NHOM}, '${item.MAGV}', ${item.SOSVTOITHIEU}, ${item.HUYLOP ? 1 : 0})">Sửa</button>
-                 <button class="btn btn-danger btn-sm" onclick="window.LopTinChiModule.handleDelete(${item.MALTC})">Xóa</button>`
-              : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
-            return `
-            <tr>
-              <td>${item.MALTC}</td>
-              <td>${item.NIENKHOA}</td>
-              <td>${item.HOCKY}</td>
-              <td>${item.TENMH || item.MAMH}</td>
-              <td>${item.NHOM}</td>
-              <td>${item.TENGV || item.MAGV}</td>
-              <td>${item.SOSVTOITHIEU}</td>
-              <td>${item.HUYLOP ? '<span style="color:red">Đã hủy</span>' : '<span style="color:green">Đang mở</span>'}</td>
-              <td style="text-align:center;">
-                ${actionBtn}
-              </td>
-            </tr>`;
-          }).join('');
+        this.lopTinChiListAll = res.data || [];
+        this.populateFilters();
+        this.renderData();
       }
     } catch (error) { Toast.error(error.message); }
   },
@@ -165,7 +247,7 @@ window.LopTinChiModule = {
     this.isEdit = !!ma;
     document.getElementById('modalTitleLTC').textContent = this.isEdit ? 'Sửa Lớp Tín Chỉ' : 'Mở Lớp Tín Chỉ';
     this.groupHuy.style.display = this.isEdit ? 'block' : 'none';
-    
+
     this.inputMa.value = ma;
     if (!this.isEdit) {
       const date = new Date();
@@ -188,7 +270,7 @@ window.LopTinChiModule = {
       const years = currentNK.split("-").map(Number);
       const startYear = years[0];
       const endYear = years[1];
-      
+
       let nextNK = "";
       let nextHK = "1";
 
@@ -229,7 +311,7 @@ window.LopTinChiModule = {
     this.selectGV.value = gv;
     this.inputSVMin.value = svmin;
     this.selectHuy.value = huy;
-    
+
     this.modal.classList.add('active');
   },
 
@@ -261,7 +343,7 @@ window.LopTinChiModule = {
       const data = {
         NIENKHOA: nk, HOCKY: hk, MAMH: mh, NHOM: nhom, MAGV: gv, MAKHOA: makhoa, SOSVTOITHIEU: svmin, HUYLOP: huy
       };
-      
+
       let res;
       if (this.isEdit) {
         res = await API.put(`/loptinchi/update/${this.inputMa.value}`, data);

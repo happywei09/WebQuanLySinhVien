@@ -7,7 +7,43 @@
       <span class="breadcrumb-item active">Lớp tín chỉ</span>
     </div>
   </div>
-  <button class="btn btn-primary">+ Mở lớp tín chỉ</button>
+  <button class="btn btn-success">+ Mở lớp tín chỉ</button>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+  <div class="card-body">
+    <div class="form-row" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: end;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="filterNienKhoa">Niên khóa</label>
+        <select id="filterNienKhoa" class="form-control">
+          <option value="">Tất cả Niên khóa</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="filterHocKy">Học kỳ</label>
+        <select id="filterHocKy" class="form-control">
+          <option value="">Tất cả Học kỳ</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="filterMonHoc">Tên môn học</label>
+        <select id="filterMonHoc" class="form-control">
+          <option value="">Tất cả Tên môn học</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" for="filterTrangThai">Trạng thái</label>
+        <select id="filterTrangThai" class="form-control">
+          <option value="">Tất cả Trạng thái</option>
+          <option value="0">Đang mở</option>
+          <option value="1">Đã hủy</option>
+        </select>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="card">
@@ -18,7 +54,7 @@
           <th>Mã LTC</th>
           <th>Niên khóa</th>
           <th>Học kỳ</th>
-          <th>Môn học</th>
+          <th>Tên môn học</th>
           <th>Nhóm</th>
           <th>Giảng viên</th>
           <th>Số SV Min</th>

@@ -174,7 +174,7 @@ window.SinhVienModule = {
       const tr = document.createElement('tr');
       
       const actionContent = isPGV
-        ? `<button class="btn btn-secondary btn-sm" onclick="window.SinhVienModule.openModal('${sv.MASV}', '${sv.HO || ''}', '${sv.TEN || ''}', ${sv.PHAI ? 1 : 0}, '${sv.MALOP}')">Sửa</button>
+        ? `<button class="btn btn-primary btn-sm" onclick="window.SinhVienModule.openModal('${sv.MASV}', '${sv.HO || ''}', '${sv.TEN || ''}', ${sv.PHAI ? 1 : 0}, '${sv.MALOP}')">Sửa</button>
            <button class="btn btn-danger btn-sm" onclick="window.SinhVienModule.handleDelete('${sv.MASV}')">Xoá</button>`
         : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
 
@@ -185,8 +185,10 @@ window.SinhVienModule = {
         <td>${sv.TEN}</td>
         <td>${sv.MALOP}</td>
         <td>${sv.PHAI ? 'Nữ' : 'Nam'}</td>
-        <td style="text-align: center;">
-          ${actionContent}
+        <td>
+          <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+            ${actionContent}
+          </div>
         </td>
       `;
       this.tbody.appendChild(tr);

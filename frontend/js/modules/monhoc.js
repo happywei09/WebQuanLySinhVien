@@ -59,7 +59,7 @@ window.MonHocModule = {
   bindEvents() {
     const user = Auth.getUser();
     const isPGV = user && user.role === 'PGV';
-    const btnAdd = document.querySelector('.page-header .btn-primary');
+    const btnAdd = document.querySelector('.page-header .btn-success');
     if (btnAdd) {
       if (isPGV) {
         btnAdd.onclick = () => this.openModal();
@@ -85,7 +85,7 @@ window.MonHocModule = {
           ? '<tr><td colspan="6" style="text-align:center;">Không có dữ liệu</td></tr>'
           : res.data.map((item, index) => {
             const actionContent = isPGV
-              ? `<button class="btn btn-secondary btn-sm" onclick="window.MonHocModule.openModal('${item.MAMH}', '${item.TENMH}', ${item.SOTIET_LT}, ${item.SOTIET_TH})">Sửa</button>
+              ? `<button class="btn btn-primary btn-sm" onclick="window.MonHocModule.openModal('${item.MAMH}', '${item.TENMH}', ${item.SOTIET_LT}, ${item.SOTIET_TH})">Sửa</button>
                  <button class="btn btn-danger btn-sm" onclick="window.MonHocModule.handleDelete('${item.MAMH}')">Xóa</button>`
               : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
             return `
@@ -95,8 +95,10 @@ window.MonHocModule = {
               <td>${item.TENMH}</td>
               <td>${item.SOTIET_LT}</td>
               <td>${item.SOTIET_TH}</td>
-              <td style="text-align:center;">
-                ${actionContent}
+              <td>
+                <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                  ${actionContent}
+                </div>
               </td>
             </tr>`;
           }).join('');
