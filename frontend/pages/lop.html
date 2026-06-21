@@ -114,6 +114,46 @@
 </div>
 
 
+<!-- Modal Thêm / Sửa Lớp -->
+<div class="modal-overlay" id="lopModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="lopModalTitle">Thêm lớp mới</h3>
+      <button class="btn-close" id="btnCloseLopModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label required" for="lopFormKhoaHoc">Khóa học</label>
+        <select id="lopFormKhoaHoc" class="form-control">
+          <!-- Sẽ được điền động bằng JS -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label required" for="lopFormMaLop">Mã lớp</label>
+        <input type="text" id="lopFormMaLop" class="form-control" placeholder="VD: D21CQCN01">
+      </div>
+      <div class="form-group">
+        <label class="form-label required" for="lopFormTenLop">Tên lớp</label>
+        <input type="text" id="lopFormTenLop" class="form-control" placeholder="VD: Công nghệ phần mềm">
+        <small id="lopFormTenLopPreview" style="display: block; margin-top: 4px; color: var(--text-muted); font-style: italic;"></small>
+      </div>
+      <div class="form-group">
+        <label class="form-label required" for="lopFormMaKhoa">Khoa</label>
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <select id="lopFormSelectKhoa" class="form-control" style="flex: 2;">
+            <!-- Sẽ được tải động bằng JS -->
+          </select>
+          <input type="text" id="lopFormMaKhoa" class="form-control" placeholder="Mã khoa" style="flex: 1;" readonly>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnCancelLopModal">Hủy</button>
+      <button class="btn btn-primary" id="btnSaveLopModal">Lưu tạm</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Sinh Vien -->
 <div class="modal-overlay" id="studentModal">
   <div class="modal">

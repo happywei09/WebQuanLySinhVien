@@ -3,15 +3,8 @@ window.LopModule = {
     originalData: [],
     pendingOperations: {},
     history: [],
-    isAddingRow: false,
-    editingLopId: null,
-    editingDraft: null,
-    draftLop: {
-      MALOP: '',
-      TENLOP: '',
-      KHOAHOC: '',
-      MAKHOA: ''
-    },
+    lopModalMode: null,
+    lopModalEditingId: null,
     detailOriginalStudents: [],
     detailPendingOperations: {},
     detailHistory: [],
@@ -27,12 +20,14 @@ window.LopModule = {
     },
     detailEditingStudentId: null,
     detailEditingDraft: null,
-    currentDetailLop: null
+    currentDetailLop: null,
+    khoaList: [] // Cache danh sách khoa từ API
   },
 
   async init() {
     this.cacheDOM();
     this.bindEvents();
+    await this.loadKhoaList();
     await this.loadData();
   },
 
@@ -45,6 +40,18 @@ window.LopModule = {
     this.btnCommit = document.getElementById('btnCommitLop');
     this.btnUndo = document.getElementById('btnUndoLop');
     this.pendingStatus = document.getElementById('lopPendingStatus');
+
+    // Modal Thêm / Sửa Lớp
+    this.lopModal = document.getElementById('lopModal');
+    this.lopModalTitle = document.getElementById('lopModalTitle');
+    this.lopFormMaLop = document.getElementById('lopFormMaLop');
+    this.lopFormTenLop = document.getElementById('lopFormTenLop');
+    this.lopFormKhoaHoc = document.getElementById('lopFormKhoaHoc');
+    this.lopFormSelectKhoa = document.getElementById('lopFormSelectKhoa');
+    this.lopFormMaKhoa = document.getElementById('lopFormMaKhoa');
+    this.btnSaveLopModal = document.getElementById('btnSaveLopModal');
+    this.btnCloseLopModal = document.getElementById('btnCloseLopModal');
+    this.btnCancelLopModal = document.getElementById('btnCancelLopModal');
 
     this.detailSection = document.getElementById('lopDetailSection');
     this.studentModal = document.getElementById('studentModal');
@@ -75,10 +82,34 @@ window.LopModule = {
 
     if (this.btnAdd) {
       if (isPGV) {
-        this.btnAdd.onclick = () => this.startAddRow();
+        this.btnAdd.onclick = () => this.openLopModal('create');
       } else {
         this.btnAdd.style.display = 'none';
       }
+    }
+
+    // Bind modal Thêm/Sửa Lớp events
+    if (this.btnSaveLopModal) this.btnSaveLopModal.onclick = () => this.saveLopModal();
+    if (this.btnCloseLopModal) this.btnCloseLopModal.onclick = () => this.closeLopModal();
+    if (this.btnCancelLopModal) this.btnCancelLopModal.onclick = () => this.closeLopModal();
+
+    if (this.lopFormKhoaHoc) {
+      this.lopFormKhoaHoc.onchange = () => {
+        this.updateMaLopPrefix();
+        this.updateTenLopPreview();
+      };
+    }
+    if (this.lopFormTenLop) {
+      this.lopFormTenLop.oninput = () => {
+        this.updateTenLopPreview();
+      };
+    }
+    if (this.lopFormSelectKhoa) {
+      this.lopFormSelectKhoa.onchange = () => {
+        if (this.lopFormMaKhoa) {
+          this.lopFormMaKhoa.value = this.lopFormSelectKhoa.value;
+        }
+      };
     }
 
     this.btnCommit.onclick = () => this.handleCommit();
@@ -110,9 +141,8 @@ window.LopModule = {
         this.state.originalData = res.data || [];
         this.state.pendingOperations = {};
         this.state.history = [];
-        this.state.isAddingRow = false;
-        this.state.draftLop = { MALOP: '', TENLOP: '', KHOAHOC: '', MAKHOA: '' };
         this.initFilterOptions();
+        this.populateLopFormKhoaHocSelect();
         this.renderTable();
       }
     } catch (error) {
@@ -120,6 +150,17 @@ window.LopModule = {
       Toast.error(error.message);
     } finally {
       this.updateActionState();
+    }
+  },
+
+  async loadKhoaList() {
+    try {
+      const res = await API.get('/khoa');
+      if (res.success) {
+        this.state.khoaList = res.data || [];
+      }
+    } catch (error) {
+      console.error('Lỗi tải danh sách khoa:', error);
     }
   },
 
@@ -189,7 +230,7 @@ window.LopModule = {
     const data = this.getFilteredData();
     this.tbody.innerHTML = '';
 
-    if (data.length === 0 && !this.state.isAddingRow) {
+    if (data.length === 0) {
       this.tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 20px;">Khong tim thay lop hoc nao khop voi dieu kien loc</td></tr>';
       return;
     }
@@ -198,18 +239,13 @@ window.LopModule = {
     const isPGV = user && user.role === 'PGV';
 
     data.forEach((item, index) => {
-      if (this.state.editingLopId === item.MALOP) {
-        this.renderEditingLopRow(index + 1, item);
-        return;
-      }
-
       const tr = document.createElement('tr');
       const pendingOp = this.state.pendingOperations[item.MALOP];
       const statusBadge = this.getStatusBadge(pendingOp);
       const actionBtn = isPGV
-        ? `<button class="btn btn-primary btn-sm" onclick="LopModule.startEditLopRow('${this.escapeJs(item.MALOP)}')">Sửa</button>
-           <button class="btn btn-danger btn-sm" onclick="LopModule.handleDelete('${this.escapeJs(item.MALOP)}')">Xoa</button>`
-        : `<span style="color: var(--text-muted); font-size: 13px;">Chi xem</span>`;
+        ? `<button class="btn btn-primary btn-sm" onclick="LopModule.openLopModal('edit','${this.escapeJs(item.MALOP)}')">Sửa</button>
+           <button class="btn btn-danger btn-sm" onclick="LopModule.handleDelete('${this.escapeJs(item.MALOP)}')">Xoá</button>`
+        : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
 
       tr.innerHTML = `
         <td>${index + 1}</td>
@@ -233,78 +269,9 @@ window.LopModule = {
       `;
       this.tbody.appendChild(tr);
     });
-
-    if (isPGV && this.state.isAddingRow) {
-      this.renderDraftRow(data.length + 1);
-    }
   },
 
-  renderEditingLopRow(index, item) {
-    const draft = this.state.editingDraft || {
-      MALOP: item.MALOP,
-      TENLOP: item.TENLOP || '',
-      KHOAHOC: item.KHOAHOC || '',
-      MAKHOA: item.MAKHOA || ''
-    };
 
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${index}</td>
-      <td>${item.MALOP}</td>
-      <td><input type="text" id="editTenLopInline" class="form-control" value="${this.escapeHtml(draft.TENLOP)}"></td>
-      <td><input type="text" id="editKhoaHocInline" class="form-control" value="${this.escapeHtml(draft.KHOAHOC)}"></td>
-      <td><input type="text" id="editMaKhoaInline" class="form-control" value="${this.escapeHtml(draft.MAKHOA)}"></td>
-      <td>
-        <button class="btn btn-primary btn-sm" id="btnConfirmEditLop">Xac nhan</button>
-        <button class="btn btn-secondary btn-sm" id="btnCancelEditLop">Huy</button>
-      </td>
-    `;
-    this.tbody.appendChild(tr);
-
-    document.getElementById('editTenLopInline')?.addEventListener('input', (e) => {
-      this.state.editingDraft.TENLOP = e.target.value;
-    });
-    document.getElementById('editKhoaHocInline')?.addEventListener('input', (e) => {
-      this.state.editingDraft.KHOAHOC = e.target.value;
-    });
-    document.getElementById('editMaKhoaInline')?.addEventListener('input', (e) => {
-      this.state.editingDraft.MAKHOA = e.target.value;
-    });
-    document.getElementById('btnConfirmEditLop')?.addEventListener('click', () => this.confirmEditLopRow());
-    document.getElementById('btnCancelEditLop')?.addEventListener('click', () => this.cancelEditLopRow());
-  },
-
-  renderDraftRow(index) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${index}</td>
-      <td><input type="text" id="draftMaLop" class="form-control" placeholder="Ma lop" value="${this.escapeHtml(this.state.draftLop.MALOP)}"></td>
-      <td><input type="text" id="draftTenLop" class="form-control" placeholder="Ten lop" value="${this.escapeHtml(this.state.draftLop.TENLOP)}"></td>
-      <td><input type="text" id="draftKhoaHoc" class="form-control" placeholder="Khoa hoc" value="${this.escapeHtml(this.state.draftLop.KHOAHOC)}"></td>
-      <td><input type="text" id="draftMaKhoa" class="form-control" placeholder="Ma khoa" value="${this.escapeHtml(this.state.draftLop.MAKHOA)}"></td>
-      <td>
-        <button class="btn btn-primary btn-sm" id="btnSaveDraftLop">Luu tam</button>
-        <button class="btn btn-secondary btn-sm" id="btnCancelDraftLop">Huy</button>
-      </td>
-    `;
-    this.tbody.appendChild(tr);
-
-    document.getElementById('draftMaLop')?.addEventListener('input', (e) => {
-      this.state.draftLop.MALOP = e.target.value;
-    });
-    document.getElementById('draftTenLop')?.addEventListener('input', (e) => {
-      this.state.draftLop.TENLOP = e.target.value;
-    });
-    document.getElementById('draftKhoaHoc')?.addEventListener('input', (e) => {
-      this.state.draftLop.KHOAHOC = e.target.value;
-    });
-    document.getElementById('draftMaKhoa')?.addEventListener('input', (e) => {
-      this.state.draftLop.MAKHOA = e.target.value;
-    });
-
-    document.getElementById('btnSaveDraftLop')?.addEventListener('click', () => this.handleSaveDraftRow());
-    document.getElementById('btnCancelDraftLop')?.addEventListener('click', () => this.cancelAddRow());
-  },
 
   getStatusBadge(pendingOp) {
     if (!pendingOp) return '';
@@ -332,69 +299,227 @@ window.LopModule = {
     const count = Object.keys(this.state.pendingOperations).length;
     this.btnCommit.disabled = count === 0;
     this.btnUndo.disabled = this.state.history.length === 0;
-    if (this.btnAdd) {
-      this.btnAdd.disabled = this.state.isAddingRow || !!this.state.editingLopId;
+    this.pendingStatus.textContent = count > 0 ? `${count} thay đổi đang chờ ghi` : '';
+  },
+
+  populateLopFormKhoaHocSelect() {
+    if (!this.lopFormKhoaHoc) return;
+    const current = this.lopFormKhoaHoc.value;
+    
+    this.lopFormKhoaHoc.innerHTML = '<option value="">-- Chọn Khóa học --</option>';
+    
+    const years = new Set();
+    // Sinh ra các khóa học chuẩn từ năm 2015-2019 đến 2035-2039
+    for (let year = 2015; year <= 2035; year++) {
+      years.add(`${year}-${year + 4}`);
     }
-    this.pendingStatus.textContent = count > 0 ? `${count} thay doi dang cho ghi` : '';
+    
+    // Quét thêm dữ liệu thực tế để đảm bảo không bỏ sót khóa học nào
+    const data = this.getCurrentData();
+    data.forEach(item => {
+      if (item.KHOAHOC) {
+        years.add(item.KHOAHOC);
+      }
+    });
+    
+    const sortedYears = Array.from(years).sort();
+    sortedYears.forEach(kh => {
+      const opt = document.createElement('option');
+      opt.value = kh;
+      opt.textContent = kh;
+      this.lopFormKhoaHoc.appendChild(opt);
+    });
+    
+    if (current && sortedYears.includes(current)) {
+      this.lopFormKhoaHoc.value = current;
+    }
   },
 
-  startAddRow() {
-    if (this.state.isAddingRow || this.state.editingLopId) return;
-    this.state.isAddingRow = true;
-    this.state.draftLop = { MALOP: '', TENLOP: '', KHOAHOC: '', MAKHOA: '' };
-    this.renderTable();
-    this.updateActionState();
+  updateMaLopPrefix() {
+    if (this.state.lopModalMode !== 'create') return;
+    if (!this.lopFormKhoaHoc || !this.lopFormMaLop) return;
+
+    const khoaHoc = this.lopFormKhoaHoc.value;
+    if (!khoaHoc) return;
+
+    const startYear = khoaHoc.split('-')[0];
+    if (!startYear || !/^\d{4}$/.test(startYear)) return;
+
+    const prefix = 'D' + startYear.slice(-2); // VD: D19
+    let currentMaLop = (this.lopFormMaLop.value || '').trim();
+
+    // Nếu mã lớp hiện tại đã có dạng Dxx ở đầu, thay thế nó bằng prefix mới
+    if (/^D\d{2}/i.test(currentMaLop)) {
+      this.lopFormMaLop.value = currentMaLop.replace(/^D\d{2}/i, prefix);
+    } else {
+      // Nếu chưa có, hoặc trống, ghép tiền tố vào trước phần người dùng đã nhập
+      this.lopFormMaLop.value = prefix + currentMaLop;
+    }
+
+    // Đưa con trỏ chuột tập trung vào ô nhập mã lớp và đặt ở cuối text
+    this.lopFormMaLop.focus();
+    const len = this.lopFormMaLop.value.length;
+    this.lopFormMaLop.setSelectionRange(len, len);
   },
 
-  cancelAddRow() {
-    this.state.isAddingRow = false;
-    this.state.draftLop = { MALOP: '', TENLOP: '', KHOAHOC: '', MAKHOA: '' };
-    this.renderTable();
-    this.updateActionState();
+  populateLopFormKhoaSelect() {
+    if (!this.lopFormSelectKhoa) return;
+    const current = this.lopFormSelectKhoa.value;
+    
+    this.lopFormSelectKhoa.innerHTML = '<option value="">-- Chọn Khoa --</option>';
+    
+    this.state.khoaList.forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = k.MAKHOA;
+      opt.textContent = k.TENKHOA;
+      this.lopFormSelectKhoa.appendChild(opt);
+    });
+    
+    if (current && this.state.khoaList.some(k => k.MAKHOA === current)) {
+      this.lopFormSelectKhoa.value = current;
+    }
   },
 
-  startEditLopRow(maLop) {
-    if (this.state.isAddingRow) return;
-    const item = this.getCurrentData().find(x => x.MALOP === maLop);
-    if (!item) {
-      Toast.error('Khong tim thay lop de sua');
+  updateTenLopPreview() {
+    const previewEl = document.getElementById('lopFormTenLopPreview');
+    if (!previewEl) return;
+
+    if (!this.lopFormKhoaHoc || !this.lopFormTenLop) {
+      previewEl.textContent = '';
       return;
     }
 
-    this.state.editingLopId = maLop;
-    this.state.editingDraft = {
-      MALOP: item.MALOP,
-      TENLOP: item.TENLOP || '',
-      KHOAHOC: item.KHOAHOC || '',
-      MAKHOA: item.MAKHOA || ''
-    };
-    this.renderTable();
-    this.updateActionState();
+    const khoaHoc = this.lopFormKhoaHoc.value;
+    const rawName = (this.lopFormTenLop.value || '').trim();
+
+    if (!khoaHoc) {
+      previewEl.textContent = '';
+      return;
+    }
+
+    const startYear = khoaHoc.split('-')[0];
+    if (!startYear || !/^\d{4}$/.test(startYear)) {
+      previewEl.textContent = '';
+      return;
+    }
+
+    // Làm sạch tên lớp: loại bỏ các hậu tố năm hiện có
+    let cleanName = rawName;
+    cleanName = cleanName.replace(new RegExp(`\\s+${startYear}$`), '');
+    cleanName = cleanName.replace(/\s+\d{4}$/, '');
+
+    if (cleanName) {
+      previewEl.textContent = `Tên lớp đầy đủ: ${cleanName} ${startYear}`;
+    } else {
+      previewEl.textContent = `Tên lớp đầy đủ: [Tên lớp] ${startYear}`;
+    }
   },
 
-  cancelEditLopRow() {
-    this.state.editingLopId = null;
-    this.state.editingDraft = null;
-    this.renderTable();
-    this.updateActionState();
+  // Modal Thêm / Sửa Lớp
+  openLopModal(mode = 'create', maLop = '') {
+    this.state.lopModalMode = mode;
+    this.state.lopModalEditingId = maLop || null;
+
+    const item = mode === 'edit' ? this.getCurrentData().find(x => x.MALOP === maLop) : null;
+
+    if (mode === 'edit' && !item) {
+      Toast.error('Không tìm thấy lớp để sửa');
+      return;
+    }
+
+    if (this.lopModalTitle) {
+      this.lopModalTitle.textContent = mode === 'edit' ? 'Sửa thông tin lớp' : 'Thêm lớp mới';
+    }
+
+    // Khởi tạo các tùy chọn khóa học và khoa trước
+    this.populateLopFormKhoaHocSelect();
+    this.populateLopFormKhoaSelect();
+
+    if (this.lopFormMaLop) {
+      this.lopFormMaLop.value = item?.MALOP || '';
+      this.lopFormMaLop.disabled = mode === 'edit';
+    }
+
+    if (this.lopFormKhoaHoc) {
+      this.lopFormKhoaHoc.value = item?.KHOAHOC || '';
+    }
+
+    if (this.lopFormTenLop) {
+      let displayTenLop = item?.TENLOP || '';
+      if (item?.KHOAHOC) {
+        const startYear = item.KHOAHOC.split('-')[0];
+        if (startYear && /^\d{4}$/.test(startYear)) {
+          // Loại bỏ năm bắt đầu ở cuối để giao diện sửa không hiển thị lặp
+          displayTenLop = displayTenLop.replace(new RegExp(`\\s+${startYear}$`), '');
+          displayTenLop = displayTenLop.replace(/\s+\d{4}$/, '');
+        }
+      }
+      this.lopFormTenLop.value = displayTenLop;
+    }
+
+    if (this.lopFormSelectKhoa) {
+      this.lopFormSelectKhoa.value = item?.MAKHOA || '';
+    }
+    if (this.lopFormMaKhoa) {
+      this.lopFormMaKhoa.value = item?.MAKHOA || '';
+    }
+
+    // Cập nhật nhãn xem trước ngay lập tức
+    this.updateTenLopPreview();
+
+    if (this.lopModal) this.lopModal.classList.add('active');
   },
 
-  handleSaveDraftRow() {
+  closeLopModal() {
+    if (this.lopModal) this.lopModal.classList.remove('active');
+    this.state.lopModalMode = null;
+    this.state.lopModalEditingId = null;
+  },
+
+  saveLopModal() {
+    if (this.state.lopModalMode === 'create') {
+      this.saveCreateLop();
+    } else {
+      this.saveEditLop();
+    }
+  },
+
+  saveCreateLop() {
+    let rawTenLop = (this.lopFormTenLop?.value || '').trim();
+    if (!rawTenLop) {
+      Toast.warning('Vui lòng nhập đầy đủ thông tin lớp học');
+      return;
+    }
+
+    const khoaHoc = (this.lopFormKhoaHoc?.value || '').trim();
+    if (!khoaHoc) {
+      Toast.warning('Vui lòng chọn khóa học');
+      return;
+    }
+
+    const startYear = khoaHoc.split('-')[0];
+    let formattedTenLop = rawTenLop;
+    if (startYear && /^\d{4}$/.test(startYear)) {
+      formattedTenLop = formattedTenLop.replace(new RegExp(`\\s+${startYear}$`), '');
+      formattedTenLop = formattedTenLop.replace(/\s+\d{4}$/, '');
+      formattedTenLop = `${formattedTenLop} ${startYear}`;
+    }
+
     const payload = {
-      MALOP: this.state.draftLop.MALOP.trim(),
-      TENLOP: this.state.draftLop.TENLOP.trim(),
-      KHOAHOC: this.state.draftLop.KHOAHOC.trim(),
-      MAKHOA: this.state.draftLop.MAKHOA.trim()
+      MALOP: (this.lopFormMaLop?.value || '').trim(),
+      TENLOP: formattedTenLop,
+      KHOAHOC: khoaHoc,
+      MAKHOA: (this.lopFormMaKhoa?.value || '').trim()
     };
 
     if (!payload.MALOP || !payload.TENLOP || !payload.KHOAHOC || !payload.MAKHOA) {
-      Toast.warning('Vui long nhap day du thong tin lop hoc');
+      Toast.warning('Vui lòng nhập đầy đủ thông tin lớp học');
       return;
     }
 
     const currentDataMap = new Map(this.getCurrentData().map(item => [item.MALOP, item]));
     if (currentDataMap.has(payload.MALOP)) {
-      Toast.warning('Ma lop da ton tai trong danh sach hien tai');
+      Toast.warning('Mã lớp đã tồn tại trong danh sách hiện tại');
       return;
     }
 
@@ -405,12 +530,89 @@ window.LopModule = {
       newValue: payload
     };
 
-    this.state.isAddingRow = false;
-    this.state.draftLop = { MALOP: '', TENLOP: '', KHOAHOC: '', MAKHOA: '' };
+    this.closeLopModal();
     this.initFilterOptions();
     this.renderTable();
     this.updateActionState();
-    Toast.success('Da them ban ghi vao danh sach cho ghi');
+    Toast.success('Đã thêm bản ghi vào danh sách chờ ghi');
+  },
+
+  saveEditLop() {
+    const maLop = this.state.lopModalEditingId;
+    let rawTenLop = (this.lopFormTenLop?.value || '').trim();
+    if (!rawTenLop) {
+      Toast.warning('Vui lòng nhập đầy đủ thông tin lớp học');
+      return;
+    }
+
+    const khoaHoc = (this.lopFormKhoaHoc?.value || '').trim();
+    if (!khoaHoc) {
+      Toast.warning('Vui lòng chọn khóa học');
+      return;
+    }
+
+    const startYear = khoaHoc.split('-')[0];
+    let formattedTenLop = rawTenLop;
+    if (startYear && /^\d{4}$/.test(startYear)) {
+      formattedTenLop = formattedTenLop.replace(new RegExp(`\\s+${startYear}$`), '');
+      formattedTenLop = formattedTenLop.replace(/\s+\d{4}$/, '');
+      formattedTenLop = `${formattedTenLop} ${startYear}`;
+    }
+
+    const payload = {
+      MALOP: maLop,
+      TENLOP: formattedTenLop,
+      KHOAHOC: khoaHoc,
+      MAKHOA: (this.lopFormMaKhoa?.value || '').trim()
+    };
+
+    if (!payload.MALOP || !payload.TENLOP || !payload.KHOAHOC || !payload.MAKHOA) {
+      Toast.warning('Vui lòng nhập đầy đủ thông tin lớp học');
+      return;
+    }
+
+    const originalItem = this.state.originalData.find(item => item.MALOP === payload.MALOP);
+    const existingPending = this.state.pendingOperations[payload.MALOP];
+
+    if (existingPending && existingPending.type === 'delete') {
+      Toast.warning('Lớp này đang chờ xoá, không thể sửa');
+      return;
+    }
+
+    this.pushHistory();
+
+    if (existingPending && existingPending.type === 'create') {
+      this.state.pendingOperations[payload.MALOP] = {
+        ...existingPending,
+        newValue: payload
+      };
+    } else {
+      this.state.pendingOperations[payload.MALOP] = {
+        type: 'update',
+        key: payload.MALOP,
+        oldValue: originalItem ? { ...originalItem } : null,
+        newValue: payload
+      };
+    }
+
+    // If update is same as original, remove the pending operation
+    const pending = this.state.pendingOperations[payload.MALOP];
+    if (
+      pending &&
+      pending.type === 'update' &&
+      pending.oldValue &&
+      pending.oldValue.TENLOP === payload.TENLOP &&
+      pending.oldValue.KHOAHOC === payload.KHOAHOC &&
+      pending.oldValue.MAKHOA === payload.MAKHOA
+    ) {
+      delete this.state.pendingOperations[payload.MALOP];
+    }
+
+    this.closeLopModal();
+    this.initFilterOptions();
+    this.renderTable();
+    this.updateActionState();
+    Toast.success('Đã đưa thay đổi vào danh sách chờ ghi');
   },
 
   async openDetailModal(maLop) {
@@ -958,66 +1160,6 @@ window.LopModule = {
       this.btnCommitStudentInClass.textContent = 'Ghi';
       this.updateDetailActionState();
     }
-  },
-
-  confirmEditLopRow() {
-    const draft = this.state.editingDraft;
-    if (!draft) return;
-
-    const payload = {
-      MALOP: draft.MALOP,
-      TENLOP: String(draft.TENLOP || '').trim(),
-      KHOAHOC: String(draft.KHOAHOC || '').trim(),
-      MAKHOA: String(draft.MAKHOA || '').trim()
-    };
-
-    if (!payload.MALOP || !payload.TENLOP || !payload.KHOAHOC || !payload.MAKHOA) {
-      Toast.warning('Vui lòng nhập đầy đủ thông tin lớp học');
-      return;
-    }
-
-    const originalItem = this.state.originalData.find(item => item.MALOP === payload.MALOP);
-    const existingPending = this.state.pendingOperations[payload.MALOP];
-
-    if (existingPending && existingPending.type === 'delete') {
-      Toast.warning('Lớp này đang chờ xoá, không thể sửa');
-      return;
-    }
-
-    this.pushHistory();
-
-    if (existingPending && existingPending.type === 'create') {
-      this.state.pendingOperations[payload.MALOP] = {
-        ...existingPending,
-        newValue: payload
-      };
-    } else {
-      this.state.pendingOperations[payload.MALOP] = {
-        type: 'update',
-        key: payload.MALOP,
-        oldValue: originalItem ? { ...originalItem } : null,
-        newValue: payload
-      };
-    }
-
-    const pending = this.state.pendingOperations[payload.MALOP];
-    if (
-      pending &&
-      pending.type === 'update' &&
-      pending.oldValue &&
-      pending.oldValue.TENLOP === payload.TENLOP &&
-      pending.oldValue.KHOAHOC === payload.KHOAHOC &&
-      pending.oldValue.MAKHOA === payload.MAKHOA
-    ) {
-      delete this.state.pendingOperations[payload.MALOP];
-    }
-
-    this.initFilterOptions();
-    this.state.editingLopId = null;
-    this.state.editingDraft = null;
-    this.renderTable();
-    this.updateActionState();
-    Toast.success('Đã đưa thay đổi vào danh sách chờ ghi');
   },
 
   handleDelete(maLop) {
