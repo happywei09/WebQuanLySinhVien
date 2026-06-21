@@ -20,7 +20,7 @@
   </div>
 </div>
 
-<div class="card">
+<div class="card khoa-list-card">
   <div class="card-header">
     <div style="display: flex; gap: 12px; align-items: center; width: 100%; max-width: 520px; flex-wrap: wrap;">
       <input type="text" id="searchKhoa" class="form-control" placeholder="Tìm kiếm khoa...">
@@ -28,7 +28,7 @@
       <span id="khoaPendingStatus" style="font-size: 13px; color: var(--text-muted);"></span>
     </div>
   </div>
-  <div class="table-responsive">
+  <div class="table-responsive khoa-list-scroll">
     <table class="table" id="tableKhoa">
       <thead>
         <tr>
@@ -44,4 +44,55 @@
     </table>
   </div>
 </div>
+
+
+<style>
+/* Khoa list - scrollable box */
+.khoa-list-card .khoa-list-scroll {
+  max-height: 420px;
+  overflow-y: auto;
+}
+.khoa-list-card .khoa-list-scroll table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-surface);
+  z-index: 2;
+  border-bottom: 2px solid var(--border-color);
+}
+.khoa-list-card .khoa-list-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.khoa-list-card .khoa-list-scroll::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+.khoa-list-card .khoa-list-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+</style>
+
+<!-- Modal Thêm Khoa -->
+<div class="modal-overlay" id="khoaModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="khoaModalTitle">Thêm khoa mới</h3>
+      <button class="btn-close" id="btnCloseKhoaModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label required" for="khoaFormMaKhoa">Mã khoa</label>
+        <input type="text" id="khoaFormMaKhoa" class="form-control" placeholder="VD: CNTT">
+      </div>
+      <div class="form-group">
+        <label class="form-label required" for="khoaFormTenKhoa">Tên khoa</label>
+        <input type="text" id="khoaFormTenKhoa" class="form-control" placeholder="VD: Công nghệ thông tin">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnCancelKhoaModal">Hủy</button>
+      <button class="btn btn-primary" id="btnSaveKhoaModal">Lưu tạm</button>
+    </div>
+  </div>
+</div>
+
 <script src="js/modules/khoa.js"></script>

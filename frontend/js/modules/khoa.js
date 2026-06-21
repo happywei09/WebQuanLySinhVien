@@ -31,6 +31,13 @@ window.KhoaModule = {
     this.btnUndo = document.getElementById('btnUndoKhoa');
     this.searchInput = document.getElementById('searchKhoa');
     this.pendingStatus = document.getElementById('khoaPendingStatus');
+    this.khoaModal = document.getElementById('khoaModal');
+    this.khoaModalTitle = document.getElementById('khoaModalTitle');
+    this.khoaFormMaKhoa = document.getElementById('khoaFormMaKhoa');
+    this.khoaFormTenKhoa = document.getElementById('khoaFormTenKhoa');
+    this.btnSaveKhoaModal = document.getElementById('btnSaveKhoaModal');
+    this.btnCloseKhoaModal = document.getElementById('btnCloseKhoaModal');
+    this.btnCancelKhoaModal = document.getElementById('btnCancelKhoaModal');
   },
 
   bindEvents() {
@@ -44,6 +51,15 @@ window.KhoaModule = {
         btnAdd.style.display = 'none';
       }
     }
+    if (this.btnSaveKhoaModal) this.btnSaveKhoaModal.onclick = () => this.handleSaveDraftRow();
+    if (this.btnCloseKhoaModal) this.btnCloseKhoaModal.onclick = () => this.cancelAddRow();
+    if (this.btnCancelKhoaModal) this.btnCancelKhoaModal.onclick = () => this.cancelAddRow();
+    if (this.khoaModal) {
+      this.khoaModal.addEventListener('click', (e) => {
+        if (e.target === this.khoaModal) this.cancelAddRow();
+      });
+    }
+
     this.btnSearch.onclick = () => this.loadData();
     this.btnCommit.onclick = () => this.handleCommit();
     this.btnUndo.onclick = () => this.handleUndo();
@@ -126,10 +142,6 @@ window.KhoaModule = {
       `;
       this.tbody.appendChild(tr);
     });
-
-    if (isPGV && this.state.isAddingRow) {
-      this.renderDraftRow(data.length + 1);
-    }
   },
 
   renderEditingRow(index, item) {
@@ -152,53 +164,6 @@ window.KhoaModule = {
     document.getElementById('btnConfirmEditKhoa')?.addEventListener('click', () => this.confirmEditRow());
     document.getElementById('btnCancelEditKhoa')?.addEventListener('click', () => this.cancelEditRow());
   },
-
-  renderDraftRow(index) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${index}</td>
-      <td>
-        <input
-          type="text"
-          id="draftMaKhoa"
-          class="form-control"
-          placeholder="Mã khoa"
-          value="${this.escapeHtml(this.state.draftKhoa.MAKHOA)}"
-        >
-      </td>
-      <td>
-        <input
-          type="text"
-          id="draftTenKhoa"
-          class="form-control"
-          placeholder="Tên khoa"
-          value="${this.escapeHtml(this.state.draftKhoa.TENKHOA)}"
-        >
-      </td>
-      <td style="text-align: center;">
-        <button class="btn btn-primary btn-sm" id="btnSaveDraftKhoa">Lưu tạm</button>
-        <button class="btn btn-secondary btn-sm" id="btnCancelDraftKhoa">Huỷ</button>
-      </td>
-    `;
-    this.tbody.appendChild(tr);
-
-    const inputMa = document.getElementById('draftMaKhoa');
-    const inputTen = document.getElementById('draftTenKhoa');
-    const btnSaveDraft = document.getElementById('btnSaveDraftKhoa');
-    const btnCancelDraft = document.getElementById('btnCancelDraftKhoa');
-
-    inputMa?.addEventListener('input', (e) => {
-      this.state.draftKhoa.MAKHOA = e.target.value;
-    });
-    inputTen?.addEventListener('input', (e) => {
-      this.state.draftKhoa.TENKHOA = e.target.value;
-    });
-    btnSaveDraft?.addEventListener('click', () => this.handleSaveDraftRow());
-    btnCancelDraft?.addEventListener('click', () => this.cancelAddRow());
-
-    inputMa?.focus();
-  },
-
   getStatusBadge(pendingOp) {
     if (!pendingOp) return '';
 
@@ -256,20 +221,28 @@ window.KhoaModule = {
 
   startAddRow() {
     if (this.state.isAddingRow || this.state.editingKhoaId) {
-      const inputMa = document.getElementById('draftMaKhoa');
-      inputMa?.focus();
+      this.khoaFormMaKhoa?.focus();
       return;
     }
 
     this.state.isAddingRow = true;
     this.state.draftKhoa = { MAKHOA: '', TENKHOA: '' };
-    this.renderTable();
+    if (this.khoaModalTitle) this.khoaModalTitle.textContent = 'Thêm khoa mới';
+    if (this.khoaFormMaKhoa) this.khoaFormMaKhoa.value = '';
+    if (this.khoaFormTenKhoa) this.khoaFormTenKhoa.value = '';
+    this.khoaModal?.classList.add('active');
+    setTimeout(() => this.khoaFormMaKhoa?.focus(), 0);
     this.updateActionState();
+  },
+
+  closeAddModal() {
+    this.khoaModal?.classList.remove('active');
   },
 
   cancelAddRow() {
     this.state.isAddingRow = false;
     this.state.draftKhoa = { MAKHOA: '', TENKHOA: '' };
+    this.closeAddModal();
     this.renderTable();
     this.updateActionState();
   },
@@ -295,6 +268,9 @@ window.KhoaModule = {
   },
 
   async handleSaveDraftRow() {
+    if (this.khoaFormMaKhoa) this.state.draftKhoa.MAKHOA = this.khoaFormMaKhoa.value;
+    if (this.khoaFormTenKhoa) this.state.draftKhoa.TENKHOA = this.khoaFormTenKhoa.value;
+
     const ma = this.state.draftKhoa.MAKHOA.trim();
     const ten = this.state.draftKhoa.TENKHOA.trim();
 
@@ -318,6 +294,7 @@ window.KhoaModule = {
 
     this.state.isAddingRow = false;
     this.state.draftKhoa = { MAKHOA: '', TENKHOA: '' };
+    this.closeAddModal();
     this.renderTable();
     this.updateActionState();
     Toast.success('Đã thêm bản ghi vào danh sách chờ ghi');

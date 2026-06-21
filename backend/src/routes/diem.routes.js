@@ -3,13 +3,13 @@ const router = express.Router();
 const diemController = require("../controllers/diem.controller");
 const { authenticate } = require("../middleware/auth.middleware");
 const { authorize, PERMISSIONS } = require("../middleware/role.middleware");
-const { validateDiem, validateRequired } = require("../middleware/validate.middleware");
+const { validateDiem, validateRequired, validateIntegerField, validateArrayField } = require("../middleware/validate.middleware");
 
 // Nhập điểm
 router.get("/loptinchi/:maLTC", authenticate, authorize(...PERMISSIONS.DIEM.VIEW), diemController.getDiemByLopTinChi);
 router.get("/sinhvien/:maSV", authenticate, authorize(...PERMISSIONS.DIEM.VIEW), diemController.getDiemBySinhVien);
-router.put("/update", authenticate, authorize(...PERMISSIONS.DIEM.UPDATE), validateRequired(["maLTC", "maSV"]), validateDiem, diemController.updateDiem);
-router.put("/update-batch", authenticate, authorize(...PERMISSIONS.DIEM.UPDATE), validateRequired(["maLTC", "diemList"]), diemController.updateBatchDiem);
+router.put("/update", authenticate, authorize(...PERMISSIONS.DIEM.UPDATE), validateRequired(["maLTC", "maSV"]), validateIntegerField("maLTC", { min: 1 }), validateDiem, diemController.updateDiem);
+router.put("/update-batch", authenticate, authorize(...PERMISSIONS.DIEM.UPDATE), validateRequired(["maLTC", "diemList"]), validateIntegerField("maLTC", { min: 1 }), validateArrayField("diemList", { minLength: 1 }), diemController.updateBatchDiem);
 
 // Báo cáo
 router.get("/report/bang-diem-mon-hoc/:maLTC", authenticate, authorize(...PERMISSIONS.REPORT.VIEW), diemController.reportBangDiemMonHoc);

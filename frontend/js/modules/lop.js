@@ -40,6 +40,7 @@ window.LopModule = {
     this.btnCommit = document.getElementById('btnCommitLop');
     this.btnUndo = document.getElementById('btnUndoLop');
     this.pendingStatus = document.getElementById('lopPendingStatus');
+    this.lopListCount = document.getElementById('lopListCount');
 
     // Modal Thêm / Sửa Lớp
     this.lopModal = document.getElementById('lopModal');
@@ -229,6 +230,10 @@ window.LopModule = {
   renderTable() {
     const data = this.getFilteredData();
     this.tbody.innerHTML = '';
+
+    if (this.lopListCount) {
+      this.lopListCount.textContent = `${data.length} lớp`;
+    }
 
     if (data.length === 0) {
       this.tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 20px;">Khong tim thay lop hoc nao khop voi dieu kien loc</td></tr>';
@@ -624,7 +629,10 @@ window.LopModule = {
       this.detailKhoaHoc.textContent = 'Dang tai...';
       this.detailMaKhoa.textContent = 'Dang tai...';
       this.detailTbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Dang tai danh sach sinh vien...</td></tr>';
-      if (this.detailSection) this.detailSection.style.display = 'block';
+      if (this.detailSection) {
+        this.detailSection.style.display = 'block';
+        this.detailSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
       this.updateDetailActionState();
 
       const [lopRes, svRes] = await Promise.all([

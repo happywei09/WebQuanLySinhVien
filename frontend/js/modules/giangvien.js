@@ -1,4 +1,4 @@
-window.GiangVienModule = {
+﻿window.GiangVienModule = {
   async init() {
     this.cacheDOM();
     this.bindEvents();

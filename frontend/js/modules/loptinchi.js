@@ -1,4 +1,4 @@
-window.LopTinChiModule = {
+﻿window.LopTinChiModule = {
   async init() {
     this.cacheDOM();
     this.bindEvents();

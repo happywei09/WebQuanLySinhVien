@@ -1,4 +1,4 @@
-window.DangKyModule = {
+﻿window.DangKyModule = {
   nextNK: '',
   nextHK: 1,
   selectedNK: '',

@@ -1,4 +1,4 @@
-window.MonHocModule = {
+﻿window.MonHocModule = {
   async init() {
     this.cacheDOM();
     this.bindEvents();

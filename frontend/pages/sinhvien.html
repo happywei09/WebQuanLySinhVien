@@ -32,8 +32,11 @@
   </div>
 </div>
 
-<div class="card" id="cardSV">
-  <div class="table-responsive">
+<div class="card sinhvien-list-card" id="cardSV">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+    <h3 class="card-title" style="margin:0;">Danh sách sinh viên</h3>
+  </div>
+  <div class="table-responsive sinhvien-list-scroll">
     <table class="table">
       <thead>
         <tr>
@@ -54,6 +57,32 @@
     </table>
   </div>
 </div>
+
+
+<style>
+/* Sinh vien list - scrollable box */
+.sinhvien-list-card .sinhvien-list-scroll {
+  max-height: 420px;
+  overflow-y: auto;
+}
+.sinhvien-list-card .sinhvien-list-scroll table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-surface);
+  z-index: 2;
+  border-bottom: 2px solid var(--border-color);
+}
+.sinhvien-list-card .sinhvien-list-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.sinhvien-list-card .sinhvien-list-scroll::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+.sinhvien-list-card .sinhvien-list-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+</style>
 
 <!-- Modal thêm/sửa Sinh Viên -->
 <div class="modal-overlay" id="modalSV">
