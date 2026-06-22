@@ -8,7 +8,7 @@ const LOPTINCHI_PROCEDURES = require("../database/procedures/loptinchi.procedure
 class LopTinChiRepository {
   async getAll() {
     const result = await executeStoredProcedure(LOPTINCHI_PROCEDURES.GET_ALL);
-    return result.recordset;
+    return (result.recordset || []).sort((a, b) => b.MALTC - a.MALTC);
   }
 
   async getById(maLTC) {
@@ -22,7 +22,7 @@ class LopTinChiRepository {
     const result = await executeStoredProcedure(LOPTINCHI_PROCEDURES.GET_BY_KHOA, {
       MAKHOA: { type: sql.NVarChar(50), value: maKhoa },
     });
-    return result.recordset;
+    return (result.recordset || []).sort((a, b) => b.MALTC - a.MALTC);
   }
 
   async getByNienKhoaHocKy(nienKhoa, hocKy) {
@@ -33,7 +33,7 @@ class LopTinChiRepository {
         HOCKY: { type: sql.Int, value: hocKy },
       }
     );
-    return result.recordset;
+    return (result.recordset || []).sort((a, b) => b.MALTC - a.MALTC);
   }
 
   async getByGiangVien(maGV) {
@@ -43,7 +43,7 @@ class LopTinChiRepository {
         MAGV: { type: sql.NVarChar(50), value: maGV },
       }
     );
-    return result.recordset;
+    return (result.recordset || []).sort((a, b) => b.MALTC - a.MALTC);
   }
 
   async create(data) {
@@ -99,7 +99,7 @@ class LopTinChiRepository {
     const result = await executeStoredProcedure(LOPTINCHI_PROCEDURES.SEARCH, {
       KEYWORD: { type: sql.NVarChar(100), value: keyword },
     });
-    return result.recordset;
+    return (result.recordset || []).sort((a, b) => b.MALTC - a.MALTC);
   }
 }
 

@@ -52,6 +52,7 @@ const getStats = async (req, res, next) => {
     
     // recordsets[1]: Danh sách chi tiết lớp tín chỉ
     const classesDetail = result.recordsets[1] || [];
+    classesDetail.sort((a, b) => b.MALTC - a.MALTC);
 
     res.json({
       success: true,

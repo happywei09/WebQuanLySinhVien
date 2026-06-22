@@ -1,4 +1,4 @@
-﻿USE [QLDSV_HTC];
+USE [QLDSV_HTC];
 GO
 
 -- =========================================================================
@@ -77,7 +77,7 @@ BEGIN
     INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
     INNER JOIN GIANGVIEN gv ON ltc.MAGV = gv.MAGV
     LEFT JOIN #DangKyCount dkc ON dkc.MALTC = ltc.MALTC
-    ORDER BY ltc.MALTC;
+    ORDER BY ltc.MALTC DESC;
 
     DROP TABLE #DangKyCount;
     DROP TABLE #FilteredLopTinChi;
