@@ -1,4 +1,4 @@
-﻿/* ====================================
+/* ====================================
    API CLIENT
    File: js/api.js
    Mục đích: Wrapper cho fetch API
@@ -13,7 +13,7 @@ class ApiClient {
     const headers = {
       'Content-Type': 'application/json',
     };
-    
+
     // Thêm token nếu có
     const token = localStorage.getItem('token');
     if (token) {
@@ -25,7 +25,7 @@ class ApiClient {
     if (serverId) {
       headers['x-server-id'] = serverId;
     }
-    
+
     return headers;
   }
 
@@ -54,17 +54,17 @@ class ApiClient {
                 body: JSON.stringify({ refreshToken }),
               });
               const refreshData = await refreshRes.json();
-              
+
               if (refreshRes.ok && refreshData.success && refreshData.data?.token) {
                 // Lưu token mới
                 localStorage.setItem('token', refreshData.data.token);
-                
+
                 // Gửi lại request gốc với header Authorization mới
                 const retryResponse = await fetch(url, {
                   ...options,
                   headers: this.getHeaders(),
                 });
-                
+
                 const retryData = await retryResponse.json();
                 if (!retryResponse.ok) {
                   throw new Error(retryData.message || 'Có lỗi xảy ra từ máy chủ');
@@ -75,7 +75,7 @@ class ApiClient {
               console.error('Error refreshing token:', refreshErr);
             }
           }
-          
+
           // Hoặc logout luôn nếu không thể refresh
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');

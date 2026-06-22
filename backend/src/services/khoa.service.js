@@ -17,8 +17,38 @@ class KhoaService {
     return khoa;
   }
 
+  formatTenKhoa(str) {
+    if (!str) return "";
+    return str
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
+
   async createKhoa(data) {
-    // TODO: Validate business rules nếu cần
+    if (!data.MAKHOA || !data.TENKHOA) {
+      throw new Error("Mã khoa và tên khoa không được để trống");
+    }
+
+    const ma = data.MAKHOA.trim();
+    const ten = this.formatTenKhoa(data.TENKHOA);
+    data.MAKHOA = ma;
+    data.TENKHOA = ten;
+
+    const allKhoa = await khoaRepository.getAll();
+    
+    // Check trùng mã khoa
+    if (allKhoa.some((k) => k.MAKHOA.trim().toLowerCase() === ma.toLowerCase())) {
+      throw new Error(`Mã khoa "${ma}" đã tồn tại!`);
+    }
+
+    // Check trùng tên khoa
+    if (allKhoa.some((k) => k.TENKHOA.trim().toLowerCase() === ten.toLowerCase())) {
+      throw new Error(`Tên khoa "${ten}" đã tồn tại!`);
+    }
+
     return khoaRepository.create(data);
   }
 
@@ -27,6 +57,21 @@ class KhoaService {
     if (!existing) {
       throw new Error("Không tìm thấy khoa để cập nhật");
     }
+
+    if (!data.TENKHOA) {
+      throw new Error("Tên khoa không được để trống");
+    }
+
+    const ten = this.formatTenKhoa(data.TENKHOA);
+    data.TENKHOA = ten;
+
+    const allKhoa = await khoaRepository.getAll();
+
+    // Check trùng tên khoa (ngoại trừ khoa hiện tại)
+    if (allKhoa.some((k) => k.MAKHOA.trim() !== maKhoa.trim() && k.TENKHOA.trim().toLowerCase() === ten.toLowerCase())) {
+      throw new Error(`Tên khoa "${ten}" đã tồn tại!`);
+    }
+
     return khoaRepository.update(maKhoa, data);
   }
 

@@ -250,10 +250,22 @@ window.KhoaModule = {
   async handleSaveDraftRow() {
     if (this.state.editingKhoaId) {
       const ma = this.state.editingKhoaId;
-      const ten = this.khoaFormTenKhoa ? this.khoaFormTenKhoa.value.trim() : '';
+      let ten = this.khoaFormTenKhoa ? this.khoaFormTenKhoa.value.trim() : '';
 
       if (!ten) {
         Toast.warning('Vui lòng nhập đầy đủ thông tin');
+        return;
+      }
+
+      // Format tên khoa (Chữ đầu in hoa, chữ sau in thường)
+      ten = this.formatTenKhoa(ten);
+      if (this.khoaFormTenKhoa) this.khoaFormTenKhoa.value = ten;
+
+      // Kiểm tra trùng tên khoa trong danh sách hiện tại (trừ chính khoa đang sửa)
+      const currentData = this.getCurrentData();
+      const isDuplicate = currentData.some(item => item.MAKHOA !== ma && item.TENKHOA.toLowerCase() === ten.toLowerCase());
+      if (isDuplicate) {
+        Toast.warning(`Tên khoa "${ten}" đã tồn tại trong danh sách!`);
         return;
       }
 
@@ -300,14 +312,26 @@ window.KhoaModule = {
     if (this.khoaFormTenKhoa) this.state.draftKhoa.TENKHOA = this.khoaFormTenKhoa.value;
 
     const ma = this.state.draftKhoa.MAKHOA.trim();
-    const ten = this.state.draftKhoa.TENKHOA.trim();
+    let ten = this.state.draftKhoa.TENKHOA.trim();
 
     if (!ma || !ten) {
       Toast.warning('Vui lòng nhập đầy đủ thông tin khoa mới');
       return;
     }
 
-    const currentDataMap = new Map(this.getCurrentData().map(item => [item.MAKHOA, item]));
+    // Format tên khoa (Chữ đầu in hoa, chữ sau in thường)
+    ten = this.formatTenKhoa(ten);
+    if (this.khoaFormTenKhoa) this.khoaFormTenKhoa.value = ten;
+
+    // Kiểm tra trùng tên khoa trong danh sách hiện tại
+    const currentData = this.getCurrentData();
+    const isNameDuplicate = currentData.some(item => item.TENKHOA.toLowerCase() === ten.toLowerCase());
+    if (isNameDuplicate) {
+      Toast.warning(`Tên khoa "${ten}" đã tồn tại trong danh sách!`);
+      return;
+    }
+
+    const currentDataMap = new Map(currentData.map(item => [item.MAKHOA, item]));
     if (currentDataMap.has(ma)) {
       Toast.warning('Mã khoa đã tồn tại trong danh sách hiện tại');
       return;
@@ -436,6 +460,16 @@ window.KhoaModule = {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  },
+
+  formatTenKhoa(str) {
+    if (!str) return '';
+    return str
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 };
 
