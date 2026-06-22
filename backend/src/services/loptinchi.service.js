@@ -54,6 +54,19 @@ class LopTinChiService {
     return loptinchiRepository.create(data);
   }
 
+  async checkClassHasGrades(maLTC) {
+    const diemRepository = require("../repositories/diem.repository");
+    const studentsGrades = await diemRepository.getByLopTinChi(maLTC);
+    if (!studentsGrades || studentsGrades.length === 0) return false;
+
+    return studentsGrades.some(
+      (student) =>
+        (student.DIEM_CC !== null && student.DIEM_CC !== undefined) ||
+        (student.DIEM_GK !== null && student.DIEM_GK !== undefined) ||
+        (student.DIEM_CK !== null && student.DIEM_CK !== undefined)
+    );
+  }
+
   async updateLopTinChi(maLTC, data) {
     const existing = await this.getLopTinChiById(maLTC);
     const updatedNienKhoa = data.NIENKHOA !== undefined ? data.NIENKHOA : existing.NIENKHOA;
@@ -65,6 +78,13 @@ class LopTinChiService {
 
     if (isSemesterChanged && updatedNienKhoa && updatedHocKy) {
       this.validateSemesterConstraint(updatedNienKhoa, updatedHocKy);
+    }
+
+    if (data.HUYLOP !== undefined && data.HUYLOP) {
+      const hasGrades = await this.checkClassHasGrades(maLTC);
+      if (hasGrades) {
+        throw new Error("Không thể hủy lớp tín chỉ này vì đã có sinh viên có điểm");
+      }
     }
     
     const result = await loptinchiRepository.update(maLTC, data);
@@ -87,6 +107,10 @@ class LopTinChiService {
 
   async cancelLopTinChi(maLTC) {
     await this.getLopTinChiById(maLTC);
+    const hasGrades = await this.checkClassHasGrades(maLTC);
+    if (hasGrades) {
+      throw new Error("Không thể hủy lớp tín chỉ này vì đã có sinh viên có điểm");
+    }
     return loptinchiRepository.cancel(maLTC);
   }
 
