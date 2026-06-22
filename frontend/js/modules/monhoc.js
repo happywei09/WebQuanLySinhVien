@@ -1,4 +1,4 @@
-﻿window.MonHocModule = {
+window.MonHocModule = {
   async init() {
     this.cacheDOM();
     this.bindEvents();
@@ -85,7 +85,7 @@
           ? '<tr><td colspan="6" style="text-align:center;">Không có dữ liệu</td></tr>'
           : res.data.map((item, index) => {
             const actionContent = isPGV
-              ? `<button class="btn btn-primary btn-sm" onclick="window.MonHocModule.openModal('${item.MAMH}', '${item.TENMH}', ${item.SOTIET_LT}, ${item.SOTIET_TH})">Sửa</button>
+              ? `<button class="btn btn-info btn-sm" onclick="window.MonHocModule.openModal('${item.MAMH}', '${item.TENMH}', ${item.SOTIET_LT}, ${item.SOTIET_TH})">Sửa</button>
                  <button class="btn btn-danger btn-sm" onclick="window.MonHocModule.handleDelete('${item.MAMH}')">Xóa</button>`
               : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
             return `

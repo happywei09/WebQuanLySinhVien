@@ -12,7 +12,7 @@ window.TaiKhoanModule = {
   async init() {
     this.cacheDOM();
     this.bindEvents();
-    
+
     // Đang tải dữ liệu ban đầu
     await Promise.all([
       this.loadNhanVien(),
@@ -27,12 +27,12 @@ window.TaiKhoanModule = {
     this.inputUsername = document.getElementById('accUsername');
     this.inputPassword = document.getElementById('accPassword');
     this.selectRole = document.getElementById('accRole');
-    
+
     this.btnCreate = document.getElementById('btnCreateAccount');
     this.btnDelete = document.getElementById('btnDeleteAccount');
     this.btnExit = document.getElementById('btnExit');
     this.btnRefresh = document.getElementById('btnRefreshAccounts');
-    
+
     this.tableBody = document.getElementById('accountsTableBody');
   },
 
@@ -41,7 +41,7 @@ window.TaiKhoanModule = {
     this.selectNhanVien.addEventListener('change', (e) => {
       const maNV = e.target.value;
       this.inputMaNV.value = maNV;
-      
+
       // Gợi ý luôn tên tài khoản dựa trên MãNV
       if (maNV) {
         this.inputUsername.value = maNV.toLowerCase();
@@ -82,7 +82,7 @@ window.TaiKhoanModule = {
       const res = await API.get('/accounts/nhanvien');
       if (res.success && res.data) {
         this.state.nhanVienList = res.data;
-        
+
         let html = '<option value="">-- Chọn nhân viên --</option>';
         res.data.forEach(nv => {
           html += `<option value="${nv.maNV}">${nv.hoTen} (${nv.maNV})</option>`;
@@ -120,7 +120,7 @@ window.TaiKhoanModule = {
     this.tableBody.innerHTML = '';
     list.forEach((acc, idx) => {
       const tr = document.createElement('tr');
-      
+
       // Xác định badge màu sắc cho từng Nhóm quyền
       let roleClass = 'badge-secondary';
       if (acc.ROLE === 'PGV') roleClass = 'badge-danger';
@@ -143,8 +143,8 @@ window.TaiKhoanModule = {
           </span>
         </td>
         <td style="text-align: center;">
-          <button class="btn btn-danger btn-sm-delete" data-username="${acc.USERNAME}" style="padding: 4px 8px; font-size: 12px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; background-color: rgba(239, 68, 68, 0.1); color: var(--danger-color); border: 1px solid rgba(239, 68, 68, 0.2);">
-            🗑️ Xóa
+          <button class="btn btn-danger btn-sm-delete" data-username="${acc.USERNAME}">
+             Xóa
           </button>
         </td>
       `;

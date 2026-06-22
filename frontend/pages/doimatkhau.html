@@ -12,29 +12,35 @@
 <div style="max-width: 500px; margin: 0 auto;">
   <div class="card">
     <div class="card-header">
-      <h3 class="card-title" style="color: var(--primary-color); text-transform: uppercase; font-size: 15px; font-weight: 700; letter-spacing: 0.5px;">Thay Đổi Mật Khẩu Tài Khoản</h3>
+      <h3 class="card-title"
+        style="color: var(--primary-color); text-transform: uppercase; font-size: 15px; font-weight: 700; letter-spacing: 0.5px;">
+        Thay Đổi Mật Khẩu Tài Khoản</h3>
     </div>
     <div class="card-body">
       <form id="changePasswordForm" onsubmit="return false;">
-        
+
         <div class="form-group">
           <label class="form-label required" for="oldPassword">Mật khẩu cũ</label>
-          <input type="password" id="oldPassword" class="form-control" required placeholder="Nhập mật khẩu hiện tại" autocomplete="current-password">
+          <input type="password" id="oldPassword" class="form-control" required placeholder="Nhập mật khẩu hiện tại"
+            autocomplete="current-password">
         </div>
 
         <div class="form-group">
           <label class="form-label required" for="newPassword">Mật khẩu mới</label>
-          <input type="password" id="newPassword" class="form-control" required placeholder="Nhập mật khẩu mới (tối thiểu 3 ký tự)" autocomplete="new-password">
+          <input type="password" id="newPassword" class="form-control" required
+            placeholder="Nhập mật khẩu mới (tối thiểu 3 ký tự)" autocomplete="new-password">
         </div>
 
         <div class="form-group">
           <label class="form-label required" for="confirmPassword">Xác nhận mật khẩu mới</label>
-          <input type="password" id="confirmPassword" class="form-control" required placeholder="Xác nhận lại mật khẩu mới" autocomplete="new-password">
+          <input type="password" id="confirmPassword" class="form-control" required
+            placeholder="Xác nhận lại mật khẩu mới" autocomplete="new-password">
         </div>
 
         <div style="margin-top: 30px;">
-          <button type="button" class="btn btn-primary" id="btnChangePassword" style="width: 100%; padding: 12px; font-weight: 600;">
-            <span>🔒 Cập nhật mật khẩu</span>
+          <button type="button" class="btn btn-primary" id="btnChangePassword"
+            style="width: 100%; padding: 12px; font-weight: 600;">
+            <span> Cập nhật mật khẩu</span>
           </button>
         </div>
       </form>

@@ -1,4 +1,4 @@
-﻿window.LopTinChiModule = {
+window.LopTinChiModule = {
   async init() {
     this.cacheDOM();
     this.bindEvents();
@@ -208,7 +208,7 @@
       ? '<tr><td colspan="9" style="text-align:center;">Không tìm thấy lớp tín chỉ phù hợp</td></tr>'
       : filtered.map((item) => {
         const actionBtn = this.isPGV
-          ? `<button class="btn btn-primary btn-sm" onclick="window.LopTinChiModule.openModal(${item.MALTC}, '${item.NIENKHOA}', ${item.HOCKY}, '${item.MAMH}', ${item.NHOM}, '${item.MAGV}', ${item.SOSVTOITHIEU}, ${item.HUYLOP ? 1 : 0})">Sửa</button>
+          ? `<button class="btn btn-info btn-sm" onclick="window.LopTinChiModule.openModal(${item.MALTC}, '${item.NIENKHOA}', ${item.HOCKY}, '${item.MAMH}', ${item.NHOM}, '${item.MAGV}', ${item.SOSVTOITHIEU}, ${item.HUYLOP ? 1 : 0})">Sửa</button>
                <button class="btn btn-danger btn-sm" onclick="window.LopTinChiModule.handleDelete(${item.MALTC})">Xóa</button>`
           : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
         return `

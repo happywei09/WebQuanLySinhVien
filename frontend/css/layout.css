@@ -14,8 +14,7 @@
 ==================================== */
 .sidebar {
   width: var(--sidebar-width);
-  background-color: var(--bg-surface);
-  border-right: 1px solid var(--border-color);
+  background: linear-gradient(180deg, #932120 0%, #63100f 100%);
   display: flex;
   flex-direction: column;
   transition: width var(--transition-normal);
@@ -31,11 +30,12 @@
   display: flex;
   align-items: center;
   padding: 0 20px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 2px solid var(--primary-color);
   font-weight: 700;
   font-size: 18px;
   color: var(--primary-color);
   gap: 12px;
+  background-color: var(--bg-surface);
 }
 
 .sidebar-logo {
@@ -84,16 +84,24 @@
 .menu-item {
   display: flex;
   align-items: center;
-  padding: 10px 20px;
-  color: var(--text-main);
+  padding: 10px 16px;
+  margin: 4px 12px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.75);
   transition: all var(--transition-fast);
   cursor: pointer;
 }
 
-.menu-item:hover, .menu-item.active {
-  background-color: var(--primary-light);
-  color: var(--primary-color);
-  border-right: 3px solid var(--primary-color);
+.menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.menu-item.active {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-weight: 500;
+  border-left: 3px solid #ffffff;
 }
 
 .menu-icon {
@@ -109,6 +117,14 @@
   width: 20px;
   height: 20px;
   object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.75;
+  transition: opacity var(--transition-fast);
+}
+
+.menu-item:hover .menu-icon img.sidebar-icon-img,
+.menu-item.active .menu-icon img.sidebar-icon-img {
+  opacity: 1;
 }
 
 .sidebar.collapsed .menu-item span {
@@ -131,7 +147,7 @@
 .topbar {
   height: var(--header-height);
   background-color: var(--bg-surface);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 2px solid var(--primary-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -158,6 +174,14 @@
 .btn-icon:hover {
   background-color: var(--bg-hover);
   color: var(--text-main);
+}
+
+#toggleSidebar {
+  color: var(--primary-color);
+}
+
+#toggleSidebar:hover {
+  color: var(--primary-hover);
 }
 
 .user-profile {

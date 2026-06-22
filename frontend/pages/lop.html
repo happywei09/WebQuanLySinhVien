@@ -8,8 +8,8 @@
     </div>
   </div>
   <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
-    <button class="btn btn-secondary" id="btnUndoLop">Phục hồi</button>
-    <button class="btn btn-success" id="btnCommitLop">Ghi</button>
+    <button class="btn btn-khaki" id="btnUndoLop">Phục hồi</button>
+    <button class="btn btn-revert" id="btnCommitLop">Ghi</button>
     <button class="btn btn-success" id="btnAddLop">+ Thêm lớp mới</button>
   </div>
 </div>
@@ -44,7 +44,8 @@
 </div>
 
 <div class="card lop-list-card">
-  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+  <div class="card-header"
+    style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
     <h3 class="card-title" style="margin:0;">Danh sách lớp</h3>
     <span id="lopListCount" style="font-size:13px; color:var(--text-muted);"></span>
   </div>
@@ -87,9 +88,9 @@
     <div class="no-print"
       style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 16px;">
       <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-khaki" id="btnUndoStudentInClass">Phục hồi</button>
+        <button class="btn btn-revert" id="btnCommitStudentInClass">Ghi</button>
         <button class="btn btn-success" id="btnAddStudentInClass">+ Thêm sinh viên</button>
-        <button class="btn btn-secondary" id="btnUndoStudentInClass">Phục hồi</button>
-        <button class="btn btn-success" id="btnCommitStudentInClass">Ghi</button>
       </div>
     </div>
     <div class="table-responsive lop-detail-student-scroll">
@@ -119,51 +120,59 @@
 
 
 <style>
-/* Lop list - scrollable box */
-.lop-list-card .lop-list-scroll {
-  max-height: 420px;
-  overflow-y: auto;
-}
-.lop-list-card .lop-list-scroll table thead th {
-  position: sticky;
-  top: 0;
-  background: var(--bg-surface);
-  z-index: 2;
-  border-bottom: 2px solid var(--border-color);
-}
-.lop-list-card .lop-list-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-.lop-list-card .lop-list-scroll::-webkit-scrollbar-track {
-  background: var(--bg-main);
-}
-.lop-list-card .lop-list-scroll::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 3px;
-}
+  /* Lop list - scrollable box */
+  .lop-list-card .lop-list-scroll {
+    max-height: 420px;
+    overflow-y: auto;
+  }
 
-/* Lop detail student list - scrollable box */
-.lop-detail-student-scroll {
-  max-height: 420px;
-  overflow-y: auto;
-}
-.lop-detail-student-scroll table thead th {
-  position: sticky;
-  top: 0;
-  background: var(--bg-surface);
-  z-index: 2;
-  border-bottom: 2px solid var(--border-color);
-}
-.lop-detail-student-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-.lop-detail-student-scroll::-webkit-scrollbar-track {
-  background: var(--bg-main);
-}
-.lop-detail-student-scroll::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 3px;
-}
+  .lop-list-card .lop-list-scroll table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-surface);
+    z-index: 2;
+    border-bottom: 2px solid var(--border-color);
+  }
+
+  .lop-list-card .lop-list-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .lop-list-card .lop-list-scroll::-webkit-scrollbar-track {
+    background: var(--bg-main);
+  }
+
+  .lop-list-card .lop-list-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+  }
+
+  /* Lop detail student list - scrollable box */
+  .lop-detail-student-scroll {
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+  .lop-detail-student-scroll table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-surface);
+    z-index: 2;
+    border-bottom: 2px solid var(--border-color);
+  }
+
+  .lop-detail-student-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .lop-detail-student-scroll::-webkit-scrollbar-track {
+    background: var(--bg-main);
+  }
+
+  .lop-detail-student-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+  }
 </style>
 
 <!-- Modal Thêm / Sửa Lớp -->
@@ -187,7 +196,8 @@
       <div class="form-group">
         <label class="form-label required" for="lopFormTenLop">Tên lớp</label>
         <input type="text" id="lopFormTenLop" class="form-control" placeholder="VD: Công nghệ phần mềm">
-        <small id="lopFormTenLopPreview" style="display: block; margin-top: 4px; color: var(--text-muted); font-style: italic;"></small>
+        <small id="lopFormTenLopPreview"
+          style="display: block; margin-top: 4px; color: var(--text-muted); font-style: italic;"></small>
       </div>
       <div class="form-group">
         <label class="form-label required" for="lopFormMaKhoa">Khoa</label>
@@ -253,7 +263,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" id="btnCancelStudentModal">Hủy</button>
-      <button class="btn btn-primary" id="btnSaveStudentModal">Lưu</button>
+      <button class="btn btn-primary" id="btnSaveStudentModal">Lưu tạm</button>
     </div>
   </div>
 </div>

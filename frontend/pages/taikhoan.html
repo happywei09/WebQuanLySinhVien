@@ -10,15 +10,17 @@
 </div>
 
 <div class="account-grid" style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; align-items: start;">
-  
+
   <!-- CREATE ACCOUNT FORM -->
   <div class="card">
     <div class="card-header">
-      <h3 class="card-title" style="color: var(--primary-color); text-transform: uppercase; font-size: 15px; font-weight: 700; letter-spacing: 0.5px;">Tạo Tài Khoản Đăng Nhập Chương Trình</h3>
+      <h3 class="card-title"
+        style="color: var(--primary-color); text-transform: uppercase; font-size: 15px; font-weight: 700; letter-spacing: 0.5px;">
+        Tạo Tài Khoản Đăng Nhập Chương Trình</h3>
     </div>
     <div class="card-body">
       <form id="createAccountForm" onsubmit="return false;">
-        
+
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
           <div class="form-group">
             <label class="form-label required" for="accNhanVien">Họ tên nhân viên</label>
@@ -26,7 +28,7 @@
               <option value="">-- Chọn nhân viên --</option>
             </select>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label" for="accMaNV">MãNV</label>
             <input type="text" id="accMaNV" class="form-control" readonly placeholder="Mã NV">
@@ -35,12 +37,14 @@
 
         <div class="form-group">
           <label class="form-label required" for="accUsername">Tài khoản</label>
-          <input type="text" id="accUsername" class="form-control" required placeholder="Nhập tên tài khoản login" autocomplete="username">
+          <input type="text" id="accUsername" class="form-control" required placeholder="Nhập tên tài khoản login"
+            autocomplete="username">
         </div>
 
         <div class="form-group">
           <label class="form-label required" for="accPassword">Mật mã</label>
-          <input type="password" id="accPassword" class="form-control" required placeholder="Nhập mật khẩu (tối thiểu 3 ký tự)" autocomplete="new-password">
+          <input type="password" id="accPassword" class="form-control" required
+            placeholder="Nhập mật khẩu (tối thiểu 3 ký tự)" autocomplete="new-password">
         </div>
 
         <div class="form-group">
@@ -54,15 +58,18 @@
         </div>
 
         <div style="display: flex; gap: 12px; margin-top: 30px; justify-content: space-between; flex-wrap: wrap;">
-          <button type="button" class="btn btn-primary" id="btnCreateAccount" style="flex: 1.2; min-width: 140px; padding: 12px; font-weight: 600;">
-            <span>➕ Tạo tài khoản</span>
-          </button>
-          
-          <button type="button" class="btn btn-danger" id="btnDeleteAccount" style="flex: 1.2; min-width: 140px; padding: 12px; font-weight: 600;">
-            <span>🗑️ Xóa tài khoản</span>
+          <button type="button" class="btn btn-primary" id="btnCreateAccount"
+            style="flex: 1.2; min-width: 140px; padding: 12px; font-weight: 600;">
+            <span> Tạo tài khoản</span>
           </button>
 
-          <button type="button" class="btn btn-secondary" id="btnExit" style="flex: 0.8; min-width: 80px; padding: 12px;">
+          <button type="button" class="btn btn-danger" id="btnDeleteAccount"
+            style="flex: 1.2; min-width: 140px; padding: 12px; font-weight: 600;">
+            <span> Xóa tài khoản</span>
+          </button>
+
+          <button type="button" class="btn btn-secondary" id="btnExit"
+            style="flex: 0.8; min-width: 80px; padding: 12px;">
             <span>Thoát</span>
           </button>
         </div>
@@ -74,7 +81,8 @@
   <div class="card">
     <div class="card-header">
       <h3 class="card-title">Danh Sách Tài Khoản Đăng Nhập</h3>
-      <button class="btn btn-secondary" id="btnRefreshAccounts" style="padding: 6px 12px; font-size: 12px; font-weight: 600;">🔄 Làm mới</button>
+      <button class="btn btn-secondary" id="btnRefreshAccounts"
+        style="padding: 6px 12px; font-size: 12px; font-weight: 600;">Làm mới</button>
     </div>
     <div class="card-body" style="padding: 0; overflow-x: auto;">
       <table class="table" style="width: 100%; border-collapse: collapse; margin-bottom: 0;">

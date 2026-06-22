@@ -5,7 +5,7 @@
     -webkit-appearance: none;
     width: 22px;
     height: 22px;
-    border: 2px solid #3b82f6;
+    border: 2px solid var(--primary-color);
     border-radius: 6px;
     outline: none;
     cursor: pointer;
@@ -19,13 +19,13 @@
   }
 
   .custom-checkbox:hover {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    border-color: var(--primary-hover);
+    box-shadow: 0 0 0 3px rgba(147, 33, 32, 0.15);
   }
 
   .custom-checkbox:checked {
-    background-color: #3b82f6;
-    border-color: #3b82f6;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
     transform: scale(1.05);
   }
 
@@ -85,7 +85,7 @@
 </div>
 
 <!-- Student Info Display -->
-<div id="studentInfoBox" style="background: rgba(59,130,246,0.08); padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; font-weight: 600; color: var(--primary-color); display: none;">
+<div id="studentInfoBox" style="background: rgba(147, 33, 32, 0.08); padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; font-weight: 600; color: var(--primary-color); display: none;">
   🎓 Sinh viên: <span id="studentNameDisplay">...</span> (<span id="studentCodeDisplay">...</span>) - Lớp: <span id="studentClassDisplay">...</span>
 </div>
 

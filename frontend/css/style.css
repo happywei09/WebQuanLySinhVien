@@ -8,15 +8,19 @@
 
 :root {
   /* Colors - Light Theme (Default) */
-  --primary-color: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-light: #eff6ff;
+  --primary-color: #932120;
+  --primary-hover: #731615;
+  --primary-light: #fdf2f2;
 
   --secondary-color: #475569;
   --success-color: #10b981;
   --warning-color: #f59e0b;
   --danger-color: #ef4444;
   --info-color: #3b82f6;
+  --khaki-color: #c3b091;
+  --khaki-active: #9e896a;
+  --revert-color: #6366f1;
+  --revert-active: #4f46e5;
 
   /* Backgrounds */
   --bg-main: #f8fafc;
@@ -25,7 +29,7 @@
 
   /* Borders */
   --border-color: #e2e8f0;
-  --border-focus: #93c5fd;
+  --border-focus: #fca5a5;
 
   /* Text */
   --text-main: #0f172a;
@@ -54,19 +58,23 @@
 
 /* Dark Theme Variables */
 [data-theme="dark"] {
-  --primary-color: #3b82f6;
-  --primary-hover: #60a5fa;
-  --primary-light: #1e3a8a;
+  --primary-color: #ab2b2a;
+  --primary-hover: #c94e4d;
+  --primary-light: #4c1110;
 
   --bg-main: #0f172a;
   --bg-surface: #1e293b;
   --bg-hover: #334155;
 
   --border-color: #334155;
-  --border-focus: #1d4ed8;
+  --border-focus: #ab2b2a;
 
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
+  --khaki-color: #d7c4a5;
+  --khaki-active: #b5a283;
+  --revert-color: #818cf8;
+  --revert-active: #6366f1;
 }
 
 /* ====================================

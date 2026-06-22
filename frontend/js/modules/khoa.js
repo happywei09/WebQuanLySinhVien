@@ -118,7 +118,7 @@ window.KhoaModule = {
       const pendingOp = this.state.pendingOperations[item.MAKHOA];
       const statusBadge = this.getStatusBadge(pendingOp);
       const actionContent = isPGV 
-        ? `<button class="btn btn-primary btn-sm" onclick="KhoaModule.startEditRow('${item.MAKHOA}')">Sửa</button>
+        ? `<button class="btn btn-info btn-sm" onclick="KhoaModule.startEditRow('${item.MAKHOA}')">Sửa</button>
            <button class="btn btn-danger btn-sm" onclick="KhoaModule.handleDelete('${item.MAKHOA}')">Xoá</button>`
         : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
 
@@ -148,7 +148,7 @@ window.KhoaModule = {
     };
 
     return `
-      <span style="display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; background:rgba(59,130,246,0.12); color:var(--primary-color); font-size:12px; font-weight:600;">
+      <span style="display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; background:rgba(147,33,32,0.12); color:var(--primary-color); font-size:12px; font-weight:600;">
         ${labelMap[pendingOp.type] || 'Chờ ghi'}
       </span>
     `;

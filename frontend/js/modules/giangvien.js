@@ -1,4 +1,4 @@
-﻿window.GiangVienModule = {
+window.GiangVienModule = {
   async init() {
     this.cacheDOM();
     this.bindEvents();
@@ -106,7 +106,7 @@
           ? '<tr><td colspan="7" style="text-align:center;">Không có dữ liệu</td></tr>'
           : res.data.map((item, index) => {
             const actionContent = isPGV
-              ? `<button class="btn btn-primary btn-sm" onclick="window.GiangVienModule.openModal('${item.MAGV}', '${item.HO}', '${item.TEN}', '${item.HOCVI}', '${item.HOCHAM}', '${item.MAKHOA}')">Sửa</button>
+              ? `<button class="btn btn-info btn-sm" onclick="window.GiangVienModule.openModal('${item.MAGV}', '${item.HO}', '${item.TEN}', '${item.HOCVI}', '${item.HOCHAM}', '${item.MAKHOA}')">Sửa</button>
                  <button class="btn btn-danger btn-sm" onclick="window.GiangVienModule.handleDelete('${item.MAGV}')">Xóa</button>`
               : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
             return `

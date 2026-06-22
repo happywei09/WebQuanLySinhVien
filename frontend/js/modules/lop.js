@@ -66,6 +66,7 @@ window.LopModule = {
     this.studentFormDangNghiHoc = document.getElementById('studentFormDangNghiHoc');
     this.btnSaveStudentModal = document.getElementById('btnSaveStudentModal');
     this.btnCloseStudentModal = document.getElementById('btnCloseStudentModal');
+    this.btnCancelStudentModal = document.getElementById('btnCancelStudentModal');
     this.detailMaLop = document.getElementById('detailMaLop');
     this.detailTenLop = document.getElementById('detailTenLop');
     this.detailKhoaHoc = document.getElementById('detailKhoaHoc');
@@ -122,6 +123,7 @@ window.LopModule = {
     if (this.btnCommitStudentInClass) this.btnCommitStudentInClass.onclick = () => this.handleCommitDetailStudents();
     if (this.btnSaveStudentModal) this.btnSaveStudentModal.onclick = () => this.saveStudentModal();
     if (this.btnCloseStudentModal) this.btnCloseStudentModal.onclick = () => this.closeStudentModal();
+    if (this.btnCancelStudentModal) this.btnCancelStudentModal.onclick = () => this.closeStudentModal();
 
     if (this.searchLop) {
       this.searchLop.addEventListener('input', () => this.renderTable());
@@ -248,7 +250,7 @@ window.LopModule = {
       const pendingOp = this.state.pendingOperations[item.MALOP];
       const statusBadge = this.getStatusBadge(pendingOp);
       const actionBtn = isPGV
-        ? `<button class="btn btn-primary btn-sm" onclick="LopModule.openLopModal('edit','${this.escapeJs(item.MALOP)}')">Sửa</button>
+        ? `<button class="btn btn-info btn-sm" onclick="LopModule.openLopModal('edit','${this.escapeJs(item.MALOP)}')">Sửa</button>
            <button class="btn btn-danger btn-sm" onclick="LopModule.handleDelete('${this.escapeJs(item.MALOP)}')">Xoá</button>`
         : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
 
@@ -285,7 +287,7 @@ window.LopModule = {
       update: 'Chờ cập nhật',
       delete: 'Chờ xóa'
     };
-    return `<span style="display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; background:rgba(59,130,246,0.12); color:var(--primary-color); font-size:12px; font-weight:600;">${labelMap[pendingOp.type] || 'Chờ ghi'}</span>`;
+    return `<span style="display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; background:rgba(147,33,32,0.12); color:var(--primary-color); font-size:12px; font-weight:600;">${labelMap[pendingOp.type] || 'Chờ ghi'}</span>`;
   },
 
   hasPendingChanges() {
@@ -704,20 +706,21 @@ window.LopModule = {
     students.forEach((sv, index) => {
 
       const pendingOp = this.state.detailPendingOperations[sv.MASV];
+      const statusBadge = this.getStatusBadge(pendingOp);
       const actionLabel = pendingOp?.type === 'delete' ? 'Chờ xoá' : '';
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${index + 1}</td>
         <td>${sv.MASV || ''}</td>
         <td>${sv.HO || ''}</td>
-        <td>${sv.TEN || ''}</td>
+        <td>${sv.TEN || ''} ${statusBadge}</td>
         <td>${sv.PHAI ? 'Nữ' : 'Nam'}</td>
         <td>${this.formatDateForDisplay(sv.NGAYSINH)}</td>
         <td>${sv.DIACHI || ''}</td>
         <td>${sv.DANGHIHOC ? 'Đã nghỉ' : 'Đang học'}</td>
         <td>
           <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
-            <button class="btn btn-primary btn-sm" onclick="LopModule.openStudentModal('edit','${this.escapeJs(sv.MASV)}')">Sửa</button>
+            <button class="btn btn-info btn-sm" onclick="LopModule.openStudentModal('edit','${this.escapeJs(sv.MASV)}')">Sửa</button>
             <button class="btn btn-danger btn-sm" onclick="LopModule.handleDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Xoá</button>
             ${actionLabel ? `<span style="margin-left:8px; font-size:12px; color:var(--danger-color); font-weight:600;">${actionLabel}</span>` : ''}
           </div>

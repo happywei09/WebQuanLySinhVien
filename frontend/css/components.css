@@ -58,101 +58,111 @@
 /* Primary Ghost / btn-primary */
 .button-ghost.primary,
 .btn-primary {
-  color: #007bff;
-  border-color: #007bff;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
   background-color: transparent;
 }
 
 .button-ghost.primary:hover,
 .btn-primary:hover {
-  background-color: #007bff;
+  background-color: var(--primary-color);
   color: white;
+  border-color: var(--primary-color);
 }
 
 .button-ghost.primary:active,
 .btn-primary:active {
-  background-color: #0056b3;
+  background-color: var(--primary-hover);
   color: white;
+  border-color: var(--primary-hover);
 }
 
 /* Success Ghost / btn-success */
 .button-ghost.success,
 .btn-success {
-  color: #28a745;
-  border-color: #28a745;
+  color: var(--success-color);
+  border-color: var(--success-color);
   background-color: transparent;
 }
 
 .button-ghost.success:hover,
 .btn-success:hover {
-  background-color: #28a745;
+  background-color: var(--success-color);
   color: white;
+  border-color: var(--success-color);
 }
 
 .button-ghost.success:active,
 .btn-success:active {
-  background-color: #218838;
+  background-color: #059669;
   color: white;
+  border-color: #059669;
 }
 
 /* Info Ghost / btn-info */
 .button-ghost.info,
 .btn-info {
-  color: #17a2b8;
-  border-color: #17a2b8;
+  color: var(--info-color);
+  border-color: var(--info-color);
   background-color: transparent;
 }
 
 .button-ghost.info:hover,
 .btn-info:hover {
-  background-color: #17a2b8;
+  background-color: var(--info-color);
   color: white;
+  border-color: var(--info-color);
 }
 
 .button-ghost.info:active,
 .btn-info:active {
-  background-color: #138496;
+  background-color: #2563eb;
   color: white;
+  border-color: #2563eb;
 }
 
 /* Warning Ghost / btn-warning */
 .button-ghost.warning,
 .btn-warning {
-  color: #ffda6a;
-  border-color: #ffda6a;
+  color: var(--warning-color);
+  border-color: var(--warning-color);
   background-color: transparent;
 }
 
 .button-ghost.warning:hover,
 .btn-warning:hover {
-  background-color: #ffc107;
+  background-color: var(--warning-color);
   color: #333;
+  border-color: var(--warning-color);
 }
 
 .button-ghost.warning:active,
 .btn-warning:active {
-  background-color: #e0a800;
-  color: #333;
+  background-color: #d97706;
+  color: white;
+  border-color: #d97706;
 }
 
 /* Danger Ghost / btn-danger */
 .button-ghost.danger,
 .btn-danger {
-  color: #dc3545;
-  border-color: #dc3545;
+  color: var(--danger-color);
+  border-color: var(--danger-color);
   background-color: transparent;
 }
 
 .button-ghost.danger:hover,
 .btn-danger:hover {
-  background-color: #dc3545;
+  background-color: var(--danger-color);
   color: white;
+  border-color: var(--danger-color);
 }
 
 .button-ghost.danger:active,
 .btn-danger:active {
-  background-color: #c82333;
+  background-color: #dc2626;
   color: white;
+  border-color: #dc2626;
 }
 
 /* Secondary Ghost / btn-secondary */
@@ -173,6 +183,44 @@
 .btn-secondary:active {
   background-color: #5a6268;
   color: white;
+}
+
+/* Khaki Ghost / btn-khaki */
+.btn-khaki {
+  color: var(--khaki-color);
+  border-color: var(--khaki-color);
+  background-color: transparent;
+}
+
+.btn-khaki:hover {
+  background-color: var(--khaki-color);
+  color: white;
+  border-color: var(--khaki-color);
+}
+
+.btn-khaki:active {
+  background-color: var(--khaki-active);
+  color: white;
+  border-color: var(--khaki-active);
+}
+
+/* Revert Ghost / btn-revert */
+.btn-revert {
+  color: var(--revert-color);
+  border-color: var(--revert-color);
+  background-color: transparent;
+}
+
+.btn-revert:hover {
+  background-color: var(--revert-color);
+  color: white;
+  border-color: var(--revert-color);
+}
+
+.btn-revert:active {
+  background-color: var(--revert-active);
+  color: white;
+  border-color: var(--revert-active);
 }
 
 .btn-cancel-ltc {
@@ -215,18 +263,18 @@
   font-size: 12px;
   font-weight: 500;
   border-radius: var(--radius-sm);
-  border: 2px solid #007bff;
+  border: 2px solid var(--primary-color);
   background-color: transparent;
-  color: #007bff;
+  color: var(--primary-color);
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
 }
 
 .btn-edit-sm:hover {
-  background-color: #007bff;
+  background-color: var(--primary-color);
   color: white;
-  border-color: #007bff;
+  border-color: var(--primary-color);
   transform: translateY(-1px);
 }
 
@@ -244,18 +292,18 @@
   font-size: 12px;
   font-weight: 500;
   border-radius: var(--radius-sm);
-  border: 2px solid #dc3545;
+  border: 2px solid var(--danger-color);
   background-color: transparent;
-  color: #dc3545;
+  color: var(--danger-color);
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
 }
 
 .btn-delete-sm:hover {
-  background-color: #dc3545;
+  background-color: var(--danger-color);
   color: white;
-  border-color: #dc3545;
+  border-color: var(--danger-color);
   transform: translateY(-1px);
 }
 
@@ -478,4 +526,61 @@
   justify-content: center;
   z-index: 50;
   border-radius: inherit;
+}
+
+/* ====================================
+   DASHBOARD METRICS THEMES
+==================================== */
+.card-metric-primary {
+  background-color: var(--primary-light) !important;
+  border: 1px solid rgba(147, 33, 32, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(147, 33, 32, 0.03) !important;
+}
+.card-metric-primary .metric-value {
+  color: var(--primary-color) !important;
+}
+
+.card-metric-success {
+  background-color: #ecfdf5 !important;
+  border: 1px solid rgba(16, 185, 129, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.03) !important;
+}
+.card-metric-success .metric-value {
+  color: var(--success-color) !important;
+}
+
+.card-metric-warning {
+  background-color: #fffbeb !important;
+  border: 1px solid rgba(245, 158, 11, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.03) !important;
+}
+.card-metric-warning .metric-value {
+  color: var(--warning-color) !important;
+}
+
+.card-metric-danger {
+  background-color: #fff1f2 !important;
+  border: 1px solid rgba(239, 68, 68, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.03) !important;
+}
+.card-metric-danger .metric-value {
+  color: var(--danger-color) !important;
+}
+
+/* Dark Mode for Metric Cards */
+[data-theme="dark"] .card-metric-primary {
+  background-color: rgba(171, 43, 42, 0.1) !important;
+  border-color: rgba(171, 43, 42, 0.25) !important;
+}
+[data-theme="dark"] .card-metric-success {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  border-color: rgba(16, 185, 129, 0.25) !important;
+}
+[data-theme="dark"] .card-metric-warning {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  border-color: rgba(245, 158, 11, 0.25) !important;
+}
+[data-theme="dark"] .card-metric-danger {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
 }
