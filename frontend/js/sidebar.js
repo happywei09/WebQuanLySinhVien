@@ -90,7 +90,14 @@ class Sidebar {
         Array.from(oldScript.attributes).forEach(attr => {
           newScript.setAttribute(attr.name, attr.value);
         });
-        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+        // Chỉ copy innerHTML cho inline script (không có src)
+        // External script (có src) không cần text node - thêm text node có thể khiến browser bỏ qua src
+        if (!oldScript.src) {
+          newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+        }
+        newScript.onerror = function() {
+          console.error('Lỗi tải script:', oldScript.src || 'inline script');
+        };
         oldScript.parentNode.replaceChild(newScript, oldScript);
       });
 

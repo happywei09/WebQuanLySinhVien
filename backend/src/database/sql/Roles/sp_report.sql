@@ -33,36 +33,50 @@ BEGIN
     ;WITH FilteredDangKy AS (
         SELECT MALTC, DIEM_CC, DIEM_GK, DIEM_CK
         FROM DANGKY
-        WHERE MASV = @MASV AND HUYDANGKY = 0
+        WHERE MASV = @MASV AND (HUYDANGKY = 0 OR HUYDANGKY IS NULL)
     ),
     ScoreBySubject AS (
         SELECT
             mh.MAMH,
             mh.TENMH,
+            dk.DIEM_CC,
+            dk.DIEM_GK,
+            dk.DIEM_CK,
             CASE 
-                WHEN dk.DIEM_CK IS NULL THEN NULL  -- Chưa nhập điểm → không tính
+                WHEN dk.DIEM_CK IS NULL THEN NULL  -- Chưa nhập điểm -> không tính
                 ELSE ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + dk.DIEM_CK * 0.6
-            END AS DIEM
+            END AS DIEM,
+            ltc.NIENKHOA,
+            ltc.HOCKY,
+            ROW_NUMBER() OVER (
+                PARTITION BY mh.MAMH 
+                ORDER BY 
+                    CASE WHEN dk.DIEM_CK IS NULL THEN 0 ELSE 1 END DESC,
+                    CASE 
+                        WHEN dk.DIEM_CK IS NULL THEN NULL
+                        ELSE ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + dk.DIEM_CK * 0.6
+                    END DESC,
+                    ltc.NIENKHOA DESC,
+                    ltc.HOCKY DESC
+            ) AS rn
         FROM FilteredDangKy dk
         INNER JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
         INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
-    ),
-    BestScorePerSubject AS (
-        SELECT
-            MAMH,
-            TENMH,
-            MAX(DIEM) AS DIEM
-        FROM ScoreBySubject
-        WHERE DIEM IS NOT NULL  -- Bỏ môn chưa nhập điểm
-        GROUP BY MAMH, TENMH
     )
     SELECT
         ROW_NUMBER() OVER (ORDER BY TENMH) AS STT,
         TENMH,
-        DIEM
-    FROM BestScorePerSubject
+        DIEM_CC,
+        DIEM_GK,
+        DIEM_CK,
+        DIEM,
+        NIENKHOA,
+        HOCKY
+    FROM ScoreBySubject
+    WHERE rn = 1
     ORDER BY TENMH;
 END;
+
 GO
 
 -- BÁO CÁO: Bảng điểm tổng kết theo lớp (Dynamic Pivot + Bảng tạm)
