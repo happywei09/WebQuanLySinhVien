@@ -50,7 +50,15 @@ document.addEventListener('pageLoaded', function (e) {
           var sv = svRes.data;
           domRefs.lblFullName.textContent = sv.HO + ' ' + sv.TEN;
           if (domRefs.lblNgaySinh) {
-            domRefs.lblNgaySinh.textContent = sv.NGAYSINH ? new Date(sv.NGAYSINH).toLocaleDateString('vi-VN') : '-';
+            if (sv.NGAYSINH) {
+              var d = new Date(sv.NGAYSINH);
+              var dd = String(d.getDate()).padStart(2, '0');
+              var mm = String(d.getMonth() + 1).padStart(2, '0');
+              var yyyy = d.getFullYear();
+              domRefs.lblNgaySinh.textContent = dd + '/' + mm + '/' + yyyy;
+            } else {
+              domRefs.lblNgaySinh.textContent = '-';
+            }
           }
           if (domRefs.lblGioiTinh) {
             domRefs.lblGioiTinh.textContent = sv.PHAI ? 'Nữ' : 'Nam';
@@ -84,9 +92,14 @@ document.addEventListener('pageLoaded', function (e) {
       }
 
       // 3. Thiết lập ngày lập phiếu
+      var today = new Date();
+      var dateText = 'TP. Hồ Chí Minh, ngày ' + today.getDate() + ' tháng ' + (today.getMonth() + 1) + ' năm ' + today.getFullYear();
       if (domRefs.lblPrintDate) {
-        var today = new Date();
-        domRefs.lblPrintDate.textContent = 'Hà Nội, ngày ' + today.getDate() + ' tháng ' + (today.getMonth() + 1) + ' năm ' + today.getFullYear();
+        domRefs.lblPrintDate.textContent = dateText;
+      }
+      var topDateEl = document.getElementById('pdPrintDateTop');
+      if (topDateEl) {
+        topDateEl.textContent = dateText;
       }
 
       domRefs.tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Đang tải điểm...</td></tr>';
@@ -135,6 +148,41 @@ document.addEventListener('pageLoaded', function (e) {
   function applyFilters() {
     var nienKhoaOpt = domRefs.filterNienKhoa ? domRefs.filterNienKhoa.value : 'ALL';
     var hocKyOpt = domRefs.filterHocKy ? domRefs.filterHocKy.value : 'ALL';
+
+    // Cập nhật thông tin niên khóa và học kỳ hiển thị theo bộ lọc
+    var periodContainer = document.querySelector('.grade-period-info');
+    var printNK = document.getElementById('pdNienKhoaText');
+    var printHK = document.getElementById('pdHocKyText');
+
+    if (periodContainer && printNK && printHK) {
+      var spanNK = printNK.parentElement;
+      var spanHK = printHK.parentElement;
+
+      if (nienKhoaOpt === 'ALL' && hocKyOpt === 'ALL') {
+        // In tất cả niên khóa và học kỳ -> không in niên khóa và học kỳ
+        periodContainer.classList.add('no-print');
+      } else {
+        periodContainer.classList.remove('no-print');
+
+        if (nienKhoaOpt !== 'ALL' && hocKyOpt === 'ALL') {
+          // Chỉ in niên khóa, ẩn học kỳ
+          spanNK.classList.remove('no-print');
+          printNK.textContent = nienKhoaOpt;
+          spanHK.classList.add('no-print');
+        } else if (nienKhoaOpt === 'ALL' && hocKyOpt !== 'ALL') {
+          // Chỉ in học kỳ, ẩn niên khóa
+          spanNK.classList.add('no-print');
+          spanHK.classList.remove('no-print');
+          printHK.textContent = 'Học kỳ ' + hocKyOpt;
+        } else {
+          // In cả hai
+          spanNK.classList.remove('no-print');
+          printNK.textContent = nienKhoaOpt;
+          spanHK.classList.remove('no-print');
+          printHK.textContent = hocKyOpt;
+        }
+      }
+    }
 
     var filteredData = allGradesData.filter(function (row) {
       var rowYear = row.NIENKHOA ? row.NIENKHOA.trim() : '';

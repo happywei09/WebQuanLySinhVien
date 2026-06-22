@@ -251,6 +251,13 @@ window.ReportsModule = {
       };
       this.reportHeader.innerHTML = '<h2 style="font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">' + titles[type] + '</h2><p style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">' + this.buildSubtitle(meta) + '</p>';
       this.renderReportTable(type);
+
+      // Cập nhật ngày tháng in báo cáo
+      const today = new Date();
+      const reportDateEl = document.getElementById('reportPrintDate');
+      if (reportDateEl) {
+        reportDateEl.textContent = 'TP. Hồ Chí Minh, ngày ' + today.getDate() + ' tháng ' + (today.getMonth() + 1) + ' năm ' + today.getFullYear();
+      }
     } catch (error) {
       this.tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:red;">Lỗi: ' + error.message + '</td></tr>';
       Toast.error(error.message);

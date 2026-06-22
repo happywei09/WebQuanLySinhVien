@@ -1,4 +1,26 @@
-<div class="page-header">
+<!-- Print-only official header (Hidden on screen, visible on print) -->
+<div class="print-only print-header-academic">
+  <table style="width: 100%; border: none; margin-bottom: 20px; border-collapse: collapse;">
+    <tr style="border: none;">
+      <td style="width: 45%; text-align: center; vertical-align: top; border: none; padding: 0; line-height: 1.4; color: #000; font-family: var(--font-family);">
+        <span style="font-size: 12px; text-transform: uppercase;">HỌC VIỆN CÔNG NGHỆ</span><br>
+        <span style="font-size: 12px; text-transform: uppercase; font-weight: bold;">BƯU CHÍNH VIỄN THÔNG</span>
+        <div style="width: 60px; height: 1px; background: #000; margin: 4px auto 0;"></div>
+      </td>
+      <td style="width: 55%; text-align: center; vertical-align: top; border: none; padding: 0; line-height: 1.4; color: #000; font-family: var(--font-family);">
+        <span style="font-size: 12px; font-weight: bold; text-transform: uppercase;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</span><br>
+        <span style="font-size: 12px; font-weight: bold;">Độc lập - Tự do - Hạnh phúc</span>
+        <div style="width: 100px; height: 1px; background: #000; margin: 4px auto 0;"></div>
+      </td>
+    </tr>
+  </table>
+  
+  <div style="text-align: center; margin: 25px 0 20px;">
+    <h2 style="font-size: 20px; font-weight: bold; text-transform: uppercase; margin: 0; color: #000; letter-spacing: 0.5px;">PHIẾU ĐIỂM CÁ NHÂN</h2>
+  </div>
+</div>
+
+<div class="page-header no-print">
   <div>
     <h1 class="page-title">Phiếu Điểm Cá Nhân</h1>
     <div class="breadcrumb">
@@ -14,10 +36,15 @@
 </div>
 
 <div class="card">
-  <div class="card-header">
+  <div class="card-header no-print">
     <h3 class="card-title">Kết quả học tập cá nhân</h3>
   </div>
   <div class="card-body">
+    <!-- Ngày lập phiếu ở trên thông tin cá nhân bên phải (Chỉ hiển thị khi in) -->
+    <div class="print-only" style="text-align: right; font-style: italic; margin-bottom: 12px; font-size: 13px; color: #000; font-family: var(--font-family);">
+      <span id="pdPrintDateTop">TP. Hồ Chí Minh, ngày ..... tháng ..... năm 20...</span>
+    </div>
+
     <!-- Student profile details grid -->
     <div class="student-info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; margin-bottom: 24px; padding: 20px; background: var(--bg-hover); border-radius: var(--radius-lg); border: 1px solid var(--border-color); font-size: 14px; line-height: 1.6;">
       <div><strong>Họ và tên:</strong> <span id="pdFullName">Đang tải...</span></div>
@@ -27,6 +54,12 @@
       <div><strong>Lớp học:</strong> <span id="pdClass">Đang tải...</span></div>
       <div><strong>Khoa:</strong> <span id="pdKhoa">Đang tải...</span></div>
       <div style="grid-column: span 2;"><strong>Địa chỉ:</strong> <span id="pdDiaChi">Đang tải...</span></div>
+    </div>
+
+    <!-- Thông tin Niên khóa & Học kỳ đang xem (Chỉ hiển thị khi in) -->
+    <div class="grade-period-info print-only" style="margin-bottom: 24px; font-size: 14px; font-weight: bold; text-align: center; color: var(--text-color); font-family: var(--font-family); text-transform: uppercase; letter-spacing: 0.5px;">
+      <span style="margin-right: 24px;">Niên khóa: <span id="pdNienKhoaText">Tất cả</span></span>
+      <span>Học kỳ: <span id="pdHocKyText">Tất cả</span></span>
     </div>
     
     <!-- Bộ lọc niên khóa & học kỳ (Không hiển thị khi in) -->
@@ -82,7 +115,7 @@
           <p style="font-style: italic; color: #475569; font-size: 13px;">(Ký, ghi rõ họ tên)</p>
         </div>
         <div style="width: 300px;">
-          <p id="pdPrintDate" style="font-style: italic; margin-bottom: 8px; color: #334155;">Hà Nội, ngày ..... tháng ..... năm 20...</p>
+          <p id="pdPrintDate" style="font-style: italic; margin-bottom: 8px; color: #334155;">Thành phố Hồ Chí Minh, ngày ..... tháng ..... năm 20...</p>
           <p style="font-weight: bold; margin-bottom: 80px; color: #000;">XÁC NHẬN CỦA NHÀ TRƯỜNG</p>
           <p style="font-style: italic; color: #475569; font-size: 13px;">(Ký tên và đóng dấu)</p>
         </div>
@@ -92,6 +125,11 @@
 </div>
 
 <style>
+/* Ẩn tiêu đề in khi hiển thị trên màn hình */
+.print-only {
+  display: none !important;
+}
+
 /* CSS Counters để tự động tính STT cho các dòng hiển thị */
 #tbodyPhieuDiem {
   counter-reset: rowNumber;
@@ -104,20 +142,30 @@
 }
 
 @media print {
-  /* Hộp thoại in: Ẩn các thành phần giao diện không liên quan */
+  /* Cho phép hiển thị tiêu đề in */
+  .print-only {
+    display: block !important;
+  }
 
-  body, .app-container {
+  /* Reset cấu trúc trang để in nhiều trang không bị cắt */
+  html, body, .app-container, .main-content, .page-content {
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
     background: white !important;
     color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
+  
+  /* Ẩn các thành phần giao diện không liên quan */
   .sidebar,
   .topbar,
   .breadcrumb,
-  .page-header button,
-  .modal-overlay,
-  .toast-container,
   .no-print,
-  .filter-section {
+  .filter-section,
+  .toast-container,
+  .modal-overlay {
     display: none !important;
   }
   
@@ -126,11 +174,7 @@
     display: none !important;
   }
   
-  .main-content {
-    margin-left: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-  }
+  /* Reset Card */
   .card {
     border: none !important;
     box-shadow: none !important;
@@ -138,35 +182,29 @@
     padding: 0 !important;
     margin: 0 !important;
   }
-  .card-header {
-    display: none !important;
-  }
-  /* Tiêu đề in chính thức */
-  .page-header {
-    text-align: center !important;
-    margin-bottom: 30px !important;
-    border-bottom: 2px solid #000 !important;
-    padding-bottom: 10px !important;
-    display: block !important;
-  }
-  .page-title {
-    font-size: 26px !important;
-    text-transform: uppercase !important;
-    font-weight: bold !important;
-    color: #000 !important;
-    margin: 0 !important;
-  }
+  
   /* Bố cục thông tin sinh viên khi in */
   .student-info-grid {
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
-    margin-bottom: 30px !important;
+    margin-bottom: 20px !important;
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
-    gap: 12px 24px !important;
+    gap: 8px 24px !important;
     color: #000 !important;
+    font-size: 13px !important;
   }
+
+  /* Định dạng niên khóa/học kỳ khi in */
+  .grade-period-info {
+    color: #000 !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    margin-bottom: 20px !important;
+  }
+  
   /* Định dạng bảng in chính thức */
   .table {
     width: 100% !important;
@@ -176,19 +214,33 @@
   .table th,
   .table td {
     border: 1px solid #000 !important;
-    padding: 10px 12px !important;
+    padding: 8px 10px !important;
     color: #000 !important;
     background: transparent !important;
+    font-size: 12px !important;
   }
   .table th {
     background-color: #f1f5f9 !important;
     font-weight: bold !important;
+    text-align: center !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+  
   /* Hiển thị chân trang ký nhận */
   .print-footer {
     display: block !important;
+    margin-top: 40px !important;
+    page-break-inside: avoid !important;
+  }
+  .print-footer, .print-footer p, .print-footer div {
+    color: #000 !important;
+  }
+  
+  /* Thiết lập khổ giấy và lề in */
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
   }
 }
 </style>
