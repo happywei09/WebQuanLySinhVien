@@ -136,7 +136,7 @@ window.LopModule = {
 
   async loadData() {
     try {
-      this.tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Dang tai...</td></tr>';
+      this.tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Đang tải...</td></tr>';
       const res = await API.get('/lop');
       if (res.success) {
         this.state.originalData = res.data || [];
@@ -147,7 +147,7 @@ window.LopModule = {
         this.renderTable();
       }
     } catch (error) {
-      this.tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Loi tai du lieu lop hoc</td></tr>';
+      this.tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Lỗi tải dữ liệu lớp học</td></tr>';
       Toast.error(error.message);
     } finally {
       this.updateActionState();
@@ -170,7 +170,7 @@ window.LopModule = {
 
     if (this.filterKhoaHoc) {
       const current = this.filterKhoaHoc.value || 'ALL';
-      this.filterKhoaHoc.innerHTML = '<option value="ALL">Tat ca Khoa hoc</option>';
+      this.filterKhoaHoc.innerHTML = '<option value="ALL">Tất cả Khóa học</option>';
       const distinctKhoaHoc = [...new Set(data.map(item => item.KHOAHOC).filter(Boolean))].sort();
       distinctKhoaHoc.forEach(kh => {
         const opt = document.createElement('option');
@@ -183,7 +183,7 @@ window.LopModule = {
 
     if (this.filterKhoa) {
       const current = this.filterKhoa.value || 'ALL';
-      this.filterKhoa.innerHTML = '<option value="ALL">Tat ca Khoa</option>';
+      this.filterKhoa.innerHTML = '<option value="ALL">Tất cả Khoa</option>';
       const distinctKhoa = [...new Set(data.map(item => item.MAKHOA).filter(Boolean))].sort();
       distinctKhoa.forEach(k => {
         const opt = document.createElement('option');
@@ -236,7 +236,7 @@ window.LopModule = {
     }
 
     if (data.length === 0) {
-      this.tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 20px;">Khong tim thay lop hoc nao khop voi dieu kien loc</td></tr>';
+      this.tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 20px;">Không tìm thấy lớp học nào khớp với điều kiện lọc</td></tr>';
       return;
     }
 
@@ -281,11 +281,11 @@ window.LopModule = {
   getStatusBadge(pendingOp) {
     if (!pendingOp) return '';
     const labelMap = {
-      create: 'Cho thêm',
-      update: 'Cho cập nhật',
-      delete: 'Cho xóa'
+      create: 'Chờ thêm',
+      update: 'Chờ cập nhật',
+      delete: 'Chờ xóa'
     };
-    return `<span style="display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; background:rgba(59,130,246,0.12); color:var(--primary-color); font-size:12px; font-weight:600;">${labelMap[pendingOp.type] || 'Cho ghi'}</span>`;
+    return `<span style="display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; background:rgba(59,130,246,0.12); color:var(--primary-color); font-size:12px; font-weight:600;">${labelMap[pendingOp.type] || 'Chờ ghi'}</span>`;
   },
 
   hasPendingChanges() {
@@ -625,10 +625,10 @@ window.LopModule = {
       this.resetDetailStudentState();
       this.state.currentDetailLop = maLop;
       this.detailMaLop.textContent = maLop;
-      this.detailTenLop.textContent = 'Dang tai...';
-      this.detailKhoaHoc.textContent = 'Dang tai...';
-      this.detailMaKhoa.textContent = 'Dang tai...';
-      this.detailTbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Dang tai danh sach sinh vien...</td></tr>';
+      this.detailTenLop.textContent = 'Đang tải...';
+      this.detailKhoaHoc.textContent = 'Đang tải...';
+      this.detailMaKhoa.textContent = 'Đang tải...';
+      this.detailTbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Đang tải danh sách sinh viên...</td></tr>';
       if (this.detailSection) {
         this.detailSection.style.display = 'block';
         this.detailSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -641,7 +641,7 @@ window.LopModule = {
       ]);
 
       if (!lopRes.success) {
-        throw new Error(lopRes.message || 'Khong the tai thong tin lop');
+        throw new Error(lopRes.message || 'Không thể tải thông tin lớp');
       }
 
       const lop = lopRes.data || {};
@@ -657,7 +657,7 @@ window.LopModule = {
       this.detailTenLop.textContent = '-';
       this.detailKhoaHoc.textContent = '-';
       this.detailMaKhoa.textContent = '-';
-      this.detailTbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:red;">Loi: ${this.escapeHtml(error.message)}</td></tr>`;
+      this.detailTbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:red;">Lỗi: ${this.escapeHtml(error.message)}</td></tr>`;
       Toast.error(error.message);
     }
   },
@@ -696,7 +696,7 @@ window.LopModule = {
     this.detailTbody.innerHTML = '';
 
     if (students.length === 0 && !this.state.detailIsAddingRow) {
-      this.detailTbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Lop nay chua co sinh vien nao</td></tr>';
+      this.detailTbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Lớp này chưa có sinh viên nào</td></tr>';
       this.updateDetailActionState();
       return;
     }
@@ -704,17 +704,17 @@ window.LopModule = {
     students.forEach((sv, index) => {
 
       const pendingOp = this.state.detailPendingOperations[sv.MASV];
-      const actionLabel = pendingOp?.type === 'delete' ? 'Cho xoá' : '';
+      const actionLabel = pendingOp?.type === 'delete' ? 'Chờ xoá' : '';
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${index + 1}</td>
         <td>${sv.MASV || ''}</td>
         <td>${sv.HO || ''}</td>
         <td>${sv.TEN || ''}</td>
-        <td>${sv.PHAI ? 'Nu' : 'Nam'}</td>
+        <td>${sv.PHAI ? 'Nữ' : 'Nam'}</td>
         <td>${this.formatDateForDisplay(sv.NGAYSINH)}</td>
         <td>${sv.DIACHI || ''}</td>
-        <td>${sv.DANGHIHOC ? 'Da nghi' : 'Dang hoc'}</td>
+        <td>${sv.DANGHIHOC ? 'Đã nghỉ' : 'Đang học'}</td>
         <td>
           <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
             <button class="btn btn-primary btn-sm" onclick="LopModule.openStudentModal('edit','${this.escapeJs(sv.MASV)}')">Sửa</button>
@@ -736,14 +736,14 @@ window.LopModule = {
 
   openStudentModal(mode = 'create', maSV = '') {
     if (!this.state.currentDetailLop) {
-      Toast.warning('Vui l?ng ch?n m?t l?p tr??c');
+      Toast.warning('Vui lòng chọn một lớp trước');
       return;
     }
 
     this.state.studentModalMode = mode;
     this.state.studentModalEditingId = maSV || null;
     const student = mode === 'edit' ? this.getCurrentDetailStudents().find(x => x.MASV === maSV) : null;
-    this.studentModalTitle.textContent = mode === 'edit' ? 'S?a sinh vi?n' : 'Th?m sinh vi?n';
+    this.studentModalTitle.textContent = mode === 'edit' ? 'Sửa sinh viên' : 'Thêm sinh viên';
     this.studentFormMasv.value = student?.MASV || '';
     this.studentFormHo.value = student?.HO || '';
     this.studentFormTen.value = student?.TEN || '';
@@ -772,7 +772,7 @@ window.LopModule = {
     };
 
     if (!payload.MASV || !payload.HO || !payload.TEN) {
-      Toast.warning('Vui l?ng nh?p ??y ?? th?ng tin sinh vi?n');
+      Toast.warning('Vui lòng nhập đầy đủ thông tin sinh viên');
       return;
     }
 
@@ -787,13 +787,13 @@ window.LopModule = {
   handleSaveDraftStudentRowFromPayload(payload) {
     const currentMap = new Map(this.getCurrentDetailStudents().map(item => [item.MASV, item]));
     if (currentMap.has(payload.MASV)) {
-      Toast.warning('Ma sinh vien da ton tai trong lop nay');
+      Toast.warning('Mã sinh viên đã tồn tại trong lớp này');
       return;
     }
     this.pushDetailHistory();
     this.state.detailPendingOperations[payload.MASV] = { type: 'create', key: payload.MASV, newValue: payload };
     this.renderDetailStudentTable();
-    Toast.success('Da them sinh vien vao danh sach cho ghi');
+    Toast.success('Đã thêm sinh viên vào danh sách chờ ghi');
   },
 
   confirmEditStudentRowFromPayload(payload) {
@@ -801,7 +801,7 @@ window.LopModule = {
     this.pushDetailHistory();
     this.state.detailPendingOperations[payload.MASV] = { type: 'update', key: payload.MASV, oldValue: originalItem ? { ...originalItem } : null, newValue: payload };
     this.renderDetailStudentTable();
-    Toast.success('Da xac nhan thay doi cua sinh vien');
+    Toast.success('Đã xác nhận thay đổi của sinh viên');
   },
 
   renderEditingStudentRow(index, sv) {
@@ -923,7 +923,7 @@ window.LopModule = {
     this.btnCommitStudentInClass.disabled = count === 0;
     this.btnUndoStudentInClass.disabled = this.state.detailHistory.length === 0;
     this.btnAddStudentInClass.disabled = this.state.detailIsAddingRow || !!this.state.detailEditingStudentId || !this.state.currentDetailLop;
-    this.studentInClassPendingStatus.textContent = count > 0 ? `${count} thay doi sinh vien dang cho ghi` : '';
+    this.studentInClassPendingStatus.textContent = count > 0 ? `${count} thay đổi sinh viên đang chờ ghi` : '';
   },
 
   pushDetailHistory() {
@@ -952,13 +952,13 @@ window.LopModule = {
     };
 
     if (!payload.MASV || !payload.HO || !payload.TEN || !payload.MALOP) {
-      Toast.warning('Vui long nhap day du thong tin sinh vien');
+      Toast.warning('Vui lòng nhập đầy đủ thông tin sinh viên');
       return;
     }
 
     const currentMap = new Map(this.getCurrentDetailStudents().map(item => [item.MASV, item]));
     if (currentMap.has(payload.MASV)) {
-      Toast.warning('Ma sinh vien da ton tai trong lop nay');
+      Toast.warning('Mã sinh viên đã tồn tại trong lớp này');
       return;
     }
 
@@ -970,14 +970,14 @@ window.LopModule = {
     };
 
     this.renderDetailStudentTable();
-    Toast.success('Da them sinh vien vao danh sach cho ghi');
+    Toast.success('Đã thêm sinh viên vào danh sách chờ ghi');
   },
 
   startEditStudentRow(maSV) {
     if (this.state.detailIsAddingRow) return;
     const sv = this.getCurrentDetailStudents().find(item => item.MASV === maSV);
     if (!sv) {
-      Toast.error('Khong tim thay sinh vien de sua');
+      Toast.error('Không tìm thấy sinh viên để sửa');
       return;
     }
 
@@ -1017,7 +1017,7 @@ window.LopModule = {
     };
 
     if (!payload.HO || !payload.TEN) {
-      Toast.warning('Vui long nhap day du ho va ten sinh vien');
+      Toast.warning('Vui lòng nhập đầy đủ họ và tên sinh viên');
       return;
     }
 
@@ -1025,7 +1025,7 @@ window.LopModule = {
     const existingPending = this.state.detailPendingOperations[payload.MASV];
 
     if (existingPending && existingPending.type === 'delete') {
-      Toast.warning('Sinh vien nay dang cho xoa, khong the sửa');
+      Toast.warning('Sinh viên này đang chờ xóa, không thể sửa');
       return;
     }
 
@@ -1175,7 +1175,7 @@ window.LopModule = {
 
     const existingPending = this.state.pendingOperations[maLop];
     if (existingPending && existingPending.type === 'delete') {
-      Toast.info('Lop nay da nam trong danh sach cho xoa');
+      Toast.info('Lớp này đã nằm trong danh sách chờ xóa');
       return;
     }
 
