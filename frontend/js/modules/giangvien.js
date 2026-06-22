@@ -131,9 +131,9 @@ window.GiangVienModule = {
               <td>${index + 1}</td>
               <td>${item.MAGV}</td>
               <td>${item.HO} ${item.TEN}</td>
-              <td>${item.HOCVI || ''}</td>
-              <td>${item.HOCHAM || ''}</td>
-              <td>${item.CHUYENMON || ''}</td>
+              <td>${item.HOCVI || '-'}</td>
+              <td>${item.HOCHAM || '-'}</td>
+              <td>${item.CHUYENMON || '-'}</td>
               <td>${item.MAKHOA}</td>
               <td>
                 <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">

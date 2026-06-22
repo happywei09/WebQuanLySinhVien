@@ -135,6 +135,11 @@ window.MonHocModule = {
       return;
     }
 
+    if (Number(lt) === 0 && Number(th) === 0) {
+      Toast.warning('Số tiết lý thuyết và thực hành không thể đồng thời bằng 0');
+      return;
+    }
+
     try {
       this.btnSave.disabled = true;
       let res;

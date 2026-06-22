@@ -12,7 +12,8 @@
 
 <div class="card" style="margin-bottom: 24px;">
   <div class="card-body">
-    <div class="form-row" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: end;">
+    <div class="form-row"
+      style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: end;">
       <div class="form-group" style="margin-bottom: 0;">
         <label class="form-label" for="filterNienKhoa">Niên khóa</label>
         <select id="filterNienKhoa" class="form-control">
@@ -48,7 +49,7 @@
 
 <div class="card">
   <div class="table-responsive">
-    <table class="table">
+    <table class="table" style="text-align: center;">
       <thead>
         <tr>
           <th>Mã LTC</th>
@@ -57,13 +58,15 @@
           <th>Tên môn học</th>
           <th>Nhóm</th>
           <th>Giảng viên</th>
-          <th>Số SV Min</th>
+          <th>Số SV Tối Thiểu</th>
           <th>Hủy lớp</th>
           <th>Thao tác</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td colspan="9" style="text-align:center;">Dữ liệu từ SP_GET_DS_LOP_TIN_CHI</td></tr>
+        <tr>
+          <td colspan="9" style="text-align:center;">Dữ liệu từ SP_GET_DS_LOP_TIN_CHI</td>
+        </tr>
       </tbody>
     </table>
   </div>
