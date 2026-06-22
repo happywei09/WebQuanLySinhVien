@@ -563,7 +563,8 @@ BEGIN
         ltc.HUYLOP
     FROM LOPTINCHI ltc
     INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
-    INNER JOIN GIANGVIEN gv ON ltc.MAGV = gv.MAGV;
+    INNER JOIN GIANGVIEN gv ON ltc.MAGV = gv.MAGV
+    ORDER BY ltc.MALTC DESC;
 END;
 GO
 
@@ -1157,7 +1158,7 @@ BEGIN
     INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
     INNER JOIN GIANGVIEN gv ON ltc.MAGV = gv.MAGV
     LEFT JOIN #DangKyCount dkc ON dkc.MALTC = ltc.MALTC
-    ORDER BY ltc.MALTC;
+    ORDER BY ltc.MALTC DESC;
 
     DROP TABLE #DangKyCount;
     DROP TABLE #FilteredLopTinChi;
