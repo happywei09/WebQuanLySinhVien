@@ -34,13 +34,17 @@ window.GiangVienModule = {
               </div>
               <div style="display: flex; gap: 16px;">
                 <div class="form-group" style="flex: 1;">
-                  <label class="form-label required">Học vị</label>
-                  <input type="text" id="hocviGV" class="form-control" required>
+                  <label class="form-label">Học vị</label>
+                  <input type="text" id="hocviGV" class="form-control" placeholder="Không bắt buộc">
                 </div>
                 <div class="form-group" style="flex: 1;">
-                  <label class="form-label required">Học hàm</label>
-                  <input type="text" id="hochamGV" class="form-control" required>
+                  <label class="form-label">Học hàm</label>
+                  <input type="text" id="hochamGV" class="form-control" placeholder="Không bắt buộc">
                 </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Chuyên môn</label>
+                <input type="text" id="chuyenmonGV" class="form-control" placeholder="Không bắt buộc">
               </div>
               <div class="form-group">
                 <label class="form-label required">Khoa trực thuộc</label>
@@ -65,6 +69,7 @@ window.GiangVienModule = {
     this.inputTen = document.getElementById('tenGV');
     this.inputHocVi = document.getElementById('hocviGV');
     this.inputHocHam = document.getElementById('hochamGV');
+    this.inputChuyenMon = document.getElementById('chuyenmonGV');
     this.selectKhoa = document.getElementById('khoaGV');
   },
 
@@ -99,14 +104,17 @@ window.GiangVienModule = {
     const isPGV = user && user.role === 'PGV';
 
     try {
-      this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Đang tải...</td></tr>';
+      this.tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Đang tải...</td></tr>';
       const res = await API.get('/giangvien');
       if (res.success) {
         this.tbody.innerHTML = res.data.length === 0 
-          ? '<tr><td colspan="7" style="text-align:center;">Không có dữ liệu</td></tr>'
+          ? '<tr><td colspan="8" style="text-align:center;">Không có dữ liệu</td></tr>'
           : res.data.map((item, index) => {
+            const safeHocVi = (item.HOCVI || '').replace(/'/g, "\\'");
+            const safeHocHam = (item.HOCHAM || '').replace(/'/g, "\\'");
+            const safeChuyenMon = (item.CHUYENMON || '').replace(/'/g, "\\'");
             const actionContent = isPGV
-              ? `<button class="btn btn-info btn-sm" onclick="window.GiangVienModule.openModal('${item.MAGV}', '${item.HO}', '${item.TEN}', '${item.HOCVI}', '${item.HOCHAM}', '${item.MAKHOA}')">Sửa</button>
+              ? `<button class="btn btn-info btn-sm" onclick="window.GiangVienModule.openModal('${item.MAGV}', '${item.HO}', '${item.TEN}', '${safeHocVi}', '${safeHocHam}', '${safeChuyenMon}', '${item.MAKHOA}')">Sửa</button>
                  <button class="btn btn-danger btn-sm" onclick="window.GiangVienModule.handleDelete('${item.MAGV}')">Xóa</button>`
               : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
             return `
@@ -114,8 +122,9 @@ window.GiangVienModule = {
               <td>${index + 1}</td>
               <td>${item.MAGV}</td>
               <td>${item.HO} ${item.TEN}</td>
-              <td>${item.HOCVI}</td>
-              <td>${item.HOCHAM}</td>
+              <td>${item.HOCVI || ''}</td>
+              <td>${item.HOCHAM || ''}</td>
+              <td>${item.CHUYENMON || ''}</td>
               <td>${item.MAKHOA}</td>
               <td>
                 <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
@@ -128,7 +137,7 @@ window.GiangVienModule = {
     } catch (error) { Toast.error(error.message); }
   },
 
-  openModal(ma = '', ho = '', ten = '', hocvi = '', hocham = '', khoa = '') {
+  openModal(ma = '', ho = '', ten = '', hocvi = '', hocham = '', chuyenmon = '', khoa = '') {
     this.isEdit = !!ma;
     document.getElementById('modalTitleGV').textContent = this.isEdit ? 'Sửa Giảng Viên' : 'Thêm Giảng Viên';
     
@@ -138,6 +147,7 @@ window.GiangVienModule = {
     this.inputTen.value = ten;
     this.inputHocVi.value = hocvi;
     this.inputHocHam.value = hocham;
+    this.inputChuyenMon.value = chuyenmon;
     this.selectKhoa.value = khoa;
     
     this.modal.classList.add('active');
@@ -154,6 +164,7 @@ window.GiangVienModule = {
     const ten = this.inputTen.value.trim();
     const hocvi = this.inputHocVi.value.trim();
     const hocham = this.inputHocHam.value.trim();
+    const chuyenmon = this.inputChuyenMon.value.trim();
     const khoa = this.selectKhoa.value;
 
     if (!ma || !ho || !ten || !khoa) {
@@ -163,7 +174,7 @@ window.GiangVienModule = {
 
     try {
       this.btnSave.disabled = true;
-      const data = { MAGV: ma, HO: ho, TEN: ten, HOCVI: hocvi, HOCHAM: hocham, MAKHOA: khoa };
+      const data = { MAGV: ma, HO: ho, TEN: ten, HOCVI: hocvi || null, HOCHAM: hocham || null, CHUYENMON: chuyenmon || null, MAKHOA: khoa };
       let res;
       if (this.isEdit) {
         res = await API.put(`/giangvien/update/${ma}`, data);
