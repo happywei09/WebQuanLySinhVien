@@ -44,8 +44,27 @@ window.ReportsModule = {
 
   bindEvents() {
     this.typeSelect.addEventListener('change', (e) => this.handleReportTypeChange(e.target.value));
-    this.selectNienKhoa.addEventListener('change', () => this.loadLopTinChiOptions());
-    this.selectHocKy.addEventListener('change', () => this.loadLopTinChiOptions());
+    
+    this.selectNienKhoa.addEventListener('change', () => {
+      this.loadLopTinChiOptions();
+      this.checkAutoGenerate();
+    });
+    
+    this.selectHocKy.addEventListener('change', () => {
+      this.loadLopTinChiOptions();
+      this.checkAutoGenerate();
+    });
+    
+    this.selectLTC.addEventListener('change', () => this.checkAutoGenerate());
+    this.selectLop.addEventListener('change', () => this.checkAutoGenerate());
+    
+    this.inputMaSV.addEventListener('change', () => this.checkAutoGenerate());
+    this.inputMaSV.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') {
+        this.checkAutoGenerate();
+      }
+    });
+
     this.btnGenerate.addEventListener('click', () => this.generateReport());
     this.btnPrint.addEventListener('click', () => window.print());
     this.btnExport.addEventListener('click', () => this.exportToExcel());
@@ -92,6 +111,8 @@ window.ReportsModule = {
           const label = (ltc.TENMH || ltc.MAMH) + ' - Nhóm ' + ltc.NHOM + ' - ' + (ltc.HOTEN_GV || '');
           this.selectLTC.innerHTML += '<option value="' + ltc.MALTC + '">' + label + '</option>';
         });
+        // Auto-run checks after options load
+        this.checkAutoGenerate();
       }
     } catch (error) {
       this.selectLTC.innerHTML = '<option value="">Lỗi tải lớp tín chỉ</option>';
@@ -118,6 +139,37 @@ window.ReportsModule = {
       this.groupSV.style.display = 'block';
     } else if (type === 'bang_diem_tk') {
       this.groupLop.style.display = 'block';
+    }
+
+    if (type !== 'dssv_ltc' && type !== 'bang_diem_mh') {
+      this.checkAutoGenerate();
+    }
+  },
+
+  checkAutoGenerate() {
+    const type = this.state.reportType;
+    if (!type) {
+      this.displayCard.style.display = 'none';
+      this.actionsCard.style.display = 'none';
+      return;
+    }
+
+    let isFullySelected = false;
+    if (type === 'ds_ltc') {
+      isFullySelected = !!this.selectNienKhoa.value && !!this.selectHocKy.value;
+    } else if (type === 'dssv_ltc' || type === 'bang_diem_mh') {
+      isFullySelected = !!this.selectNienKhoa.value && !!this.selectHocKy.value && !!this.selectLTC.value;
+    } else if (type === 'phieu_diem') {
+      isFullySelected = !!this.inputMaSV.value.trim();
+    } else if (type === 'bang_diem_tk') {
+      isFullySelected = !!this.selectLop.value;
+    }
+
+    if (isFullySelected) {
+      this.generateReport();
+    } else {
+      this.displayCard.style.display = 'none';
+      this.actionsCard.style.display = 'none';
     }
   },
 
