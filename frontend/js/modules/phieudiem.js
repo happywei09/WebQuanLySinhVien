@@ -72,6 +72,11 @@ document.addEventListener('pageLoaded', function (e) {
       } catch (err) {
         console.error('Lỗi tải chi tiết sinh viên:', err);
         domRefs.lblFullName.textContent = user.fullName || user.username;
+        if (domRefs.lblNgaySinh) domRefs.lblNgaySinh.textContent = '-';
+        if (domRefs.lblGioiTinh) domRefs.lblGioiTinh.textContent = '-';
+        if (domRefs.lblClass) domRefs.lblClass.textContent = 'N/A';
+        if (domRefs.lblDiaChi) domRefs.lblDiaChi.textContent = '-';
+        if (domRefs.lblKhoa) domRefs.lblKhoa.textContent = '-';
       }
 
       // 2. Tải thông tin lớp học & khoa
