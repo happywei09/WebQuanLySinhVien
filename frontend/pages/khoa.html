@@ -21,12 +21,12 @@
 </div>
 
 <div class="card khoa-list-card">
-  <div class="card-header">
-    <div style="display: flex; gap: 12px; align-items: center; width: 100%; max-width: 520px; flex-wrap: wrap;">
-      <input type="text" id="searchKhoa" class="form-control" placeholder="Tìm kiếm khoa...">
-      <button class="btn btn-secondary" id="btnSearchKhoa">Tìm</button>
-      <span id="khoaPendingStatus" style="font-size: 13px; color: var(--text-muted);"></span>
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+    <div style="display: flex; gap: 12px; align-items: center; width: 100%; max-width: 400px; flex: 1;">
+      <input type="text" id="searchKhoa" class="form-control" placeholder="Tìm kiếm khoa..." style="flex: 1;">
+      <button class="btn btn-secondary" id="btnSearchKhoa" style="flex-shrink: 0;">Tìm</button>
     </div>
+    <span id="khoaPendingStatus" style="font-size: 13px; color: var(--text-muted);"></span>
   </div>
   <div class="table-responsive khoa-list-scroll">
     <table class="table" id="tableKhoa">

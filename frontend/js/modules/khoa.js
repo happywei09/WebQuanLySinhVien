@@ -114,11 +114,6 @@ window.KhoaModule = {
     const isPGV = user && user.role === 'PGV';
 
     data.forEach((item, index) => {
-      if (this.state.editingKhoaId === item.MAKHOA) {
-        this.renderEditingRow(index + 1, item);
-        return;
-      }
-
       const tr = document.createElement('tr');
       const pendingOp = this.state.pendingOperations[item.MAKHOA];
       const statusBadge = this.getStatusBadge(pendingOp);
@@ -142,27 +137,6 @@ window.KhoaModule = {
       `;
       this.tbody.appendChild(tr);
     });
-  },
-
-  renderEditingRow(index, item) {
-    const draft = this.state.editingDraft || { MAKHOA: item.MAKHOA, TENKHOA: item.TENKHOA || '' };
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${index}</td>
-      <td>${item.MAKHOA}</td>
-      <td><input type="text" id="editTenKhoa" class="form-control" value="${this.escapeHtml(draft.TENKHOA)}"></td>
-      <td style="text-align: center;">
-        <button class="btn btn-primary btn-sm" id="btnConfirmEditKhoa">Xác nhận</button>
-        <button class="btn btn-secondary btn-sm" id="btnCancelEditKhoa">Huỷ</button>
-      </td>
-    `;
-    this.tbody.appendChild(tr);
-
-    document.getElementById('editTenKhoa')?.addEventListener('input', (e) => {
-      this.state.editingDraft.TENKHOA = e.target.value;
-    });
-    document.getElementById('btnConfirmEditKhoa')?.addEventListener('click', () => this.confirmEditRow());
-    document.getElementById('btnCancelEditKhoa')?.addEventListener('click', () => this.cancelEditRow());
   },
   getStatusBadge(pendingOp) {
     if (!pendingOp) return '';
@@ -241,7 +215,10 @@ window.KhoaModule = {
 
   cancelAddRow() {
     this.state.isAddingRow = false;
+    this.state.editingKhoaId = null;
+    this.state.editingDraft = null;
     this.state.draftKhoa = { MAKHOA: '', TENKHOA: '' };
+    if (this.khoaFormMaKhoa) this.khoaFormMaKhoa.readOnly = false;
     this.closeAddModal();
     this.renderTable();
     this.updateActionState();
@@ -256,18 +233,69 @@ window.KhoaModule = {
     }
     this.state.editingKhoaId = ma;
     this.state.editingDraft = { MAKHOA: ma, TENKHOA: item.TENKHOA || '' };
-    this.renderTable();
-    this.updateActionState();
-  },
-
-  cancelEditRow() {
-    this.state.editingKhoaId = null;
-    this.state.editingDraft = null;
-    this.renderTable();
+    
+    if (this.khoaModalTitle) this.khoaModalTitle.textContent = 'Sửa thông tin khoa';
+    if (this.khoaFormMaKhoa) {
+      this.khoaFormMaKhoa.value = ma;
+      this.khoaFormMaKhoa.readOnly = true;
+    }
+    if (this.khoaFormTenKhoa) {
+      this.khoaFormTenKhoa.value = item.TENKHOA || '';
+    }
+    this.khoaModal?.classList.add('active');
+    setTimeout(() => this.khoaFormTenKhoa?.focus(), 0);
     this.updateActionState();
   },
 
   async handleSaveDraftRow() {
+    if (this.state.editingKhoaId) {
+      const ma = this.state.editingKhoaId;
+      const ten = this.khoaFormTenKhoa ? this.khoaFormTenKhoa.value.trim() : '';
+
+      if (!ten) {
+        Toast.warning('Vui lòng nhập đầy đủ thông tin');
+        return;
+      }
+
+      const originalItem = this.state.originalData.find(item => item.MAKHOA === ma);
+      const existingPending = this.state.pendingOperations[ma];
+
+      if (existingPending && existingPending.type === 'delete') {
+        Toast.warning('Khoa này đang chờ xoá, không thể sửa');
+        return;
+      }
+
+      this.pushHistory();
+
+      if (existingPending && existingPending.type === 'create') {
+        this.state.pendingOperations[ma] = {
+          ...existingPending,
+          newValue: { MAKHOA: ma, TENKHOA: ten }
+        };
+      } else {
+        this.state.pendingOperations[ma] = {
+          type: 'update',
+          key: ma,
+          oldValue: originalItem ? { ...originalItem } : { MAKHOA: ma, TENKHOA: '' },
+          newValue: { MAKHOA: ma, TENKHOA: ten }
+        };
+      }
+
+      const pending = this.state.pendingOperations[ma];
+      if (pending && pending.type === 'update' && pending.oldValue && pending.oldValue.TENKHOA === ten) {
+        delete this.state.pendingOperations[ma];
+      }
+
+      this.state.editingKhoaId = null;
+      this.state.editingDraft = null;
+      if (this.khoaFormMaKhoa) this.khoaFormMaKhoa.readOnly = false;
+      this.closeAddModal();
+      this.renderTable();
+      this.updateActionState();
+      Toast.success('Đã đưa thay đổi vào danh sách chờ ghi');
+      return;
+    }
+
     if (this.khoaFormMaKhoa) this.state.draftKhoa.MAKHOA = this.khoaFormMaKhoa.value;
     if (this.khoaFormTenKhoa) this.state.draftKhoa.TENKHOA = this.khoaFormTenKhoa.value;
 
@@ -298,54 +326,6 @@ window.KhoaModule = {
     this.renderTable();
     this.updateActionState();
     Toast.success('Đã thêm bản ghi vào danh sách chờ ghi');
-  },
-
-  confirmEditRow() {
-    const draft = this.state.editingDraft;
-    if (!draft) return;
-
-    const ma = draft.MAKHOA;
-    const ten = String(draft.TENKHOA || '').trim();
-
-    if (!ten) {
-      Toast.warning('Vui lòng nhập đầy đủ thông tin');
-      return;
-    }
-
-    const originalItem = this.state.originalData.find(item => item.MAKHOA === ma);
-    const existingPending = this.state.pendingOperations[ma];
-
-    if (existingPending && existingPending.type === 'delete') {
-      Toast.warning('Khoa này đang chờ xoá, không thể sửa');
-      return;
-    }
-
-    this.pushHistory();
-
-    if (existingPending && existingPending.type === 'create') {
-      this.state.pendingOperations[ma] = {
-        ...existingPending,
-        newValue: { MAKHOA: ma, TENKHOA: ten }
-      };
-    } else {
-      this.state.pendingOperations[ma] = {
-        type: 'update',
-        key: ma,
-        oldValue: originalItem ? { ...originalItem } : { MAKHOA: ma, TENKHOA: '' },
-        newValue: { MAKHOA: ma, TENKHOA: ten }
-      };
-    }
-
-    const pending = this.state.pendingOperations[ma];
-    if (pending && pending.type === 'update' && pending.oldValue && pending.oldValue.TENKHOA === ten) {
-      delete this.state.pendingOperations[ma];
-    }
-
-    this.state.editingKhoaId = null;
-    this.state.editingDraft = null;
-    this.renderTable();
-    this.updateActionState();
-    Toast.success('Đã đưa thay đổi vào danh sách chờ ghi');
   },
 
   async handleDelete(ma) {
