@@ -1,4 +1,4 @@
-﻿USE [QLDSV_HTC];
+USE [QLDSV_HTC];
 GO
 
 -- =========================================================================
@@ -147,37 +147,39 @@ CREATE OR ALTER PROCEDURE SP_REPORT_DS_LOPTINCHI
     @HOCKY INT
 AS
 BEGIN
-    -- ===== BẢNG TẠM: Chỉ đếm SV đăng ký cho các lớp thuộc niên khóa + học kỳ cần báo cáo =====
-    -- (Tránh quét toàn bộ DANGKY)
-    SELECT dk.MALTC, COUNT(dk.MASV) AS SOSV_DANGKY
-    INTO #SoSV_DangKy
-    FROM DANGKY dk
-    INNER JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
-    WHERE dk.HUYDANGKY = 0
-      AND ltc.NIENKHOA = @NIENKHOA
-      AND ltc.HOCKY = @HOCKY
-      AND ltc.HUYLOP = 0
-    GROUP BY dk.MALTC;
+    SET NOCOUNT ON; -- Tối ưu băng thông mạng
 
-    ALTER TABLE #SoSV_DangKy ADD CONSTRAINT PK_SoSV_DangKy PRIMARY KEY CLUSTERED (MALTC);
+    -- BƯỚC 1: Gom nhóm, lọc active và đếm sĩ số ném thẳng vào bảng tạm vật lý
+    SELECT 
+        dk_sub.MALTC, 
+        COUNT(dk_sub.MASV) AS SOSV_DANGKY
+    INTO #ThongKeDangKy
+    FROM DANGKY dk_sub
+    WHERE dk_sub.HUYDANGKY = 0 OR dk_sub.HUYDANGKY IS NULL
+    GROUP BY dk_sub.MALTC;
 
-    -- Bước 2: JOIN bảng tạm (nhỏ) với các bảng danh mục
+    -- BƯỚC 2: "Vả" Clustered Index trực tiếp trên bảng tạm để phép LEFT JOIN phía dưới chạy bằng INDEX SEEK
+    CREATE CLUSTERED INDEX IX_Temp_ThongKeDangKy_MALTC ON #ThongKeDangKy(MALTC);
+
+    -- BƯỚC 3: Câu lệnh chính - JOIN các bảng danh mục mục tiêu với bảng tạm sạch
     SELECT 
         ltc.MALTC,
         mh.TENMH,
         ltc.NHOM,
         gv.HO + ' ' + gv.TEN AS HOTEN_GV,
         ltc.SOSVTOITHIEU,
-        ISNULL(dk.SOSV_DANGKY, 0) AS SOSV_DANGKY
+        ISNULL(tk.SOSV_DANGKY, 0) AS SOSV_DANGKY -- Nếu lớp trống (không khớp bảng tạm) thì hiện số 0
     FROM LOPTINCHI ltc
     INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
     INNER JOIN GIANGVIEN gv ON ltc.MAGV = gv.MAGV
-    LEFT JOIN #SoSV_DangKy dk ON dk.MALTC = ltc.MALTC
+    -- LEFT JOIN với bảng tạm siêu nhỏ đã có sẵn Index
+    LEFT JOIN #ThongKeDangKy tk ON ltc.MALTC = tk.MALTC
     WHERE ltc.NIENKHOA = @NIENKHOA 
       AND ltc.HOCKY = @HOCKY 
       AND ltc.HUYLOP = 0
     ORDER BY mh.TENMH, ltc.NHOM;
 
-    DROP TABLE #SoSV_DangKy;
+    -- BƯỚC 4: Xóa bảng tạm để dọn dẹp sạch sẽ tài nguyên vùng tempdb
+    DROP TABLE #ThongKeDangKy;
 END;
 GO

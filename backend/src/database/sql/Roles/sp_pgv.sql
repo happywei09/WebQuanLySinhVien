@@ -63,6 +63,15 @@ BEGIN
 END;
 GO
 
+IF OBJECT_ID('dbo.IX_DANGKY_MALTC_SI_SO', 'IX') IS NULL
+BEGIN
+    CREATE INDEX IX_DANGKY_MALTC_SI_SO
+    ON dbo.DANGKY (MALTC)
+    INCLUDE (MASV)
+    WHERE HUYDANGKY = 0; -- Ngắn gọn, chuẩn cú pháp Filtered Index
+END;
+GO
+
 -- =========================================================================
 -- STORED PROCEDURES - LOP
 -- =========================================================================
