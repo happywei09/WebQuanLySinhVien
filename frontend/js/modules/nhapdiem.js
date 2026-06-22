@@ -445,13 +445,13 @@ window.NhapDiemModule = {
         <td>${sv.MASV}</td>
         <td>${sv.HOTEN}</td>
         <td style="text-align: center;">
-          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CC" value="${cc}" ${isFuture ? 'disabled' : ''}>
+          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CC" value="${cc}" placeholder="-" ${isFuture ? 'disabled' : ''}>
         </td>
         <td style="text-align: center;">
-          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_GK" value="${gk}" ${isFuture ? 'disabled' : ''}>
+          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_GK" value="${gk}" placeholder="-" ${isFuture ? 'disabled' : ''}>
         </td>
         <td style="text-align: center;">
-          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CK" value="${ck}" ${isFuture ? 'disabled' : ''}>
+          <input type="number" step="0.1" min="0" max="10" class="inline-input" data-sv="${sv.MASV}" data-field="DIEM_CK" value="${ck}" placeholder="-" ${isFuture ? 'disabled' : ''}>
         </td>
         <td style="text-align: center; font-weight: bold; color: var(--primary-color);" id="tk_${sv.MASV}">
           ${diemTK !== '' ? diemTK : '-'}
@@ -503,13 +503,13 @@ window.NhapDiemModule = {
     this.state.hasUnsavedChanges = isUnsaved;
     this.btnSave.disabled = !isUnsaved;
     if (isUnsaved) {
-      this.warning.textContent = '⚠️ Có thay đổi chưa lưu';
+      this.warning.textContent = ' Có thay đổi chưa lưu';
       this.warning.style.color = 'var(--warning-color)';
     } else {
       const ltc = this.getSelectedLopTinChi();
       const isFuture = ltc ? Utils.isFutureSemester(ltc.NIENKHOA, ltc.HOCKY) : false;
       if (isFuture) {
-        this.warning.textContent = '🔒 Lớp thuộc học kỳ tương lai. Chỉ xem, không thể nhập/sửa điểm.';
+        this.warning.textContent = ' Lớp thuộc học kỳ tương lai. Chỉ xem, không thể nhập/sửa điểm.';
         this.warning.style.color = 'var(--danger-color)';
       } else {
         this.warning.textContent = '';
