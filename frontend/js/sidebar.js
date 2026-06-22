@@ -32,8 +32,12 @@ class Sidebar {
       if (item.roles.includes(userRole)) {
         const isImg = item.icon.startsWith('assets/');
         const iconHtml = isImg ? `<img src="${item.icon}" alt="${item.title}" class="sidebar-icon-img" />` : item.icon;
+        let file = item.file;
+        if (item.id === 'dashboard' && userRole === 'SINHVIEN') {
+          file = 'dashboard_sinhvien.html';
+        }
         html += `
-          <div class="menu-item" data-id="${item.id}" data-file="${item.file}">
+          <div class="menu-item" data-id="${item.id}" data-file="${file}">
             <div class="menu-icon">${iconHtml}</div>
             <span>${item.title}</span>
           </div>
