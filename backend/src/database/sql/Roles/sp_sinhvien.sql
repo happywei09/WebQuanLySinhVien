@@ -13,13 +13,6 @@ BEGIN
 END;
 GO
 
-IF OBJECT_ID('dbo.IX_SINHVIEN_MASV', 'IX') IS NULL
-BEGIN
-    CREATE INDEX IX_SINHVIEN_MASV
-    ON dbo.SINHVIEN (MASV)
-    INCLUDE (HO, TEN, MALOP, PHAI, NGAYSINH, DIACHI, DANGHIHOC);
-END;
-GO
 
 -- =========================================================================
 -- STORED PROCEDURES - SINHVIEN

@@ -1,4 +1,4 @@
-USE [QLDSV_HTC];
+﻿USE [QLDSV_HTC];
 GO
 
 -- =========================================================================
@@ -22,6 +22,26 @@ CREATE OR ALTER PROCEDURE SP_DASHBOARD_GET_STATS
     @HOCKY INT = NULL
 AS
 BEGIN
+    -- ===== BẢNG TẠM 1: Lọc LOPTINCHI 1 lần duy nhất =====
+    SELECT MALTC, MAMH, NHOM, MAGV, SOSVTOITHIEU, HUYLOP
+    INTO #FilteredLopTinChi
+    FROM LOPTINCHI
+    WHERE (@MAKHOA IS NULL OR MAKHOA = @MAKHOA)
+      AND (@NIENKHOA IS NULL OR NIENKHOA = @NIENKHOA)
+      AND (@HOCKY IS NULL OR HOCKY = @HOCKY);
+
+    -- Tạo PK giúp Optimizer chọn Nested Loop thay vì Hash Join
+    ALTER TABLE #FilteredLopTinChi ADD CONSTRAINT PK_FilteredLTC PRIMARY KEY CLUSTERED (MALTC);
+
+    -- ===== BẢNG TẠM 2: Đếm số SV đăng ký 1 lần, dùng chung cho cả 2 Recordset =====
+    SELECT fltc.MALTC, COUNT(dk.MASV) AS SOSVDANGKY
+    INTO #DangKyCount
+    FROM #FilteredLopTinChi fltc
+    LEFT JOIN DANGKY dk ON dk.MALTC = fltc.MALTC AND dk.HUYDANGKY = 0
+    GROUP BY fltc.MALTC;
+
+    ALTER TABLE #DangKyCount ADD CONSTRAINT PK_DKCount PRIMARY KEY CLUSTERED (MALTC);
+
     -- Recordset 0: Thống kê tổng quan
     DECLARE @TotalStudents INT;
     DECLARE @OpenClasses INT;
@@ -33,47 +53,33 @@ BEGIN
     INNER JOIN LOP l ON sv.MALOP = l.MALOP
     WHERE (@MAKHOA IS NULL OR l.MAKHOA = @MAKHOA);
 
-    ;WITH FilteredLopTinChi AS (
-        SELECT ltc.MALTC, ltc.HUYLOP
-        FROM LOPTINCHI ltc
-        WHERE (@MAKHOA IS NULL OR ltc.MAKHOA = @MAKHOA)
-          AND (@NIENKHOA IS NULL OR ltc.NIENKHOA = @NIENKHOA)
-          AND (@HOCKY IS NULL OR ltc.HOCKY = @HOCKY)
-    )
     SELECT
-        @OpenClasses = COUNT(CASE WHEN fltc.HUYLOP = 0 THEN 1 END),
-        @TotalClasses = COUNT(*) ,
-        @TotalRegistrations = COUNT(dk.MASV)
-    FROM FilteredLopTinChi fltc
-    LEFT JOIN DANGKY dk
-      ON dk.MALTC = fltc.MALTC
-     AND dk.HUYDANGKY = 0;
+        @OpenClasses = SUM(CASE WHEN fltc.HUYLOP = 0 THEN 1 ELSE 0 END),
+        @TotalClasses = COUNT(*),
+        @TotalRegistrations = SUM(dkc.SOSVDANGKY)
+    FROM #FilteredLopTinChi fltc
+    INNER JOIN #DangKyCount dkc ON dkc.MALTC = fltc.MALTC;
 
     SELECT @TotalStudents AS TotalStudents,
            @OpenClasses AS OpenClasses,
            @TotalClasses AS TotalClasses,
            @TotalRegistrations AS TotalRegistrations;
 
-    -- Recordset 1: Chi tiết các lớp tín chỉ
-    ;WITH FilteredLopTinChi AS (
-        SELECT MALTC, MAMH, NHOM, MAGV, SOSVTOITHIEU
-        FROM LOPTINCHI ltc
-        WHERE (@MAKHOA IS NULL OR ltc.MAKHOA = @MAKHOA)
-          AND (@NIENKHOA IS NULL OR ltc.NIENKHOA = @NIENKHOA)
-          AND (@HOCKY IS NULL OR ltc.HOCKY = @HOCKY)
-    )
+    -- Recordset 1: Chi tiết các lớp tín chỉ (dùng lại cả 2 bảng tạm)
     SELECT 
         ltc.MALTC,
         mh.TENMH,
         ltc.NHOM,
         gv.HO + ' ' + gv.TEN AS TEN_GV,
         ltc.SOSVTOITHIEU,
-        COUNT(dk.MASV) AS SOSVDANGKY
-    FROM FilteredLopTinChi ltc
+        ISNULL(dkc.SOSVDANGKY, 0) AS SOSVDANGKY
+    FROM #FilteredLopTinChi ltc
     INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
     INNER JOIN GIANGVIEN gv ON ltc.MAGV = gv.MAGV
-    LEFT JOIN DANGKY dk ON dk.MALTC = ltc.MALTC AND dk.HUYDANGKY = 0
-    GROUP BY ltc.MALTC, mh.TENMH, ltc.NHOM, gv.HO, gv.TEN, ltc.SOSVTOITHIEU
+    LEFT JOIN #DangKyCount dkc ON dkc.MALTC = ltc.MALTC
     ORDER BY ltc.MALTC;
+
+    DROP TABLE #DangKyCount;
+    DROP TABLE #FilteredLopTinChi;
 END;
 GO

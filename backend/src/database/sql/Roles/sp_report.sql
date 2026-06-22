@@ -1,4 +1,4 @@
-USE [QLDSV_HTC];
+﻿USE [QLDSV_HTC];
 GO
 
 -- =========================================================================
@@ -39,75 +39,87 @@ BEGIN
         SELECT
             mh.MAMH,
             mh.TENMH,
-            MAX(
-                ISNULL(dk.DIEM_CC, 0) * 0.1 +
-                ISNULL(dk.DIEM_GK, 0) * 0.3 +
-                ISNULL(dk.DIEM_CK, 0) * 0.6
-            ) AS DIEM
+            CASE 
+                WHEN dk.DIEM_CK IS NULL THEN NULL  -- Chưa nhập điểm → không tính
+                ELSE ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + dk.DIEM_CK * 0.6
+            END AS DIEM
         FROM FilteredDangKy dk
         INNER JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
         INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
-        GROUP BY mh.MAMH, mh.TENMH
+    ),
+    BestScorePerSubject AS (
+        SELECT
+            MAMH,
+            TENMH,
+            MAX(DIEM) AS DIEM
+        FROM ScoreBySubject
+        WHERE DIEM IS NOT NULL  -- Bỏ môn chưa nhập điểm
+        GROUP BY MAMH, TENMH
     )
     SELECT
         ROW_NUMBER() OVER (ORDER BY TENMH) AS STT,
         TENMH,
         DIEM
-    FROM ScoreBySubject
+    FROM BestScorePerSubject
     ORDER BY TENMH;
 END;
 GO
 
--- BÁO CÁO: Bảng điểm tổng kết theo lớp (Dynamic Pivot)
+-- BÁO CÁO: Bảng điểm tổng kết theo lớp (Dynamic Pivot + Bảng tạm)
 CREATE OR ALTER PROCEDURE SP_REPORT_BANGDIEM_TONGKET
     @MALOP NCHAR(10)
 AS
 BEGIN
+    -- ===== BẢNG TẠM: Gom dữ liệu điểm thô, chỉ lấy SV có đăng ký =====
+    -- Dùng INNER JOIN thay vì LEFT JOIN để tránh phình bảng tạm với NULL rows
+    SELECT 
+        sv.MASV,
+        sv.HO,
+        sv.TEN,
+        mh.TENMH,
+        CASE 
+            WHEN dk.DIEM_CK IS NULL THEN NULL
+            ELSE ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + dk.DIEM_CK * 0.6
+        END AS DIEM_KTHP
+    INTO #DiemRaw
+    FROM SINHVIEN sv
+    INNER JOIN DANGKY dk ON sv.MASV = dk.MASV AND dk.HUYDANGKY = 0
+    INNER JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
+    INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
+    WHERE sv.MALOP = @MALOP;
+
+    -- Tạo index giúp PIVOT đọc nhanh theo TENMH
+    CREATE NONCLUSTERED INDEX IX_DiemRaw_TENMH ON #DiemRaw (TENMH) INCLUDE (MASV, HO, TEN, DIEM_KTHP);
+
+    -- Lấy danh sách tên môn học từ bảng tạm
     DECLARE @cols AS NVARCHAR(MAX),
             @query AS NVARCHAR(MAX);
 
-    -- Lấy danh sách tên tất cả môn học mà sinh viên lớp này đã học/đăng ký
     SELECT @cols = COALESCE(@cols + ', ', '') + QUOTENAME(TENMH)
-    FROM (
-        SELECT DISTINCT mh.TENMH
-        FROM DANGKY dk
-        INNER JOIN SINHVIEN sv ON dk.MASV = sv.MASV
-        INNER JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
-        INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
-        WHERE sv.MALOP = @MALOP AND dk.HUYDANGKY = 0
-    ) AS Subjects;
+    FROM (SELECT DISTINCT TENMH FROM #DiemRaw WHERE TENMH IS NOT NULL) AS Subjects;
 
     IF @cols IS NULL OR @cols = ''
     BEGIN
         -- Trả về danh sách sinh viên cơ bản nếu chưa có đăng ký môn nào
-        SELECT MASV, HO, TEN 
+        SELECT DISTINCT MASV, HO, TEN 
         FROM SINHVIEN 
         WHERE MALOP = @MALOP;
+        DROP TABLE #DiemRaw;
         RETURN;
     END
 
-    -- Sử dụng Dynamic SQL để pivot kết quả điểm tổng kết
-    SET @query = '
-    SELECT MASV, HO, TEN, ' + @cols + '
-    FROM (
-        SELECT 
-            sv.MASV,
-            sv.HO,
-            sv.TEN,
-            mh.TENMH,
-            (ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + ISNULL(dk.DIEM_CK, 0) * 0.6) AS DIEM_KTHP
-        FROM SINHVIEN sv
-        LEFT JOIN DANGKY dk ON sv.MASV = dk.MASV AND dk.HUYDANGKY = 0
-        LEFT JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
-        LEFT JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
-        WHERE sv.MALOP = ''' + @MALOP + '''
-    ) src
+    -- PIVOT chỉ trên bảng tạm nhỏ - không cần JOIN lại 4 bảng lớn
+    SET @query = N'
+    SELECT MASV, HO, TEN, ' + @cols + N'
+    FROM #DiemRaw
     PIVOT (
         MAX(DIEM_KTHP)
-        FOR TENMH IN (' + @cols + ')
+        FOR TENMH IN (' + @cols + N')
     ) piv;';
 
     EXEC sp_executesql @query;
+
+    DROP TABLE #DiemRaw;
 END;
 GO
 
@@ -129,31 +141,43 @@ BEGIN
 END;
 GO
 
--- BÁO CÁO: Danh sách lớp tín chỉ của niên khoá + học kỳ
+-- BÁO CÁO: Danh sách lớp tín chỉ của niên khoá + học kỳ (Bảng tạm)
 CREATE OR ALTER PROCEDURE SP_REPORT_DS_LOPTINCHI
     @NIENKHOA NCHAR(9),
     @HOCKY INT
 AS
 BEGIN
-    ;WITH FilteredLopTinChi AS (
-        SELECT MALTC, MAMH, NHOM, MAGV, SOSVTOITHIEU
-        FROM LOPTINCHI
-        WHERE NIENKHOA = @NIENKHOA 
-          AND HOCKY = @HOCKY 
-          AND HUYLOP = 0
-    )
+    -- ===== BẢNG TẠM: Chỉ đếm SV đăng ký cho các lớp thuộc niên khóa + học kỳ cần báo cáo =====
+    -- (Tránh quét toàn bộ DANGKY)
+    SELECT dk.MALTC, COUNT(dk.MASV) AS SOSV_DANGKY
+    INTO #SoSV_DangKy
+    FROM DANGKY dk
+    INNER JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
+    WHERE dk.HUYDANGKY = 0
+      AND ltc.NIENKHOA = @NIENKHOA
+      AND ltc.HOCKY = @HOCKY
+      AND ltc.HUYLOP = 0
+    GROUP BY dk.MALTC;
+
+    ALTER TABLE #SoSV_DangKy ADD CONSTRAINT PK_SoSV_DangKy PRIMARY KEY CLUSTERED (MALTC);
+
+    -- Bước 2: JOIN bảng tạm (nhỏ) với các bảng danh mục
     SELECT 
         ltc.MALTC,
         mh.TENMH,
         ltc.NHOM,
         gv.HO + ' ' + gv.TEN AS HOTEN_GV,
         ltc.SOSVTOITHIEU,
-        COUNT(dk.MASV) AS SOSV_DANGKY
-    FROM FilteredLopTinChi ltc
+        ISNULL(dk.SOSV_DANGKY, 0) AS SOSV_DANGKY
+    FROM LOPTINCHI ltc
     INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
     INNER JOIN GIANGVIEN gv ON ltc.MAGV = gv.MAGV
-    LEFT JOIN DANGKY dk ON dk.MALTC = ltc.MALTC AND dk.HUYDANGKY = 0
-    GROUP BY ltc.MALTC, mh.TENMH, ltc.NHOM, gv.HO, gv.TEN, ltc.SOSVTOITHIEU
+    LEFT JOIN #SoSV_DangKy dk ON dk.MALTC = ltc.MALTC
+    WHERE ltc.NIENKHOA = @NIENKHOA 
+      AND ltc.HOCKY = @HOCKY 
+      AND ltc.HUYLOP = 0
     ORDER BY mh.TENMH, ltc.NHOM;
+
+    DROP TABLE #SoSV_DangKy;
 END;
 GO
