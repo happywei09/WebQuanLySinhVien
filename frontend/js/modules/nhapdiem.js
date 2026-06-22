@@ -353,7 +353,7 @@ window.NhapDiemModule = {
             <span style="display: inline-flex; align-items: center; justify-content: center; background-color: rgba(16,185,129,0.12); color: var(--success-color); padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; border: 1px solid rgba(16,185,129,0.25);">Đang mở</span>
           </td>
           <td style="text-align: center;">
-            <button class="btn btn-primary btn-sm" style="white-space: nowrap; padding: 6px 14px; font-size: 13px;" onclick="window.NhapDiemModule.selectLopForDiem(${item.MALTC})">Nhập điểm</button>
+            <button class="btn btn-info btn-sm" style="white-space: nowrap; padding: 6px 14px; font-size: 13px;" onclick="window.NhapDiemModule.selectLopForDiem(${item.MALTC})">Nhập điểm</button>
           </td>
         `;
         this.tbodyLopTinChi.appendChild(tr);
@@ -556,7 +556,7 @@ window.NhapDiemModule = {
       Toast.error(error.message || 'Lỗi khi lưu bảng điểm');
     } finally {
       this.btnSave.disabled = !this.state.hasUnsavedChanges;
-      this.btnSave.innerHTML = '💾 Lưu tất cả thay đổi';
+      this.btnSave.innerHTML = 'Lưu tất cả thay đổi';
     }
   }
 };

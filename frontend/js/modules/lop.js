@@ -76,6 +76,7 @@ window.LopModule = {
     this.btnUndoStudentInClass = document.getElementById('btnUndoStudentInClass');
     this.btnCommitStudentInClass = document.getElementById('btnCommitStudentInClass');
     this.studentInClassPendingStatus = document.getElementById('studentInClassPendingStatus');
+    this.searchStudentInClass = document.getElementById('searchStudentInClass');
   },
 
   bindEvents() {
@@ -127,6 +128,9 @@ window.LopModule = {
 
     if (this.searchLop) {
       this.searchLop.addEventListener('input', () => this.renderTable());
+    }
+    if (this.searchStudentInClass) {
+      this.searchStudentInClass.addEventListener('input', () => this.renderDetailStudentTable());
     }
     if (this.filterKhoaHoc) {
       this.filterKhoaHoc.addEventListener('change', () => this.renderTable());
@@ -625,6 +629,9 @@ window.LopModule = {
   async openDetailModal(maLop) {
     try {
       this.resetDetailStudentState();
+      if (this.searchStudentInClass) {
+        this.searchStudentInClass.value = '';
+      }
       this.state.currentDetailLop = maLop;
       this.detailMaLop.textContent = maLop;
       this.detailTenLop.textContent = 'Đang tải...';
@@ -693,12 +700,29 @@ window.LopModule = {
     return Array.from(map.values()).sort((a, b) => a.MASV.localeCompare(b.MASV));
   },
 
-  renderDetailStudentTable() {
+  getFilteredDetailStudents() {
     const students = this.getCurrentDetailStudents();
+    const query = this.searchStudentInClass ? this.searchStudentInClass.value.trim().toLowerCase() : '';
+    if (!query) return students;
+
+    return students.filter(sv => {
+      const masv = (sv.MASV || '').toLowerCase();
+      const ho = (sv.HO || '').toLowerCase();
+      const ten = (sv.TEN || '').toLowerCase();
+      const hoten = `${ho} ${ten}`.toLowerCase();
+      return masv.includes(query) || ho.includes(query) || ten.includes(query) || hoten.includes(query);
+    });
+  },
+
+  renderDetailStudentTable() {
+    const students = this.getFilteredDetailStudents();
     this.detailTbody.innerHTML = '';
 
     if (students.length === 0 && !this.state.detailIsAddingRow) {
-      this.detailTbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Lớp này chưa có sinh viên nào</td></tr>';
+      const query = this.searchStudentInClass ? this.searchStudentInClass.value.trim() : '';
+      this.detailTbody.innerHTML = query 
+        ? '<tr><td colspan="9" style="text-align:center; color: var(--text-muted);">Không tìm thấy sinh viên nào khớp với từ khóa tìm kiếm</td></tr>'
+        : '<tr><td colspan="9" style="text-align:center;">Lớp này chưa có sinh viên nào</td></tr>';
       this.updateDetailActionState();
       return;
     }

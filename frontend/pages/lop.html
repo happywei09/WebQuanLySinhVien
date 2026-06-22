@@ -86,7 +86,10 @@
   </div>
   <div class="card-body">
     <div class="no-print"
-      style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 16px; width: 100%;">
+      <div style="flex: 1; max-width: 320px; min-width: 200px;">
+        <input type="text" id="searchStudentInClass" class="form-control" placeholder="Tìm kiếm sinh viên (Mã SV, họ tên)..." />
+      </div>
       <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <button class="btn btn-khaki" id="btnUndoStudentInClass">Phục hồi</button>
         <button class="btn btn-revert" id="btnCommitStudentInClass">Ghi</button>
