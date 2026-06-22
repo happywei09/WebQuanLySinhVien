@@ -35,11 +35,20 @@ window.GiangVienModule = {
               <div style="display: flex; gap: 16px;">
                 <div class="form-group" style="flex: 1;">
                   <label class="form-label">Học vị</label>
-                  <input type="text" id="hocviGV" class="form-control" placeholder="Không bắt buộc">
+                  <select id="hocviGV" class="form-control">
+                    <option value=""> Không chọn </option>
+                    <option value="Cử nhân">Cử nhân</option>
+                    <option value="Thạc sĩ">Thạc sĩ</option>
+                    <option value="Tiến sĩ">Tiến sĩ</option>
+                  </select>
                 </div>
                 <div class="form-group" style="flex: 1;">
                   <label class="form-label">Học hàm</label>
-                  <input type="text" id="hochamGV" class="form-control" placeholder="Không bắt buộc">
+                  <select id="hochamGV" class="form-control">
+                    <option value=""> Không chọn </option>
+                    <option value="Phó Giáo sư">Phó Giáo sư</option>
+                    <option value="Giáo sư">Giáo sư</option>
+                  </select>
                 </div>
               </div>
               <div class="form-group">
@@ -84,7 +93,7 @@ window.GiangVienModule = {
         btnAdd.style.display = 'none';
       }
     }
-    
+
     document.getElementById('btnCloseModalGV').onclick = () => this.closeModal();
     document.getElementById('btnCancelModalGV').onclick = () => this.closeModal();
     this.btnSave.onclick = () => this.handleSave();
@@ -94,10 +103,10 @@ window.GiangVienModule = {
     try {
       const res = await API.get('/khoa');
       if (res.success) {
-        this.selectKhoa.innerHTML = '<option value="">-- Chọn Khoa --</option>' + 
+        this.selectKhoa.innerHTML = '<option value="">-- Chọn Khoa --</option>' +
           res.data.map(k => `<option value="${k.MAKHOA}">${k.MAKHOA} - ${k.TENKHOA}</option>`).join('');
       }
-    } catch (e) {}
+    } catch (e) { }
   },
   async loadData() {
     const user = Auth.getUser();
@@ -107,7 +116,7 @@ window.GiangVienModule = {
       this.tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Đang tải...</td></tr>';
       const res = await API.get('/giangvien');
       if (res.success) {
-        this.tbody.innerHTML = res.data.length === 0 
+        this.tbody.innerHTML = res.data.length === 0
           ? '<tr><td colspan="8" style="text-align:center;">Không có dữ liệu</td></tr>'
           : res.data.map((item, index) => {
             const safeHocVi = (item.HOCVI || '').replace(/'/g, "\\'");
@@ -140,7 +149,7 @@ window.GiangVienModule = {
   openModal(ma = '', ho = '', ten = '', hocvi = '', hocham = '', chuyenmon = '', khoa = '') {
     this.isEdit = !!ma;
     document.getElementById('modalTitleGV').textContent = this.isEdit ? 'Sửa Giảng Viên' : 'Thêm Giảng Viên';
-    
+
     this.inputMa.value = ma;
     this.inputMa.readOnly = this.isEdit;
     this.inputHo.value = ho;
@@ -149,7 +158,7 @@ window.GiangVienModule = {
     this.inputHocHam.value = hocham;
     this.inputChuyenMon.value = chuyenmon;
     this.selectKhoa.value = khoa;
-    
+
     this.modal.classList.add('active');
   },
 
