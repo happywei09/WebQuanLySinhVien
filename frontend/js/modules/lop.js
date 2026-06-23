@@ -274,7 +274,7 @@ window.LopModule = {
 
     return this.getCurrentData().filter(item => {
       const matchesKhoaHoc = selectedKhoaHoc === 'ALL' || item.KHOAHOC === selectedKhoaHoc;
-      
+
       let matchesKhoa = false;
       if (user && user.role === 'KHOA' && user.maKhoa) {
         matchesKhoa = (item.MAKHOA || '').trim() === user.maKhoa.trim();
@@ -310,7 +310,7 @@ window.LopModule = {
       }
       const pendingOp = this.state.pendingOperations[item.MALOP];
       const statusBadge = this.getStatusBadge(pendingOp);
-      
+
       let actionBtn = '';
       if (isPGV) {
         if (item._isDeleted) {
@@ -801,9 +801,9 @@ window.LopModule = {
     students.forEach((sv, index) => {
       const pendingOp = this.state.detailPendingOperations[sv.MASV];
       const statusBadge = this.getStatusBadge(pendingOp);
-      
+
       const actionLabel = pendingOp?.type === 'delete' ? 'Chờ xoá' : '';
-      
+
       const actionContent = isPGV
         ? `<button class="btn btn-info btn-sm" onclick="LopModule.openStudentModal('edit','${this.escapeJs(sv.MASV)}')">Sửa</button>
            <button class="btn btn-danger btn-sm" onclick="LopModule.handleDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Xoá</button>
@@ -816,7 +816,7 @@ window.LopModule = {
         tr.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
       }
 
-      let actionContent = '';
+      // let actionContent = '';
       if (sv._isDeleted) {
         actionContent = `<button class="btn btn-secondary btn-sm" onclick="LopModule.handleCancelDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Huỷ xoá</button>`;
       } else {

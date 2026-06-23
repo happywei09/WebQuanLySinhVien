@@ -1,4 +1,4 @@
-require("dotenv").config();
+﻿require("dotenv").config();
 
 module.exports = {
   // ====================================
@@ -65,7 +65,8 @@ module.exports = {
   // CORS
   // ====================================
   cors: {
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: (process.env.CORS_ORIGIN || 'http://localhost:3000').split(','),
     credentials: true,
   },
 };
+

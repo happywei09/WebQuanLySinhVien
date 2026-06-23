@@ -47,6 +47,7 @@ window.SinhVienModule = {
         this.inputTen = document.getElementById('tenSV');
         this.inputPhai = document.getElementById('phaiSV');
         this.selectLopModal = document.getElementById('lopSV');
+        this.inputDaNghiHoc = document.getElementById('daNghiHocSV');
     },
 
     bindEvents() {
@@ -274,6 +275,8 @@ window.SinhVienModule = {
             if (sv._isDeleted) {
                 tr.style.opacity = '0.6';
                 tr.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
+            } else if (this.state.pendingOperations[sv.MASV] && this.state.pendingOperations[sv.MASV].type === 'update') {
+                tr.style.backgroundColor = 'rgba(255, 193, 7, 0.08)';
             }
 
             const pendingOp = this.state.pendingOperations[sv.MASV];
@@ -284,7 +287,7 @@ window.SinhVienModule = {
                 if (sv._isDeleted) {
                     actionContent = `<button class="btn btn-secondary btn-sm" onclick="window.SinhVienModule.handleCancelDelete('${sv.MASV}')">Huỷ xoá</button>`;
                 } else {
-                    actionContent = `<button class="btn btn-primary btn-sm" onclick="window.SinhVienModule.openModal('${sv.MASV}', '${this.escapeJs(sv.HO || '')}', '${this.escapeJs(sv.TEN || '')}', ${sv.PHAI ? 1 : 0}, '${this.escapeJs(sv.MALOP)}')">Sửa</button>
+                    actionContent = `<button class="btn btn-primary btn-sm" onclick="window.SinhVienModule.openModal('${sv.MASV}', '${this.escapeJs(sv.HO || '')}', '${this.escapeJs(sv.TEN || '')}', ${sv.PHAI ? 1 : 0}, '${this.escapeJs(sv.MALOP)}', ${sv.DANGHIHOC ? 1 : 0})">Sửa</button>
                                      <button class="btn btn-danger btn-sm" onclick="window.SinhVienModule.handleDelete('${sv.MASV}')">Xoá</button>`;
                 }
             } else {
@@ -308,7 +311,7 @@ window.SinhVienModule = {
         });
     },
 
-    openModal(ma = '', ho = '', ten = '', phai = 0, malop = '') {
+    openModal(ma = '', ho = '', ten = '', phai = 0, malop = '', daNghiHoc = 0) {
         this.isEdit = !!ma;
         document.getElementById('modalTitleSV').textContent = this.isEdit ? 'Sửa Sinh Viên' : 'Thêm Sinh Viên';
 
@@ -317,6 +320,7 @@ window.SinhVienModule = {
         this.inputHo.value = ho;
         this.inputTen.value = ten;
         this.inputPhai.value = phai;
+        if (this.inputDaNghiHoc) this.inputDaNghiHoc.value = daNghiHoc;
 
         // Nếu có chọn một lớp cụ thể ở bộ lọc, tự động gán làm lớp mặc định trong modal
         if (this.selectLopModal) {
@@ -349,7 +353,8 @@ window.SinhVienModule = {
         }
 
         const isFemale = phai === "1";
-        const studentPayload = { MASV: ma, HO: ho, TEN: ten, PHAI: isFemale, MALOP: maLop };
+        const daNghiHoc = this.inputDaNghiHoc ? this.inputDaNghiHoc.value === '1' : false;
+        const studentPayload = { MASV: ma, HO: ho, TEN: ten, PHAI: isFemale, MALOP: maLop, DANGHIHOC: daNghiHoc };
 
         if (this.isEdit) {
             const originalItem = this.state.originalData.find(item => item.MASV === ma);
@@ -385,7 +390,8 @@ window.SinhVienModule = {
                 pending.oldValue.HO === ho &&
                 pending.oldValue.TEN === ten &&
                 !!pending.oldValue.PHAI === isFemale &&
-                pending.oldValue.MALOP === maLop
+                pending.oldValue.MALOP === maLop &&
+                !!pending.oldValue.DANGHIHOC === daNghiHoc
             ) {
                 delete this.state.pendingOperations[ma];
             }
@@ -492,7 +498,8 @@ window.SinhVienModule = {
                         HO: op.newValue.HO,
                         TEN: op.newValue.TEN,
                         PHAI: op.newValue.PHAI,
-                        MALOP: op.newValue.MALOP
+                        MALOP: op.newValue.MALOP,
+                        DANGHIHOC: op.newValue.DANGHIHOC
                     });
                 } else if (op.type === 'delete') {
                     await API.delete(`/sinhvien/delete/${op.key}`);
