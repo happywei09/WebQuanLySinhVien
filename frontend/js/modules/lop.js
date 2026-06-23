@@ -125,10 +125,19 @@ window.LopModule = {
     this.btnCommit.onclick = () => this.handleCommit();
     this.btnUndo.onclick = () => this.handleUndo();
     if (this.btnAddStudentInClass) {
-      this.btnAddStudentInClass.onclick = () => this.openStudentModal('create');
+      if (isPGV) {
+        this.btnAddStudentInClass.onclick = () => this.openStudentModal('create');
+        this.btnUndoStudentInClass.style.display = 'inline-block';
+        this.btnCommitStudentInClass.style.display = 'inline-block';
+        this.btnAddStudentInClass.style.display = 'inline-block';
+      } else {
+        this.btnUndoStudentInClass.style.display = 'none';
+        this.btnCommitStudentInClass.style.display = 'none';
+        this.btnAddStudentInClass.style.display = 'none';
+      }
     }
-    if (this.btnUndoStudentInClass) this.btnUndoStudentInClass.onclick = () => this.handleUndoDetailStudent();
-    if (this.btnCommitStudentInClass) this.btnCommitStudentInClass.onclick = () => this.handleCommitDetailStudents();
+    if (this.btnUndoStudentInClass && isPGV) this.btnUndoStudentInClass.onclick = () => this.handleUndoDetailStudent();
+    if (this.btnCommitStudentInClass && isPGV) this.btnCommitStudentInClass.onclick = () => this.handleCommitDetailStudents();
     if (this.btnSaveStudentModal) this.btnSaveStudentModal.onclick = () => this.saveStudentModal();
     if (this.btnCloseStudentModal) this.btnCloseStudentModal.onclick = () => this.closeStudentModal();
     if (this.btnCancelStudentModal) this.btnCancelStudentModal.onclick = () => this.closeStudentModal();
@@ -219,16 +228,25 @@ window.LopModule = {
     }
 
     if (this.filterKhoa) {
-      const current = this.filterKhoa.value || 'ALL';
-      this.filterKhoa.innerHTML = '<option value="ALL">Tất cả Khoa</option>';
-      const distinctKhoa = [...new Set(data.map(item => item.MAKHOA).filter(Boolean))].sort();
-      distinctKhoa.forEach(k => {
-        const opt = document.createElement('option');
-        opt.value = k;
-        opt.textContent = k;
-        this.filterKhoa.appendChild(opt);
-      });
-      this.filterKhoa.value = distinctKhoa.includes(current) ? current : 'ALL';
+      const user = Auth.getUser();
+      if (user && user.role === 'KHOA' && user.maKhoa) {
+        const maKhoaValue = user.maKhoa.trim();
+        this.filterKhoa.innerHTML = `<option value="${maKhoaValue}">${maKhoaValue}</option>`;
+        this.filterKhoa.value = maKhoaValue;
+        this.filterKhoa.disabled = true;
+      } else {
+        const current = this.filterKhoa.value || 'ALL';
+        this.filterKhoa.innerHTML = '<option value="ALL">Tất cả Khoa</option>';
+        const distinctKhoa = [...new Set(data.map(item => item.MAKHOA).filter(Boolean))].sort();
+        distinctKhoa.forEach(k => {
+          const opt = document.createElement('option');
+          opt.value = k;
+          opt.textContent = k;
+          this.filterKhoa.appendChild(opt);
+        });
+        this.filterKhoa.value = distinctKhoa.includes(current) ? current : 'ALL';
+        this.filterKhoa.disabled = false;
+      }
     }
   },
 
@@ -250,12 +268,19 @@ window.LopModule = {
   },
 
   getFilteredData() {
+    const user = Auth.getUser();
     const selectedKhoaHoc = this.filterKhoaHoc ? this.filterKhoaHoc.value : 'ALL';
     const selectedKhoa = this.filterKhoa ? this.filterKhoa.value : 'ALL';
 
     return this.getCurrentData().filter(item => {
       const matchesKhoaHoc = selectedKhoaHoc === 'ALL' || item.KHOAHOC === selectedKhoaHoc;
-      const matchesKhoa = selectedKhoa === 'ALL' || item.MAKHOA === selectedKhoa;
+      
+      let matchesKhoa = false;
+      if (user && user.role === 'KHOA' && user.maKhoa) {
+        matchesKhoa = (item.MAKHOA || '').trim() === user.maKhoa.trim();
+      } else {
+        matchesKhoa = selectedKhoa === 'ALL' || item.MAKHOA === selectedKhoa;
+      }
 
       return matchesKhoaHoc && matchesKhoa;
     });
@@ -770,11 +795,21 @@ window.LopModule = {
       return;
     }
 
-    students.forEach((sv, index) => {
+    const user = Auth.getUser();
+    const isPGV = user && user.role === 'PGV';
 
+    students.forEach((sv, index) => {
       const pendingOp = this.state.detailPendingOperations[sv.MASV];
       const statusBadge = this.getStatusBadge(pendingOp);
       
+      const actionLabel = pendingOp?.type === 'delete' ? 'Chờ xoá' : '';
+      
+      const actionContent = isPGV
+        ? `<button class="btn btn-info btn-sm" onclick="LopModule.openStudentModal('edit','${this.escapeJs(sv.MASV)}')">Sửa</button>
+           <button class="btn btn-danger btn-sm" onclick="LopModule.handleDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Xoá</button>
+           ${actionLabel ? `<span style="margin-left:8px; font-size:12px; color:var(--danger-color); font-weight:600;">${actionLabel}</span>` : ''}`
+        : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+
       const tr = document.createElement('tr');
       if (sv._isDeleted) {
         tr.style.opacity = '0.6';
