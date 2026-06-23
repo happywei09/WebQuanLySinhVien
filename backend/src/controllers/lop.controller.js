@@ -6,7 +6,7 @@ const lopService = require("../services/lop.service");
 
 const getAllLop = async (req, res, next) => {
   try {
-    const data = await lopService.getAllLop();
+    const data = await lopService.getLopForUser(req.user);
     res.json({ success: true, message: "Success", data });
   } catch (error) {
     next(error);
@@ -60,7 +60,7 @@ const deleteLop = async (req, res, next) => {
 
 const searchLop = async (req, res, next) => {
   try {
-    const data = await lopService.searchLop(req.query.keyword || "");
+    const data = await lopService.searchLop(req.query.keyword || "", req.user);
     res.json({ success: true, message: "Success", data });
   } catch (error) {
     next(error);
