@@ -8,6 +8,7 @@ window.MonHocModule = {
     originalData: [],
     pendingOperations: {},
     history: [],
+    searchKeyword: '',
     isAddingRow: false,
     editingMHId: null,
     editingDraft: null,
@@ -17,6 +18,11 @@ window.MonHocModule = {
       SOTIET_LT: '',
       SOTIET_TH: ''
     }
+  },
+
+  debounce(func, delay = 500) {
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(func, delay);
   },
 
   async init() {
@@ -30,6 +36,8 @@ window.MonHocModule = {
     this.btnCommit = document.getElementById('btnCommitMH');
     this.btnUndo = document.getElementById('btnUndoMH');
     this.pendingStatus = document.getElementById('monhocPendingStatus');
+    this.searchMH = document.getElementById('searchMH');
+    this.btnSearchMH = document.getElementById('btnSearchMH');
 
     // Dynamically create the modal if it doesn't exist
     if (!document.getElementById('modalMH')) {
@@ -104,17 +112,43 @@ window.MonHocModule = {
     
     if (this.btnCommit) this.btnCommit.onclick = () => this.handleCommit();
     if (this.btnUndo) this.btnUndo.onclick = () => this.handleUndo();
+
+    if (this.btnSearchMH) {
+      this.btnSearchMH.onclick = () => {
+        const keyword = this.searchMH ? this.searchMH.value.trim() : '';
+        this.loadData(keyword);
+      };
+    }
+
+    if (this.searchMH) {
+      this.searchMH.addEventListener('input', () => {
+        this.debounce(() => {
+          const keyword = this.searchMH.value.trim();
+          this.loadData(keyword);
+        });
+      });
+    }
   },
 
-  async loadData() {
-    if (this.hasPendingChanges()) {
-      const ok = confirm('Bạn đang có thay đổi chưa ghi. Tải lại dữ liệu sẽ bỏ các thay đổi này. Tiếp tục?');
-      if (!ok) return;
+  async loadData(keyword = '') {
+    if (this.hasPendingChanges() && keyword === this.state.searchKeyword) {
+      this.renderTable();
+      this.updateActionState();
+      return;
     }
 
     try {
       this.tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Đang tải...</td></tr>';
-      const res = await API.get('/monhoc');
+      
+      if (this.hasPendingChanges()) {
+        const ok = confirm('Bạn đang có thay đổi chưa ghi. Tải lại dữ liệu sẽ bỏ các thay đổi này. Tiếp tục?');
+        if (!ok) return;
+      }
+
+      this.state.searchKeyword = keyword;
+      const endpoint = keyword ? `/monhoc/search?keyword=${encodeURIComponent(keyword)}` : '/monhoc';
+
+      const res = await API.get(endpoint);
       if (res.success) {
         this.state.originalData = res.data || [];
         this.state.pendingOperations = {};
@@ -429,7 +463,9 @@ window.MonHocModule = {
   },
 
   async reloadAfterCommit() {
-    const res = await API.get('/monhoc');
+    const keyword = this.state.searchKeyword;
+    const endpoint = keyword ? `/monhoc/search?keyword=${encodeURIComponent(keyword)}` : '/monhoc';
+    const res = await API.get(endpoint);
     this.state.originalData = res.success ? (res.data || []) : [];
     this.state.pendingOperations = {};
     this.state.history = [];

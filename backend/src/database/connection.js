@@ -168,38 +168,7 @@ async function executeSPOnPool(pool, procedureName, params = {}) {
   };
 }
 
-/**
- * Thực thi SP có output params trên một pool cụ thể
- */
-async function executeSPWithOutputOnPool(
-  pool,
-  procedureName,
-  inputParams = {},
-  outputParams = {}
-) {
-  const request = pool.request();
 
-  for (const [key, param] of Object.entries(inputParams)) {
-    if (param.type && param.value !== undefined) {
-      request.input(key, param.type, param.value);
-    }
-  }
-
-  for (const [key, param] of Object.entries(outputParams)) {
-    if (param.type) {
-      request.output(key, param.type);
-    }
-  }
-
-  const result = await request.execute(procedureName);
-
-  return {
-    recordset: result.recordset || [],
-    recordsets: result.recordsets || [],
-    rowsAffected: result.rowsAffected || [],
-    output: result.output || {},
-  };
-}
 
 // ====================================
 // EXECUTE STORED PROCEDURE (with dual-write)
@@ -280,76 +249,7 @@ async function executeStoredProcedure(procedureName, params = {}) {
   }
 }
 
-// ====================================
-// EXECUTE STORED PROCEDURE VỚI OUTPUT PARAMS
-// ====================================
 
-/**
- * Thực thi SP có output parameters
- *
- * @param {string} procedureName
- * @param {Object} inputParams - { paramName: { type, value } }
- * @param {Object} outputParams - { paramName: { type } }
- * @returns {Promise<Object>}
- */
-async function executeStoredProcedureWithOutput(
-  procedureName,
-  inputParams = {},
-  outputParams = {}
-) {
-  const currentServerId = dbStorage.getStore() || "server1";
-
-  try {
-    if (isWriteProcedure(procedureName)) {
-      // WRITE: Thực thi trên cả 2 server
-      const primaryPool = getPool(currentServerId);
-      const primaryResult = await executeSPWithOutputOnPool(
-        primaryPool,
-        procedureName,
-        inputParams,
-        outputParams
-      );
-
-      const replicaId = currentServerId === "server1" ? "server2" : "server1";
-      try {
-        const replicaPool = pools[replicaId];
-        if (replicaPool) {
-          await executeSPWithOutputOnPool(
-            replicaPool,
-            procedureName,
-            inputParams,
-            outputParams
-          );
-          console.log(
-            `🔄 Đồng bộ SP [${procedureName}] sang ${replicaId} thành công`
-          );
-        }
-      } catch (replicaError) {
-        console.error(
-          `⚠️ Lỗi đồng bộ SP [${procedureName}] sang ${replicaId}:`,
-          replicaError.message
-        );
-      }
-
-      return primaryResult;
-    } else {
-      // READ: Chỉ server hiện tại
-      const pool = getPool(currentServerId);
-      return await executeSPWithOutputOnPool(
-        pool,
-        procedureName,
-        inputParams,
-        outputParams
-      );
-    }
-  } catch (error) {
-    console.error(
-      `❌ Lỗi thực thi SP [${procedureName}]:`,
-      error.message
-    );
-    throw error;
-  }
-}
 
 // ====================================
 // CLOSE CONNECTION
@@ -385,7 +285,6 @@ module.exports = {
   initAllPools,
   getPool,
   executeStoredProcedure,
-  executeStoredProcedureWithOutput,
   closeAllConnections,
   getAvailableServers,
   dbStorage,

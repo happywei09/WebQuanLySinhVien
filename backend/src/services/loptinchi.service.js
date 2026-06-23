@@ -3,7 +3,7 @@
 // ====================================
 
 const loptinchiRepository = require("../repositories/loptinchi.repository");
-const { getCurrentSemester, getNextSemester, isSameSemester, isSemesterAfter } = require("../utils/academic.helper");
+const { getCurrentSemester, isSemesterAfter } = require("../utils/academic.helper");
 
 class LopTinChiService {
   validateSemesterConstraint(nienKhoa, hocKy) {
@@ -17,9 +17,7 @@ class LopTinChiService {
     }
   }
 
-  async getAllLopTinChi() {
-    return loptinchiRepository.getAll();
-  }
+
 
   async getLopTinChiForUser(user) {
     if (user && user.role === 'KHOA' && user.maKhoa) {
@@ -43,9 +41,7 @@ class LopTinChiService {
     return loptinchiRepository.getByNienKhoaHocKy(nienKhoa, hocKy);
   }
 
-  async getLopTinChiByGiangVien(maGV) {
-    return loptinchiRepository.getByGiangVien(maGV);
-  }
+
 
   async createLopTinChi(data) {
     if (data.NIENKHOA && data.HOCKY) {
@@ -114,9 +110,7 @@ class LopTinChiService {
     return loptinchiRepository.cancel(maLTC);
   }
 
-  async searchLopTinChi(keyword) {
-    return loptinchiRepository.search(keyword);
-  }
+
 }
 
 module.exports = new LopTinChiService();

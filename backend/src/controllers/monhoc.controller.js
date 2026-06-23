@@ -39,10 +39,18 @@ const deleteMonHoc = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+const searchMonHoc = async (req, res, next) => {
+  try {
+    const data = await monhocService.searchMonHoc(req.query.keyword || "");
+    res.json({ success: true, message: "Success", data });
+  } catch (error) { next(error); }
+};
+
 module.exports = {
   getAllMonHoc,
   getMonHocById,
   createMonHoc,
   updateMonHoc,
   deleteMonHoc,
+  searchMonHoc,
 };

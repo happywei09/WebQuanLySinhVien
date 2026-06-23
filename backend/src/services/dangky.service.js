@@ -7,9 +7,7 @@ const loptinchiRepository = require("../repositories/loptinchi.repository");
 const { getCurrentSemester, getNextSemester, isSameSemester } = require("../utils/academic.helper");
 
 class DangKyService {
-  async getAllDangKy() {
-    return dangkyRepository.getAll();
-  }
+
 
   async getDangKyByLopTinChi(maLTC) {
     return dangkyRepository.getByLopTinChi(maLTC);

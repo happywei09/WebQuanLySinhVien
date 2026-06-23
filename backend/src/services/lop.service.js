@@ -5,9 +5,6 @@
 const lopRepository = require("../repositories/lop.repository");
 
 class LopService {
-  async getAllLop() {
-    return lopRepository.getAll();
-  }
 
   async getLopForUser(user) {
     if (user && user.role === "KHOA" && user.maKhoa) {

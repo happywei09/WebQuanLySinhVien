@@ -87,16 +87,7 @@ class DiemService {
     }
   }
 
-  /**
-   * Tính điểm tổng kết
-   * Công thức: 0.1 * DIEM_CC + 0.3 * DIEM_GK + 0.6 * DIEM_CK
-   */
-  calculateDiemTongKet(diemCC, diemGK, diemCK) {
-    if (diemCC == null || diemGK == null || diemCK == null) {
-      return null;
-    }
-    return Math.round((0.1 * diemCC + 0.3 * diemGK + 0.6 * diemCK) * 100) / 100;
-  }
+
 
   // ====================================
   // BÁO CÁO

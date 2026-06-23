@@ -36,15 +36,7 @@ class LopTinChiRepository {
     return (result.recordset || []).sort((a, b) => b.MALTC - a.MALTC);
   }
 
-  async getByGiangVien(maGV) {
-    const result = await executeStoredProcedure(
-      LOPTINCHI_PROCEDURES.GET_BY_GIANGVIEN,
-      {
-        MAGV: { type: sql.NVarChar(50), value: maGV },
-      }
-    );
-    return (result.recordset || []).sort((a, b) => b.MALTC - a.MALTC);
-  }
+
 
   async create(data) {
     const result = await executeStoredProcedure(LOPTINCHI_PROCEDURES.CREATE, {
@@ -95,12 +87,7 @@ class LopTinChiRepository {
     return result;
   }
 
-  async search(keyword) {
-    const result = await executeStoredProcedure(LOPTINCHI_PROCEDURES.SEARCH, {
-      KEYWORD: { type: sql.NVarChar(100), value: keyword },
-    });
-    return (result.recordset || []).sort((a, b) => b.MALTC - a.MALTC);
-  }
+
 }
 
 module.exports = new LopTinChiRepository();

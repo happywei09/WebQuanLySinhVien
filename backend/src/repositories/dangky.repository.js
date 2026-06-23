@@ -6,10 +6,6 @@ const { executeStoredProcedure, sql } = require("../database/connection");
 const DANGKY_PROCEDURES = require("../database/procedures/dangky.procedure");
 
 class DangKyRepository {
-  async getAll() {
-    const result = await executeStoredProcedure(DANGKY_PROCEDURES.GET_ALL);
-    return result.recordset;
-  }
 
   async getByLopTinChi(maLTC) {
     const result = await executeStoredProcedure(DANGKY_PROCEDURES.GET_BY_LTC, {

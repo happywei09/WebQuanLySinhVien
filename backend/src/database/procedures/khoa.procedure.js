@@ -23,8 +23,6 @@ const KHOA_PROCEDURES = {
   // Xoá khoa (soft delete hoặc hard delete)
   DELETE: "SP_DELETE_KHOA",
 
-  // Khôi phục khoa đã xoá
-  RESTORE: "SP_RESTORE_KHOA",
 
   // Tìm kiếm khoa theo tên
   SEARCH: "SP_SEARCH_KHOA",
