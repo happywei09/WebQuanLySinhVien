@@ -177,7 +177,7 @@ window.LopTinChiModule = {
       if (resMH.success) {
         this.state.monhocList = resMH.data || [];
         this.selectMH.innerHTML = '<option value="">-- Chọn Môn --</option>' +
-          this.state.monhocList.map(m => `<option value="${m.MAMH ? m.MAMH.trim() : ''}">${m.MAMH ? m.MAMH.trim() : ''} - ${m.TENMH}</option>`).join('');
+          this.state.monhocList.map(m => `<option value="${m.MAMH ? m.MAMH.trim() : ''}">${m.TENMH} - ${m.MAMH ? m.MAMH.trim() : ''}</option>`).join('');
       }
       if (resGV.success) {
         this.state.giangvienList = resGV.data || [];
@@ -219,7 +219,7 @@ window.LopTinChiModule = {
       if (item.MAMH) {
         const mamh = this.normalizeText(item.MAMH);
         if (!uniqueMH.has(mamh)) {
-          const mhObj = this.state.monhocList.find(m => m.MAMH === mamh);
+          const mhObj = this.state.monhocList.find(m => (m.MAMH ? m.MAMH.trim() : '') === mamh);
           uniqueMH.set(mamh, mhObj ? mhObj.TENMH : item.MAMH);
         }
       }
@@ -227,7 +227,7 @@ window.LopTinChiModule = {
 
     let mhOptions = '<option value="">Tất cả Môn học</option>';
     uniqueMH.forEach((tenMH, mamh) => {
-      mhOptions += `<option value="${mamh}">${mamh ? mamh.trim().toUpperCase() : ''} - ${tenMH}</option>`;
+      mhOptions += `<option value="${mamh}">${tenMH} - ${mamh ? mamh.trim().toUpperCase() : ''}</option>`;
     });
     this.filterMH.innerHTML = mhOptions;
 
@@ -339,7 +339,7 @@ window.LopTinChiModule = {
               <td>${displayId}</td>
               <td>${item.NIENKHOA}</td>
               <td>${item.HOCKY}</td>
-              <td>${tenMH} ${statusBadge}</td>
+              <td>${tenMH} - ${item.MAMH ? item.MAMH.trim() : ''} ${statusBadge}</td>
               <td>${item.NHOM}</td>
               <td>${tenGV}</td>
               <td>${item.MAKHOA ? item.MAKHOA.trim() : ''}</td>
