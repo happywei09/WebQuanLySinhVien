@@ -1,0 +1,149 @@
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Quản lý Sinh viên</h1>
+        <div class="breadcrumb">
+            <span class="breadcrumb-item">Trang chủ</span>
+            <span>/</span>
+            <span class="breadcrumb-item active">Sinh viên</span>
+        </div>
+    </div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+        <button class="btn btn-khaki" id="btnUndoSV">Phục hồi</button>
+        <button class="btn btn-revert" id="btnCommitSV">Ghi</button>
+        <button class="btn btn-success" id="btnAddSV">+ Thêm sinh viên</button>
+    </div>
+</div>
+
+<!-- Bộ lọc và tìm kiếm sinh viên -->
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-body" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
+        <div style="flex: 2; min-width: 200px;">
+            <label class="form-label"
+                style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">TÌM KIẾM SINH
+                VIÊN</label>
+            <input type="text" id="searchSV" class="form-control" placeholder="Nhập mã SV hoặc họ tên cần tìm..." />
+        </div>
+        <div style="flex: 1; min-width: 150px;">
+            <label class="form-label"
+                style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">KHÓA
+                HỌC</label>
+            <select id="filterSVKhoaHoc" class="form-control">
+                <option value="ALL">Tất cả Khóa học</option>
+            </select>
+        </div>
+        <div style="flex: 1; min-width: 150px;">
+            <label class="form-label"
+                style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">LỚP HỌC</label>
+            <select id="filterSVLop" class="form-control">
+                <option value="ALL">Tất cả Lớp</option>
+            </select>
+        </div>
+        <div style="min-width: 220px;">
+            <span id="svPendingStatus" style="font-size: 13px; color: var(--text-muted);"></span>
+        </div>
+    </div>
+</div>
+
+<div class="card sinhvien-list-card" id="cardSV">
+    <div class="card-header"
+        style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+        <h3 class="card-title" style="margin:0;">Danh sách sinh viên</h3>
+    </div>
+    <div class="table-responsive sinhvien-list-scroll">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Mã SV</th>
+                    <th>Họ</th>
+                    <th>Tên</th>
+                    <th>Mã Lớp</th>
+                    <th>Phái</th>
+                    <th style="text-align: center;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="7" style="text-align:center;">Dữ liệu sẽ được tải từ SP_GET_ALL_SINHVIEN</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<style>
+    /* Sinh vien list - scrollable box */
+    .sinhvien-list-card .sinhvien-list-scroll {
+        max-height: 420px;
+        overflow-y: auto;
+    }
+
+    .sinhvien-list-card .sinhvien-list-scroll table thead th {
+        position: sticky;
+        top: 0;
+        background: var(--bg-surface);
+        z-index: 2;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .sinhvien-list-card .sinhvien-list-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .sinhvien-list-card .sinhvien-list-scroll::-webkit-scrollbar-track {
+        background: var(--bg-main);
+    }
+
+    .sinhvien-list-card .sinhvien-list-scroll::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 3px;
+    }
+</style>
+
+<!-- Modal thêm/sửa Sinh Viên -->
+<div class="modal-overlay" id="modalSV">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitleSV">Thêm Sinh Viên</h3>
+            <button class="btn-close" id="btnCloseModalSV">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="formSV">
+                <div class="form-group">
+                    <label class="form-label required" for="maSV">Mã Sinh Viên</label>
+                    <input type="text" id="maSV" class="form-control" required placeholder="Ví dụ: N19DCCN001">
+                </div>
+                <div style="display: flex; gap: 16px;">
+                    <div class="form-group" style="flex: 2;">
+                        <label class="form-label required" for="hoSV">Họ và đệm</label>
+                        <input type="text" id="hoSV" class="form-control" required placeholder="Ví dụ: Nguyễn Văn">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label required" for="tenSV">Tên</label>
+                        <input type="text" id="tenSV" class="form-control" required placeholder="Ví dụ: A">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required" for="phaiSV">Giới tính</label>
+                    <select id="phaiSV" class="form-control">
+                        <option value="0">Nam</option>
+                        <option value="1">Nữ</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required" for="lopSV">Lớp Học</label>
+                    <select id="lopSV" class="form-control" required>
+                        <option value="">-- Chọn một lớp --</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="btnCancelModalSV">Huỷ</button>
+            <button class="btn btn-primary" id="btnSaveSV">Lưu tạm</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/modules/sinhvien.js"></script>

@@ -17,7 +17,6 @@ document.addEventListener('pageLoaded', function (e) {
     domRefs.lblNgaySinh = document.getElementById('pdNgaySinh');
     domRefs.lblGioiTinh = document.getElementById('pdGioiTinh');
     domRefs.lblClass = document.getElementById('pdClass');
-    domRefs.lblKhoa = document.getElementById('pdKhoa');
     domRefs.lblDiaChi = document.getElementById('pdDiaChi');
     domRefs.lblPrintDate = document.getElementById('pdPrintDate');
     domRefs.filterNienKhoa = document.getElementById('filterNienKhoa');
@@ -76,7 +75,6 @@ document.addEventListener('pageLoaded', function (e) {
         if (domRefs.lblGioiTinh) domRefs.lblGioiTinh.textContent = '-';
         if (domRefs.lblClass) domRefs.lblClass.textContent = 'N/A';
         if (domRefs.lblDiaChi) domRefs.lblDiaChi.textContent = '-';
-        if (domRefs.lblKhoa) domRefs.lblKhoa.textContent = '-';
       }
 
       // 2. Tải thông tin lớp học & khoa
@@ -86,14 +84,11 @@ document.addEventListener('pageLoaded', function (e) {
           if (lopRes.success && lopRes.data) {
             var lop = lopRes.data;
             if (domRefs.lblClass) domRefs.lblClass.textContent = lop.MALOP + ' - ' + lop.TENLOP;
-            if (domRefs.lblKhoa) domRefs.lblKhoa.textContent = lop.MAKHOA;
           }
         } catch (err) {
           console.error('Lỗi tải chi tiết lớp học:', err);
-          if (domRefs.lblKhoa) domRefs.lblKhoa.textContent = '-';
         }
       } else {
-        if (domRefs.lblKhoa) domRefs.lblKhoa.textContent = '-';
       }
 
       // 3. Thiết lập ngày lập phiếu

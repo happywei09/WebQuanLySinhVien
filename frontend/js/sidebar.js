@@ -7,6 +7,7 @@ const MENU_ITEMS = [
   { id: 'dashboard', title: 'Tổng quan', icon: 'assets/images/(1).png', roles: ['PGV', 'KHOA', 'SINHVIEN'], file: 'dashboard.html' },
   { id: 'khoa', title: 'Quản lý Khoa', icon: 'assets/images/(2).png', roles: ['PGV', 'KHOA'], file: 'khoa.html' },
   { id: 'lop', title: 'Quản lý Lớp', icon: 'assets/images/(3).png', roles: ['PGV', 'KHOA'], file: 'lop.html' },
+  { id: 'sinhvien', title: 'Quản lý Sinh viên', icon: 'assets/images/(4).png', roles: ['PGV', 'KHOA'], file: 'sinhvien.html' },
   { id: 'giangvien', title: 'Quản lý Giảng viên', icon: 'assets/images/(5).png', roles: ['PGV', 'KHOA'], file: 'giangvien.html' },
   { id: 'monhoc', title: 'Quản lý Môn học', icon: 'assets/images/(6).png', roles: ['PGV', 'KHOA'], file: 'monhoc.html' },
   { id: 'loptinchi', title: 'Lớp Tín Chỉ', icon: 'assets/images/(7).png', roles: ['PGV', 'KHOA'], file: 'loptinchi.html' },
@@ -95,7 +96,7 @@ class Sidebar {
         if (!oldScript.src) {
           newScript.appendChild(document.createTextNode(oldScript.innerHTML));
         }
-        newScript.onerror = function() {
+        newScript.onerror = function () {
           console.error('Lỗi tải script:', oldScript.src || 'inline script');
         };
         oldScript.parentNode.replaceChild(newScript, oldScript);
