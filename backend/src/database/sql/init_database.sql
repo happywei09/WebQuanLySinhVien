@@ -2011,39 +2011,65 @@ CREATE OR ALTER PROCEDURE SP_REPORT_PHIEUDIEM
     @MASV NCHAR(10)
 AS
 BEGIN
-    ;WITH FilteredDangKy AS (
-        SELECT MALTC, DIEM_CC, DIEM_GK, DIEM_CK
-        FROM DANGKY
-        WHERE MASV = @MASV AND (HUYDANGKY = 0 OR HUYDANGKY IS NULL)
-    ),
-    ScoreBySubject AS (
-        SELECT
-            mh.MAMH,
-            mh.TENMH,
-            dk.DIEM_CC,
-            dk.DIEM_GK,
-            dk.DIEM_CK,
-            CASE 
-                WHEN dk.DIEM_CK IS NULL THEN NULL
-                ELSE ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + dk.DIEM_CK * 0.6
-            END AS DIEM,
-            ltc.NIENKHOA,
-            ltc.HOCKY,
-            ROW_NUMBER() OVER (
-                PARTITION BY mh.MAMH 
-                ORDER BY 
-                    CASE WHEN dk.DIEM_CK IS NULL THEN 0 ELSE 1 END DESC,
-                    CASE 
-                        WHEN dk.DIEM_CK IS NULL THEN NULL
-                        ELSE ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + dk.DIEM_CK * 0.6
-                    END DESC,
-                    ltc.NIENKHOA DESC,
-                    ltc.HOCKY DESC
-            ) AS rn
-        FROM FilteredDangKy dk
-        INNER JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
-        INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
-    )
+    -- Cấu hình giúp tăng tốc độ xử lý câu lệnh, bỏ qua việc gửi các thông báo phụ về ứng dụng
+    SET NOCOUNT ON;
+
+    -- BƯỚC 1: Tạo bảng tạm thứ nhất hứng dữ liệu thô của sinh viên được truyền vào
+    CREATE TABLE #FilteredDangKy (
+        MALTC INT,
+        DIEM_CC FLOAT,
+        DIEM_GK FLOAT,
+        DIEM_CK FLOAT,
+        PRIMARY KEY (MALTC) -- Hỗ trợ tăng tốc truy vấn khi INNER JOIN ở bước sau
+    );
+
+    -- Đổ dữ liệu thô của @MASV vào bảng tạm 1
+    INSERT INTO #FilteredDangKy (MALTC, DIEM_CC, DIEM_GK, DIEM_CK)
+    SELECT MALTC, DIEM_CC, DIEM_GK, DIEM_CK
+    FROM DANGKY
+    WHERE MASV = @MASV AND HUYDANGKY = 0;
+
+    -- BƯỚC 2: Tạo bảng tạm thứ hai chứa kết quả điểm đã tính toán và xếp hạng
+    CREATE TABLE #ScoreBySubject (
+        TENMH NVARCHAR(100),
+        DIEM_CC FLOAT,
+        DIEM_GK FLOAT,
+        DIEM_CK FLOAT,
+        DIEM FLOAT,
+        NIENKHOA VARCHAR(20),
+        HOCKY INT,
+        rn INT
+    );
+
+    -- Tính điểm hệ số và đánh số thứ tự (ROW_NUMBER) theo luật ưu tiên
+    INSERT INTO #ScoreBySubject
+    SELECT
+        mh.TENMH,
+        dk.DIEM_CC,
+        dk.DIEM_GK,
+        dk.DIEM_CK,
+        CASE 
+            WHEN dk.DIEM_CK IS NULL THEN NULL 
+            ELSE ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + dk.DIEM_CK * 0.6
+        END AS DIEM,
+        ltc.NIENKHOA,
+        ltc.HOCKY,
+        ROW_NUMBER() OVER (
+            PARTITION BY ltc.MAMH -- Nhóm theo mã môn học
+            ORDER BY 
+                CASE WHEN dk.DIEM_CK IS NULL THEN 0 ELSE 1 END DESC, -- 1. Ưu tiên đã thi
+                CASE 
+                    WHEN dk.DIEM_CK IS NULL THEN NULL
+                    ELSE ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + dk.DIEM_CK * 0.6
+                END DESC, -- 2. Ưu tiên điểm cao
+                ltc.NIENKHOA DESC, -- 3. Ưu tiên niên khóa mới
+                ltc.HOCKY DESC -- 4. Ưu tiên học kỳ mới
+        ) AS rn
+    FROM #FilteredDangKy dk
+    INNER JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
+    INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH;
+
+    -- BƯỚC 3: Trả về kết quả phiếu điểm cuối cùng cho ứng dụng (Lọc lấy những dòng rn = 1)
     SELECT
         ROW_NUMBER() OVER (ORDER BY TENMH) AS STT,
         TENMH,
@@ -2053,9 +2079,13 @@ BEGIN
         DIEM,
         NIENKHOA,
         HOCKY
-    FROM ScoreBySubject
+    FROM #ScoreBySubject
     WHERE rn = 1
     ORDER BY TENMH;
+
+    -- BƯỚC 4: Giải phóng tài nguyên ngay trong Procedure
+    DROP TABLE #FilteredDangKy;
+    DROP TABLE #ScoreBySubject;
 END;
 GO
 
@@ -2224,64 +2254,33 @@ GO
 -- Returns: Hai Recordsets thống kê dữ liệu.
 -- =========================================================================
 CREATE OR ALTER PROCEDURE SP_DASHBOARD_GET_STATS
-    @MAKHOA NCHAR(10) = NULL,
-    @NIENKHOA NCHAR(9) = NULL,
-    @HOCKY INT = NULL
 AS
 BEGIN
-    SELECT MALTC, MAMH, NHOM, MAGV, SOSVTOITHIEU, HUYLOP
-    INTO #FilteredLopTinChi
-    FROM LOPTINCHI
-    WHERE (@MAKHOA IS NULL OR MAKHOA = @MAKHOA)
-      AND (@NIENKHOA IS NULL OR NIENKHOA = @NIENKHOA)
-      AND (@HOCKY IS NULL OR HOCKY = @HOCKY);
-
-    ALTER TABLE #FilteredLopTinChi ADD CONSTRAINT PK_FilteredLTC PRIMARY KEY CLUSTERED (MALTC);
-
-    SELECT fltc.MALTC, COUNT(dk.MASV) AS SOSVDANGKY
-    INTO #DangKyCount
-    FROM #FilteredLopTinChi fltc
-    LEFT JOIN DANGKY dk ON dk.MALTC = fltc.MALTC AND dk.HUYDANGKY = 0
-    GROUP BY fltc.MALTC;
-
-    ALTER TABLE #DangKyCount ADD CONSTRAINT PK_DKCount PRIMARY KEY CLUSTERED (MALTC);
+    SET NOCOUNT ON;
 
     DECLARE @TotalStudents INT;
     DECLARE @OpenClasses INT;
     DECLARE @TotalClasses INT;
     DECLARE @TotalRegistrations INT;
 
-    SELECT @TotalStudents = COUNT(sv.MASV)
-    FROM SINHVIEN sv
-    INNER JOIN LOP l ON sv.MALOP = l.MALOP
-    WHERE (@MAKHOA IS NULL OR l.MAKHOA = @MAKHOA);
+    -- 1. Tổng số sinh viên toàn trường
+    SELECT @TotalStudents = COUNT(*) FROM SINHVIEN;
 
-    SELECT
-        @OpenClasses = SUM(CASE WHEN fltc.HUYLOP = 0 THEN 1 ELSE 0 END),
-        @TotalClasses = COUNT(*),
-        @TotalRegistrations = SUM(dkc.SOSVDANGKY)
-    FROM #FilteredLopTinChi fltc
-    INNER JOIN #DangKyCount dkc ON dkc.MALTC = fltc.MALTC;
+    -- 2. Lớp tín chỉ đang mở (HUYLOP = 0) và Tổng số lớp tín chỉ
+    SELECT 
+        @OpenClasses = ISNULL(SUM(CASE WHEN HUYLOP = 0 THEN 1 ELSE 0 END), 0),
+        @TotalClasses = COUNT(*)
+    FROM LOPTINCHI;
 
+    -- 3. Tổng lượt đăng ký học thành công (chưa bị hủy)
+    SELECT @TotalRegistrations = COUNT(*)
+    FROM DANGKY
+    WHERE HUYDANGKY = 0 OR HUYDANGKY IS NULL;
+
+    -- Trả về recordset thống kê
     SELECT @TotalStudents AS TotalStudents,
            @OpenClasses AS OpenClasses,
            @TotalClasses AS TotalClasses,
            @TotalRegistrations AS TotalRegistrations;
-
-    SELECT 
-        ltc.MALTC,
-        mh.TENMH,
-        ltc.NHOM,
-        gv.HO + ' ' + gv.TEN AS TEN_GV,
-        ltc.SOSVTOITHIEU,
-        ISNULL(dkc.SOSVDANGKY, 0) AS SOSVDANGKY
-    FROM #FilteredLopTinChi ltc
-    INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
-    INNER JOIN GIANGVIEN gv ON ltc.MAGV = gv.MAGV
-    LEFT JOIN #DangKyCount dkc ON dkc.MALTC = ltc.MALTC
-    ORDER BY ltc.MALTC DESC;
-
-    DROP TABLE #DangKyCount;
-    DROP TABLE #FilteredLopTinChi;
 END;
 GO
