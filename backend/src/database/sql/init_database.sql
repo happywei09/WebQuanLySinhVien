@@ -2013,39 +2013,65 @@ CREATE OR ALTER PROCEDURE SP_REPORT_PHIEUDIEM
     @MASV NCHAR(10)
 AS
 BEGIN
-    ;WITH FilteredDangKy AS (
-        SELECT MALTC, DIEM_CC, DIEM_GK, DIEM_CK
-        FROM DANGKY
-        WHERE MASV = @MASV AND (HUYDANGKY = 0 OR HUYDANGKY IS NULL)
-    ),
-    ScoreBySubject AS (
-        SELECT
-            mh.MAMH,
-            mh.TENMH,
-            dk.DIEM_CC,
-            dk.DIEM_GK,
-            dk.DIEM_CK,
-            CASE 
-                WHEN dk.DIEM_CK IS NULL THEN NULL
-                ELSE ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + dk.DIEM_CK * 0.6
-            END AS DIEM,
-            ltc.NIENKHOA,
-            ltc.HOCKY,
-            ROW_NUMBER() OVER (
-                PARTITION BY mh.MAMH 
-                ORDER BY 
-                    CASE WHEN dk.DIEM_CK IS NULL THEN 0 ELSE 1 END DESC,
-                    CASE 
-                        WHEN dk.DIEM_CK IS NULL THEN NULL
-                        ELSE ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + dk.DIEM_CK * 0.6
-                    END DESC,
-                    ltc.NIENKHOA DESC,
-                    ltc.HOCKY DESC
-            ) AS rn
-        FROM FilteredDangKy dk
-        INNER JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
-        INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
-    )
+    -- Cấu hình giúp tăng tốc độ xử lý câu lệnh, bỏ qua việc gửi các thông báo phụ về ứng dụng
+    SET NOCOUNT ON;
+
+    -- BƯỚC 1: Tạo bảng tạm thứ nhất hứng dữ liệu thô của sinh viên được truyền vào
+    CREATE TABLE #FilteredDangKy (
+        MALTC INT,
+        DIEM_CC FLOAT,
+        DIEM_GK FLOAT,
+        DIEM_CK FLOAT,
+        PRIMARY KEY (MALTC) -- Hỗ trợ tăng tốc truy vấn khi INNER JOIN ở bước sau
+    );
+
+    -- Đổ dữ liệu thô của @MASV vào bảng tạm 1
+    INSERT INTO #FilteredDangKy (MALTC, DIEM_CC, DIEM_GK, DIEM_CK)
+    SELECT MALTC, DIEM_CC, DIEM_GK, DIEM_CK
+    FROM DANGKY
+    WHERE MASV = @MASV AND HUYDANGKY = 0;
+
+    -- BƯỚC 2: Tạo bảng tạm thứ hai chứa kết quả điểm đã tính toán và xếp hạng
+    CREATE TABLE #ScoreBySubject (
+        TENMH NVARCHAR(100),
+        DIEM_CC FLOAT,
+        DIEM_GK FLOAT,
+        DIEM_CK FLOAT,
+        DIEM FLOAT,
+        NIENKHOA VARCHAR(20),
+        HOCKY INT,
+        rn INT
+    );
+
+    -- Tính điểm hệ số và đánh số thứ tự (ROW_NUMBER) theo luật ưu tiên
+    INSERT INTO #ScoreBySubject
+    SELECT
+        mh.TENMH,
+        dk.DIEM_CC,
+        dk.DIEM_GK,
+        dk.DIEM_CK,
+        CASE 
+            WHEN dk.DIEM_CK IS NULL THEN NULL 
+            ELSE ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + dk.DIEM_CK * 0.6
+        END AS DIEM,
+        ltc.NIENKHOA,
+        ltc.HOCKY,
+        ROW_NUMBER() OVER (
+            PARTITION BY ltc.MAMH -- Nhóm theo mã môn học
+            ORDER BY 
+                CASE WHEN dk.DIEM_CK IS NULL THEN 0 ELSE 1 END DESC, -- 1. Ưu tiên đã thi
+                CASE 
+                    WHEN dk.DIEM_CK IS NULL THEN NULL
+                    ELSE ISNULL(dk.DIEM_CC, 0) * 0.1 + ISNULL(dk.DIEM_GK, 0) * 0.3 + dk.DIEM_CK * 0.6
+                END DESC, -- 2. Ưu tiên điểm cao
+                ltc.NIENKHOA DESC, -- 3. Ưu tiên niên khóa mới
+                ltc.HOCKY DESC -- 4. Ưu tiên học kỳ mới
+        ) AS rn
+    FROM #FilteredDangKy dk
+    INNER JOIN LOPTINCHI ltc ON dk.MALTC = ltc.MALTC
+    INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH;
+
+    -- BƯỚC 3: Trả về kết quả phiếu điểm cuối cùng cho ứng dụng (Lọc lấy những dòng rn = 1)
     SELECT
         ROW_NUMBER() OVER (ORDER BY TENMH) AS STT,
         TENMH,
@@ -2055,11 +2081,16 @@ BEGIN
         DIEM,
         NIENKHOA,
         HOCKY
-    FROM ScoreBySubject
+    FROM #ScoreBySubject
     WHERE rn = 1
     ORDER BY TENMH;
+
+    -- BƯỚC 4: Giải phóng tài nguyên ngay trong Procedure
+    DROP TABLE #FilteredDangKy;
+    DROP TABLE #ScoreBySubject;
 END;
 GO
+
 
 -- =========================================================================
 -- STORED PROCEDURE: SP_REPORT_BANGDIEM_TONGKET
