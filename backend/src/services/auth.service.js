@@ -163,6 +163,18 @@ class AuthService {
       ? config.databases[serverId].displayName
       : serverId;
 
+    // Lấy thông tin khoa của database hiện tại
+    let tenKhoa = null;
+    try {
+      const mainPool = getPool(serverId);
+      const khoaResult = await mainPool.request().execute("SP_GET_LOCAL_KHOA");
+      if (khoaResult.recordset && khoaResult.recordset.length > 0) {
+        tenKhoa = khoaResult.recordset[0].TENKHOA.trim();
+      }
+    } catch (khoaError) {
+      console.error("Lỗi lấy thông tin khoa khi đăng nhập:", khoaError.message);
+    }
+
     return {
       token,
       refreshToken,
@@ -171,6 +183,7 @@ class AuthService {
         role: user.ROLE,
         fullName: user.FULLNAME,
         maKhoa: user.MAKHOA || null,
+        tenKhoa: tenKhoa,
         serverId: serverId,
         serverName: serverDisplayName,
       },

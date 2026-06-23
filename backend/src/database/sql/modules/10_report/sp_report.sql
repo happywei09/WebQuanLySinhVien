@@ -217,10 +217,14 @@ BEGIN
         ltc.NHOM,
         gv.HO + ' ' + gv.TEN AS HOTEN_GV,
         ltc.SOSVTOITHIEU,
-        ISNULL(tk.SOSV_DANGKY, 0) AS SOSV_DANGKY -- Nếu lớp trống (không khớp bảng tạm) thì hiện số 0
+        ISNULL(tk.SOSV_DANGKY, 0) AS SOSV_DANGKY, -- Nếu lớp trống (không khớp bảng tạm) thì hiện số 0
+        k.TENKHOA,
+        ltc.NIENKHOA,
+        ltc.HOCKY
     FROM LOPTINCHI ltc
     INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
     INNER JOIN GIANGVIEN gv ON ltc.MAGV = gv.MAGV
+    INNER JOIN KHOA k ON ltc.MAKHOA = k.MAKHOA
     -- LEFT JOIN với bảng tạm siêu nhỏ đã có sẵn Index
     LEFT JOIN #ThongKeDangKy tk ON ltc.MALTC = tk.MALTC
     WHERE ltc.NIENKHOA = @NIENKHOA 

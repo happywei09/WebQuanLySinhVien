@@ -121,3 +121,25 @@ BEGIN
     WHERE MAKHOA LIKE '%' + @KEYWORD + '%' OR TENKHOA LIKE '%' + @KEYWORD + '%';
 END;
 GO
+
+-- =========================================================================
+-- STORED PROCEDURE: SP_GET_LOCAL_KHOA
+-- Description: Lấy mã khoa và tên khoa cục bộ tương ứng với database hiện tại.
+-- Returns: Một dòng chứa MAKHOA và TENKHOA.
+-- =========================================================================
+CREATE OR ALTER PROCEDURE SP_GET_LOCAL_KHOA
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @DBName NVARCHAR(128) = DB_NAME();
+    IF CHARINDEX('HTC', @DBName) > 0 OR @DBName = 'QLDSV_HTC'
+    BEGIN
+        SELECT MAKHOA, TENKHOA FROM KHOA WHERE MAKHOA = 'CNTT';
+    END
+    ELSE
+    BEGIN
+        SELECT MAKHOA, TENKHOA FROM KHOA WHERE MAKHOA = 'VT';
+    END
+END;
+GO
+

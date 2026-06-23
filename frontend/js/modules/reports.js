@@ -44,20 +44,20 @@ window.ReportsModule = {
 
   bindEvents() {
     this.typeSelect.addEventListener('change', (e) => this.handleReportTypeChange(e.target.value));
-    
+
     this.selectNienKhoa.addEventListener('change', () => {
       this.loadLopTinChiOptions();
       this.checkAutoGenerate();
     });
-    
+
     this.selectHocKy.addEventListener('change', () => {
       this.loadLopTinChiOptions();
       this.checkAutoGenerate();
     });
-    
+
     this.selectLTC.addEventListener('change', () => this.checkAutoGenerate());
     this.selectLop.addEventListener('change', () => this.checkAutoGenerate());
-    
+
     this.inputMaSV.addEventListener('change', () => this.checkAutoGenerate());
     this.inputMaSV.addEventListener('keyup', (e) => {
       if (e.key === 'Enter') {
@@ -175,9 +175,82 @@ window.ReportsModule = {
 
   buildSubtitle(meta) {
     const lines = [];
+
+    // Phiếu điểm cá nhân: hiển thị thông tin sinh viên dưới dạng grid
+    if (this.state.reportType === 'phieu_diem' && meta.studentInfo) {
+      const sv = meta.studentInfo;
+      const fullName = (sv.HO || '') + ' ' + (sv.TEN || '');
+      let ngaySinh = '-';
+      if (sv.NGAYSINH) {
+        const d = new Date(sv.NGAYSINH);
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        ngaySinh = dd + '/' + mm + '/' + yyyy;
+      }
+      const gioiTinh = sv.PHAI ? 'Nữ' : 'Nam';
+      return '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; text-align: left; font-size: 14px; line-height: 1.8; margin-top: 8px;">'
+        + '<div><strong><em>Họ và tên:</em></strong> ' + fullName.trim() + '</div>'
+        + '<div><strong><em>Mã số sinh viên:</em></strong> ' + (sv.MASV || '') + '</div>'
+        + '<div><strong><em>Ngày sinh:</em></strong> ' + ngaySinh + '</div>'
+        + '<div><strong><em>Giới tính:</em></strong> ' + gioiTinh + '</div>'
+        + '<div><strong><em>Lớp học:</em></strong> ' + (sv.MALOP || '') + '</div>'
+        + '<div><strong><em>Khoa:</em></strong>' + (sv.TENKHOA || '') + '</div>'
+        + '<div style="grid-column: span 2;"><strong><em>Địa chỉ:</em></strong> ' + (sv.DIACHI || '-') + '</div>'
+        + '</div>';
+    }
+
+    if (this.state.reportType === 'bang_diem_tk') {
+      if (meta.lop) {
+        let lopLine = 'LỚP: ' + meta.lop;
+        if (meta.khoaHoc) {
+          lopLine += ' – KHÓA HỌC: ' + meta.khoaHoc;
+        }
+        lines.push(lopLine);
+      }
+      if (meta.khoa) {
+        lines.push('KHOA: ' + meta.khoa);
+      }
+      return lines.join('<br/>');
+    }
+
+    if (this.state.reportType === 'dssv_ltc' || this.state.reportType === 'bang_diem_mh') {
+      if (meta.khoa) {
+        lines.push('KHOA: ' + meta.khoa);
+      }
+      let nkHkLine = '';
+      if (meta.nienKhoa) {
+        nkHkLine += 'Niên khóa: ' + meta.nienKhoa;
+      }
+      if (meta.hocKy) {
+        nkHkLine += (nkHkLine ? ' &nbsp; &nbsp; ' : '') + 'Học kỳ: ' + meta.hocKy;
+      }
+      if (nkHkLine) {
+        lines.push(nkHkLine);
+      }
+      let mhNhomLine = '';
+      if (meta.monHoc) {
+        mhNhomLine += 'Môn học: ' + meta.monHoc;
+      }
+      if (meta.nhom) {
+        mhNhomLine += ' – Nhóm: ' + meta.nhom;
+      }
+      if (mhNhomLine) {
+        lines.push(mhNhomLine);
+      }
+      return lines.join('<br/>');
+    }
+
     if (meta.khoa) lines.push('KHOA: ' + meta.khoa);
-    if (meta.nienKhoa) lines.push('Niên khóa: ' + meta.nienKhoa);
-    if (meta.hocKy) lines.push('Học kỳ: ' + meta.hocKy);
+
+    // Group Niên khóa and Học kỳ onto the same line if both are present
+    if (meta.nienKhoa && meta.hocKy) {
+      lines.push('Niên khóa: ' + meta.nienKhoa + ' &nbsp; &nbsp; Học kỳ: ' + meta.hocKy);
+    } else {
+      if (meta.nienKhoa) lines.push('Niên khóa: ' + meta.nienKhoa);
+      if (meta.hocKy) lines.push('Học kỳ: ' + meta.hocKy);
+    }
+
     if (meta.monHoc) lines.push('Môn học: ' + meta.monHoc);
     if (meta.nhom) lines.push('Nhóm: ' + meta.nhom);
     if (meta.lop) lines.push('Lớp: ' + meta.lop);
@@ -228,7 +301,7 @@ window.ReportsModule = {
         const masv = this.inputMaSV.value.trim();
         if (!masv) return Toast.warning('Vui lòng nhập mã sinh viên');
         endpoint = '/diem/report/phieu-diem/' + encodeURIComponent(masv);
-        meta = { ...meta, sinhVien: masv };
+        meta = { ...meta, sinhVien: masv, studentInfo: null };
       } else if (type === 'bang_diem_tk') {
         const lop = this.selectLop.value;
         if (!lop) return Toast.warning('Vui lòng chọn lớp học');
@@ -240,6 +313,15 @@ window.ReportsModule = {
       if (!res.success) throw new Error(res.message || 'Lỗi tải báo cáo');
 
       this.state.activeData = res.data || [];
+      if (res.khoaName) {
+        meta.khoa = res.khoaName;
+      }
+      if (res.khoaHoc) {
+        meta.khoaHoc = res.khoaHoc;
+      }
+      if (res.studentInfo) {
+        meta.studentInfo = res.studentInfo;
+      }
       this.state.activeMeta = meta;
       this.actionsCard.style.display = 'flex';
       const titles = {
@@ -254,9 +336,18 @@ window.ReportsModule = {
 
       // Cập nhật ngày tháng in báo cáo
       const today = new Date();
+      const dd = String(today.getDate()).padStart(2, '0');
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const yyyy = today.getFullYear();
+      const dateString = 'TP. Hồ Chí Minh, ngày ' + dd + ' tháng ' + mm + ' năm ' + yyyy;
+
       const reportDateEl = document.getElementById('reportPrintDate');
       if (reportDateEl) {
-        reportDateEl.textContent = 'TP. Hồ Chí Minh, ngày ' + today.getDate() + ' tháng ' + (today.getMonth() + 1) + ' năm ' + today.getFullYear();
+        reportDateEl.textContent = dateString;
+      }
+      const headerDateEl = document.getElementById('printHeaderDate');
+      if (headerDateEl) {
+        headerDateEl.textContent = dateString;
       }
     } catch (error) {
       this.tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:red;">Lỗi: ' + error.message + '</td></tr>';
@@ -274,25 +365,25 @@ window.ReportsModule = {
     }
 
     if (type === 'ds_ltc') {
-      this.thead.innerHTML = '<tr><th width="60">STT</th><th>Tên môn học</th><th width="80" style="text-align:center;">Nhóm</th><th>Họ tên GV giảng</th><th width="120" style="text-align:center;">Số SV tối thiểu</th><th width="120" style="text-align:center;">Số SV đã đăng ký</th></tr>';
+      this.thead.innerHTML = '<tr><th width="60">STT</th><th>TÊN MÔN HỌC</th><th width="80" style="text-align:center;">NHÓM</th><th>HỌ TÊN GIẢNG VIÊN</th><th width="120" style="text-align:center;">SỐ SV TỐI THIỂU</th><th width="120" style="text-align:center;">SỐ SV ĐÃ ĐĂNG KÝ</th></tr>';
       data.forEach((row, index) => this.tbody.insertAdjacentHTML('beforeend', '<tr><td>' + (index + 1) + '</td><td style="font-weight:600;">' + (row.TENMH || row.MAMH || '') + '</td><td style="text-align:center;">' + (row.NHOM ?? '') + '</td><td>' + (row.HOTEN_GV || '') + '</td><td style="text-align:center;">' + (row.SOSVTOITHIEU ?? 0) + '</td><td style="text-align:center; font-weight:700; color:var(--primary-color);">' + (row.SOSV_DANGKY ?? 0) + '</td></tr>'));
       this.reportFooter.innerHTML = 'Số lượng lớp đã mở: ' + data.length;
     } else if (type === 'dssv_ltc') {
-      this.thead.innerHTML = '<tr><th width="60">STT</th><th width="150">Mã SV</th><th>Họ</th><th>Tên</th><th width="100" style="text-align:center;">Phái</th><th width="150">Mã lớp</th></tr>';
+      this.thead.innerHTML = '<tr><th width="60">STT</th><th width="150">MÃ SV</th><th>HỌ</th><th>TÊN</th><th width="100" style="text-align:center;">PHÁI</th><th width="150">MÃ LỚP</th></tr>';
       data.forEach((row, index) => this.tbody.insertAdjacentHTML('beforeend', '<tr><td>' + (index + 1) + '</td><td style="font-weight:600;">' + (row.MASV || '') + '</td><td>' + (row.HO || '') + '</td><td>' + (row.TEN || '') + '</td><td style="text-align:center;">' + (row.PHAI ? 'Nữ' : 'Nam') + '</td><td>' + (row.MALOP || '') + '</td></tr>'));
       this.reportFooter.innerHTML = 'Số sinh viên đã đăng ký: ' + data.length;
     } else if (type === 'bang_diem_mh') {
-      this.thead.innerHTML = '<tr><th width="60">STT</th><th width="150">Mã SV</th><th>Họ</th><th>Tên</th><th width="100" style="text-align:center;">Điểm chuyên cần</th><th width="100" style="text-align:center;">Điểm giữa kỳ</th><th width="100" style="text-align:center;">Điểm cuối kỳ</th><th width="120" style="text-align:center; font-weight:bold; color:var(--primary-color);">Điểm hết môn</th></tr>';
+      this.thead.innerHTML = '<tr><th width="60">STT</th><th width="150">MÃ SV</th><th>HỌ</th><th>TÊN</th><th width="100" style="text-align:center;">ĐIỂM CHUYÊN CẦN</th><th width="100" style="text-align:center;">ĐIỂM GIỮA KỲ</th><th width="100" style="text-align:center;">ĐIỂM CUỐI KỲ</th><th width="120" style="text-align:center; font-weight:bold; color:var(--primary-color);">ĐIỂM HẾT MÔN</th></tr>';
       data.forEach((row, index) => this.tbody.insertAdjacentHTML('beforeend', '<tr><td>' + (index + 1) + '</td><td style="font-weight:600;">' + (row.MASV || '') + '</td><td>' + (row.HO || '') + '</td><td>' + (row.TEN || '') + '</td><td style="text-align:center;">' + this.formatScore(row.DIEM_CC) + '</td><td style="text-align:center;">' + this.formatScore(row.DIEM_GK) + '</td><td style="text-align:center;">' + this.formatScore(row.DIEM_CK) + '</td><td style="text-align:center; font-weight:700; color:var(--primary-color);">' + this.formatScore(row.DIEM_KTHP) + '</td></tr>'));
       this.reportFooter.innerHTML = 'Số sinh viên: ' + data.length;
     } else if (type === 'phieu_diem') {
-      this.thead.innerHTML = '<tr><th width="60">STT</th><th>Tên môn học</th><th width="150" style="text-align:center; font-weight:bold; color:var(--primary-color);">Điểm</th></tr>';
-      data.forEach((row, index) => this.tbody.insertAdjacentHTML('beforeend', '<tr><td>' + (row.STT || (index + 1)) + '</td><td style="font-weight:600;">' + (row.TENMH || '') + '</td><td style="text-align:center; font-weight:700; color:var(--primary-color);">' + this.formatScore(row.DIEM) + '</td></tr>'));
+      this.thead.innerHTML = '<tr><th width="60">STT</th><th>TÊN MÔN HỌC</th><th width="100" style="text-align:center;">ĐIỂM CC</th><th width="100" style="text-align:center;">ĐIỂM GK</th><th width="100" style="text-align:center;">ĐIỂM CK</th><th width="120" style="text-align:center; font-weight:bold; color:var(--primary-color);">ĐIỂM TK</th></tr>';
+      data.forEach((row, index) => this.tbody.insertAdjacentHTML('beforeend', '<tr><td>' + (row.STT || (index + 1)) + '</td><td style="font-weight:600;">' + (row.TENMH || '') + '</td><td style="text-align:center;">' + this.formatScore(row.DIEM_CC) + '</td><td style="text-align:center;">' + this.formatScore(row.DIEM_GK) + '</td><td style="text-align:center;">' + this.formatScore(row.DIEM_CK) + '</td><td style="text-align:center; font-weight:700; color:var(--primary-color);">' + this.formatScore(row.DIEM) + '</td></tr>'));
       this.reportFooter.innerHTML = 'Số môn học: ' + data.length;
     } else if (type === 'bang_diem_tk') {
       const sample = data[0];
       const subjectKeys = Object.keys(sample).filter(k => !['MASV', 'HO', 'TEN'].includes(k));
-      this.thead.innerHTML = '<tr><th width="200">MASV - Họ tên</th>' + subjectKeys.map(s => '<th style="text-align:center; min-width:100px;">' + s + '</th>').join('') + '</tr>';
+      this.thead.innerHTML = '<tr><th width="200">MASV-Họ tên</th>' + subjectKeys.map(s => '<th style="text-align:center; min-width:100px;">' + s.toUpperCase() + '</th>').join('') + '</tr>';
       data.forEach(row => {
         const fullName = (row.HO || '') + ' ' + (row.TEN || '');
         const cells = subjectKeys.map(s => '<td style="text-align:center;">' + this.formatScore(row[s]) + '</td>').join('');

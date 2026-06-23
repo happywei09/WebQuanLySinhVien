@@ -620,6 +620,28 @@ BEGIN
 END;
 GO
 
+-- =========================================================================
+-- STORED PROCEDURE: SP_GET_LOCAL_KHOA
+-- Description: Lấy mã khoa và tên khoa cục bộ tương ứng với database hiện tại.
+-- Returns: Một dòng chứa MAKHOA và TENKHOA.
+-- =========================================================================
+CREATE OR ALTER PROCEDURE SP_GET_LOCAL_KHOA
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @DBName NVARCHAR(128) = DB_NAME();
+    IF CHARINDEX('HTC', @DBName) > 0 OR @DBName = 'QLDSV_HTC'
+    BEGIN
+        SELECT MAKHOA, TENKHOA FROM KHOA WHERE MAKHOA = 'CNTT';
+    END
+    ELSE
+    BEGIN
+        SELECT MAKHOA, TENKHOA FROM KHOA WHERE MAKHOA = 'VT';
+    END
+END;
+GO
+
+
 
 -- =========================================================================
 -- SECTION 03: LOP MODULE (INDEXES AND STORED PROCEDURES)
@@ -2153,10 +2175,14 @@ BEGIN
         ltc.NHOM,
         gv.HO + ' ' + gv.TEN AS HOTEN_GV,
         ltc.SOSVTOITHIEU,
-        ISNULL(tk.SOSV_DANGKY, 0) AS SOSV_DANGKY
+        ISNULL(tk.SOSV_DANGKY, 0) AS SOSV_DANGKY,
+        k.TENKHOA,
+        ltc.NIENKHOA,
+        ltc.HOCKY
     FROM LOPTINCHI ltc
     INNER JOIN MONHOC mh ON ltc.MAMH = mh.MAMH
     INNER JOIN GIANGVIEN gv ON ltc.MAGV = gv.MAGV
+    INNER JOIN KHOA k ON ltc.MAKHOA = k.MAKHOA
     LEFT JOIN #ThongKeDangKy tk ON ltc.MALTC = tk.MALTC
     WHERE ltc.NIENKHOA = @NIENKHOA 
       AND ltc.HOCKY = @HOCKY 

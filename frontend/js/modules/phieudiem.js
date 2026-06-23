@@ -18,6 +18,7 @@ document.addEventListener('pageLoaded', function (e) {
     domRefs.lblGioiTinh = document.getElementById('pdGioiTinh');
     domRefs.lblClass = document.getElementById('pdClass');
     domRefs.lblDiaChi = document.getElementById('pdDiaChi');
+    domRefs.lblKhoa = document.getElementById('pdKhoa');
     domRefs.lblPrintDate = document.getElementById('pdPrintDate');
     domRefs.filterNienKhoa = document.getElementById('filterNienKhoa');
     domRefs.filterHocKy = document.getElementById('filterHocKy');
@@ -75,6 +76,7 @@ document.addEventListener('pageLoaded', function (e) {
         if (domRefs.lblGioiTinh) domRefs.lblGioiTinh.textContent = '-';
         if (domRefs.lblClass) domRefs.lblClass.textContent = 'N/A';
         if (domRefs.lblDiaChi) domRefs.lblDiaChi.textContent = '-';
+        if (domRefs.lblKhoa) domRefs.lblKhoa.textContent = '-';
       }
 
       // 2. Tải thông tin lớp học & khoa
@@ -108,6 +110,12 @@ document.addEventListener('pageLoaded', function (e) {
       var res = await API.get('/diem/report/phieu-diem/' + user.username);
       if (res.success) {
         allGradesData = res.data || [];
+        // Cập nhật tên khoa từ studentInfo
+        if (res.studentInfo && res.studentInfo.TENKHOA && domRefs.lblKhoa) {
+          domRefs.lblKhoa.textContent = res.studentInfo.TENKHOA;
+        } else if (domRefs.lblKhoa) {
+          domRefs.lblKhoa.textContent = '-';
+        }
         populateNienKhoaFilter();
         applyFilters();
       } else {

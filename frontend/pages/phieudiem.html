@@ -1,23 +1,26 @@
 <!-- Print-only official header (Hidden on screen, visible on print) -->
 <div class="print-only print-header-academic">
-  <table style="width: 100%; border: none; margin-bottom: 20px; border-collapse: collapse;">
+  <table style="width: 100%; border: none; margin-bottom: 10px; border-collapse: collapse;">
     <tr style="border: none;">
       <td
         style="width: 45%; text-align: center; vertical-align: top; border: none; padding: 0; line-height: 1.4; color: #000; font-family: var(--font-family);">
         <span style="font-size: 12px; text-transform: uppercase;">HỌC VIỆN CÔNG NGHỆ</span><br>
         <span style="font-size: 12px; text-transform: uppercase; font-weight: bold;">BƯU CHÍNH VIỄN THÔNG CƠ SỞ TP HỒ
           CHÍ MINH</span>
-        <div style="width: 60px; height: 1px; background: #000; margin: 4px auto 0;"></div>
       </td>
       <td
         style="width: 55%; text-align: center; vertical-align: top; border: none; padding: 0; line-height: 1.4; color: #000; font-family: var(--font-family);">
         <span style="font-size: 12px; font-weight: bold; text-transform: uppercase;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT
           NAM</span><br>
         <span style="font-size: 12px; font-weight: bold;">Độc lập - Tự do - Hạnh phúc</span>
-        <div style="width: 100px; height: 1px; background: #000; margin: 4px auto 0;"></div>
       </td>
     </tr>
   </table>
+
+  <!-- Ngày lập phiếu ở trên thông tin cá nhân bên phải (Chỉ hiển thị khi in) -->
+  <div style="text-align: right; font-style: italic; margin-bottom: 25px; margin-right: 5%; font-size: 13px; color: #000; font-family: var(--font-family);">
+    <span id="pdPrintDateTop">TP. Hồ Chí Minh, ngày ..... tháng ..... năm 20...</span>
+  </div>
 
   <div style="text-align: center; margin: 25px 0 20px;">
     <h2
@@ -51,11 +54,6 @@
     <h3 class="card-title">Kết quả học tập cá nhân</h3>
   </div>
   <div class="card-body">
-    <!-- Ngày lập phiếu ở trên thông tin cá nhân bên phải (Chỉ hiển thị khi in) -->
-    <div class="print-only"
-      style="text-align: right; font-style: italic; margin-bottom: 12px; font-size: 13px; color: #000; font-family: var(--font-family);">
-      <span id="pdPrintDateTop">TP. Hồ Chí Minh, ngày ..... tháng ..... năm 20...</span>
-    </div>
 
     <!-- Student profile details grid -->
     <div class="student-info-grid"
@@ -65,6 +63,7 @@
       <div><strong>Ngày sinh:</strong> <span id="pdNgaySinh">Đang tải...</span></div>
       <div><strong>Giới tính:</strong> <span id="pdGioiTinh">Đang tải...</span></div>
       <div><strong>Lớp học:</strong> <span id="pdClass">Đang tải...</span></div>
+      <div><strong>Khoa:</strong> <span id="pdKhoa">Đang tải...</span></div>
       <div style="grid-column: span 2;"><strong>Địa chỉ:</strong> <span id="pdDiaChi">Đang tải...</span></div>
     </div>
 

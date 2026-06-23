@@ -12,8 +12,9 @@
 <!-- CHOOSE REPORT TYPE & FILTERS -->
 <div class="card no-print" style="margin-bottom: 24px;">
   <div class="card-body">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: flex-end;">
-      
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: flex-end;">
+
       <div class="form-group" style="margin-bottom: 0;">
         <label class="form-label" for="reportTypeSelect">Chọn loại báo cáo</label>
         <select id="reportTypeSelect" class="form-control">
@@ -42,7 +43,8 @@
       </div>
 
       <!-- LOP TIN CHI SELECT (Used by dssv_ltc, bang_diem_mh) -->
-      <div class="form-group filter-group" id="groupLopTinChi" style="display: none; margin-bottom: 0; min-width: 250px;">
+      <div class="form-group filter-group" id="groupLopTinChi"
+        style="display: none; margin-bottom: 0; min-width: 250px;">
         <label class="form-label" for="reportLTC">Lớp tín chỉ</label>
         <select id="reportLTC" class="form-control">
           <option value="">-- Tải lớp tín chỉ --</option>
@@ -83,20 +85,27 @@
   <div class="card-body" id="printReportArea">
     <!-- Print-only official header (Hidden on screen, visible on print) -->
     <div class="print-only print-header-academic">
-      <table style="width: 100%; border: none; margin-bottom: 20px; border-collapse: collapse;">
+      <table style="width: 100%; border: none; margin-bottom: 10px; border-collapse: collapse;">
         <tr style="border: none;">
-          <td style="width: 45%; text-align: center; vertical-align: top; border: none; padding: 0; line-height: 1.4; color: #000; font-family: var(--font-family);">
+          <td
+            style="width: 45%; text-align: center; vertical-align: top; border: none; padding: 0; line-height: 1.4; color: #000; font-family: var(--font-family);">
             <span style="font-size: 12px; text-transform: uppercase;">HỌC VIỆN CÔNG NGHỆ</span><br>
-            <span style="font-size: 12px; text-transform: uppercase; font-weight: bold;">BƯU CHÍNH VIỄN THÔNG</span>
-            <div style="width: 60px; height: 1px; background: #000; margin: 4px auto 0;"></div>
+            <span style="font-size: 12px; text-transform: uppercase; font-weight: bold;">BƯU CHÍNH VIỄN THÔNG CƠ SỞ TP HỒ
+              CHÍ MINH</span>
           </td>
-          <td style="width: 55%; text-align: center; vertical-align: top; border: none; padding: 0; line-height: 1.4; color: #000; font-family: var(--font-family);">
-            <span style="font-size: 12px; font-weight: bold; text-transform: uppercase;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</span><br>
+          <td
+            style="width: 55%; text-align: center; vertical-align: top; border: none; padding: 0; line-height: 1.4; color: #000; font-family: var(--font-family);">
+            <span style="font-size: 12px; font-weight: bold; text-transform: uppercase;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT
+              NAM</span><br>
             <span style="font-size: 12px; font-weight: bold;">Độc lập - Tự do - Hạnh phúc</span>
-            <div style="width: 100px; height: 1px; background: #000; margin: 4px auto 0;"></div>
           </td>
         </tr>
       </table>
+
+      <!-- Ngày tháng lập biểu (căn phải) -->
+      <div style="text-align: right; font-style: italic; margin-bottom: 25px; margin-right: 5%; font-size: 13px; color: #000; font-family: var(--font-family);">
+        <span id="printHeaderDate">TP. Hồ Chí Minh, ngày 10 tháng 06 năm 2026</span>
+      </div>
     </div>
 
     <!-- Dynamic Report Content gets injected here -->
@@ -115,13 +124,14 @@
 
     <!-- Print-only signature footer -->
     <div class="print-only print-footer" style="margin-top: 40px; width: 100%;">
-      <div style="display: flex; justify-content: space-between; text-align: center; font-size: 14px; font-family: var(--font-family); color: #000;">
+      <div
+        style="display: flex; justify-content: space-between; text-align: center; font-size: 14px; font-family: var(--font-family); color: #000;">
         <div style="width: 220px;">
           <p style="font-weight: bold; margin-bottom: 80px; color: #000;">NGƯỜI LẬP BIỂU</p>
           <p style="font-style: italic; color: #475569; font-size: 13px;">(Ký, ghi rõ họ tên)</p>
         </div>
         <div style="width: 300px;">
-          <p id="reportPrintDate" style="font-style: italic; margin-bottom: 8px; color: #334155;">Hà Nội, ngày ..... tháng ..... năm 20...</p>
+          <!-- <p id="reportPrintDate" style="font-style: italic; margin-bottom: 8px; color: #334155;">Hà Nội, ngày ..... tháng ..... năm 20...</p> -->
           <p style="font-weight: bold; margin-bottom: 80px; color: #000;">XÁC NHẬN CỦA KHOA/TRƯỜNG</p>
           <p style="font-style: italic; color: #475569; font-size: 13px;">(Ký tên và đóng dấu)</p>
         </div>
@@ -138,13 +148,18 @@
   }
 
   @media print {
+
     /* Cho phép hiển thị tiêu đề in */
     .print-only {
       display: block !important;
     }
 
     /* Reset cấu trúc trang để in nhiều trang không bị cắt */
-    html, body, .app-container, .main-content, .page-content {
+    html,
+    body,
+    .app-container,
+    .main-content,
+    .page-content {
       height: auto !important;
       overflow: visible !important;
       display: block !important;
@@ -153,7 +168,7 @@
       padding: 0 !important;
       margin: 0 !important;
     }
-    
+
     /* Ẩn các thành phần giao diện không liên quan */
     .sidebar,
     .topbar,
@@ -162,7 +177,7 @@
     .modal-overlay {
       display: none !important;
     }
-    
+
     /* Reset Card */
     .card {
       border: none !important;
@@ -171,7 +186,7 @@
       padding: 0 !important;
       margin: 0 !important;
     }
-    
+
     /* Cấu hình vùng in */
     #printReportArea {
       width: 100% !important;
@@ -180,6 +195,10 @@
     }
 
     /* Căn chỉnh lại tiêu đề báo cáo khi in */
+    #reportHeader {
+      margin-bottom: 20px !important;
+    }
+
     #reportHeader h2 {
       color: #000 !important;
       font-size: 18px !important;
@@ -187,18 +206,20 @@
       margin-top: 10px !important;
       text-transform: uppercase !important;
     }
+
     #reportHeader p {
       color: #000 !important;
       font-size: 12px !important;
       line-height: 1.5 !important;
     }
-    
+
     /* Định dạng bảng in chính thức */
     #reportTable {
       width: 100% !important;
       border-collapse: collapse !important;
       margin-top: 15px !important;
     }
+
     #reportTable th,
     #reportTable td {
       border: 1px solid #000 !important;
@@ -207,6 +228,7 @@
       background: transparent !important;
       font-size: 12px !important;
     }
+
     #reportTable th {
       background-color: #f1f5f9 !important;
       font-weight: bold !important;
@@ -220,17 +242,20 @@
       font-size: 12px !important;
       margin-top: 15px !important;
     }
-    
+
     /* Hiển thị chân trang ký nhận */
     .print-footer {
       display: block !important;
       margin-top: 40px !important;
       page-break-inside: avoid !important;
     }
-    .print-footer, .print-footer p, .print-footer div {
+
+    .print-footer,
+    .print-footer p,
+    .print-footer div {
       color: #000 !important;
     }
-    
+
     /* Thiết lập khổ giấy và lề in */
     @page {
       size: A4 portrait;
