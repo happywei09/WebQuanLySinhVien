@@ -78,12 +78,7 @@ class AuthService {
           // A. Tìm Database User Name tương ứng với Login này
           const dbUserResult = await mainPool.request()
             .input("loginName", sql.NVarChar(128), username)
-            .query(`
-              SELECT u.name AS UserName 
-              FROM sys.database_principals u
-              INNER JOIN sys.sql_logins l ON u.sid = l.sid
-              WHERE l.name = @loginName;
-            `);
+            .execute("SP_GET_DB_USER_BY_LOGIN");
 
           let dbUser = username;
           if (dbUserResult.recordset && dbUserResult.recordset.length > 0) {
@@ -107,7 +102,7 @@ class AuthService {
           // C. Lấy họ tên giảng viên từ bảng GIANGVIEN
           const nameResult = await mainPool.request()
             .input("MAGV", sql.NChar(10), dbUser)
-            .query("SELECT HO, TEN, MAKHOA FROM GIANGVIEN WHERE MAGV = @MAGV");
+            .execute("SP_GET_GIANGVIEN_BY_ID");
 
           let fullName = username;
           let maKhoa = null;

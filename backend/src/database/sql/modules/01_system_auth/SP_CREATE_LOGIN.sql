@@ -1,4 +1,15 @@
-CREATE PROCEDURE SP_CREATE_LOGIN
+USE [QLDSV_HTC];
+GO
+
+-- =========================================================================
+-- STORED PROCEDURE: SP_CREATE_LOGIN
+-- Description: Tạo mới một SQL Server Login trên server cho giảng viên/nhân viên.
+-- Parameters:
+--   - @LoginName: Tên login cần tạo
+--   - @Password: Mật khẩu cho login mới
+-- Returns: Không trả về dữ liệu, in thông báo thành công hoặc ném lỗi.
+-- =========================================================================
+CREATE OR ALTER PROCEDURE SP_CREATE_LOGIN
     @LoginName NVARCHAR(50),  -- Tên Login cần tạo (Ví dụ: 'gv_minh' hoặc 'sv')
     @Password NVARCHAR(50)    -- Mật khẩu cho Login đó
 AS
@@ -28,5 +39,3 @@ BEGIN
     END CATCH
 END
 GO
-
-EXEC SP_CREATE_LOGIN @LoginName = 'gv_minh', @Password = '123456';

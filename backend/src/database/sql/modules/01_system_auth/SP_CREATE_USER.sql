@@ -1,4 +1,16 @@
-CREATE PROCEDURE SP_CREATE_USER
+USE [QLDSV_HTC];
+GO
+
+-- =========================================================================
+-- STORED PROCEDURE: SP_CREATE_USER
+-- Description: Tạo database user từ SQL Login và gán vào database role tương ứng.
+-- Parameters:
+--   - @LoginName: Tên login đã có trên Server
+--   - @UserName: Mã giảng viên hoặc nhân viên làm DB User tương ứng
+--   - @RoleName: Tên nhóm quyền được gán ('PGV', 'KHOA', 'SV')
+-- Returns: Không trả về dữ liệu, in thông báo thành công hoặc ném lỗi.
+-- =========================================================================
+CREATE OR ALTER PROCEDURE SP_CREATE_USER
     @LoginName NVARCHAR(50),  -- Tên Login đã tạo trước đó (Ví dụ: 'gv_an' hoặc 'sv')
     @UserName NVARCHAR(50),   -- Tên Database User (Bắt buộc là Mã GV hoặc Mã SV)
     @RoleName NVARCHAR(20)    -- Tên Nhóm quyền ('PGV', 'KHOA', hoặc 'SV')
@@ -49,7 +61,3 @@ BEGIN
     END CATCH
 END
 GO
-
-EXEC SP_CREATE_USER @LoginName = 'gv_minh', @UserName = 'GV17', @RoleName = 'KHOA';
-
-EXEC SP_GET_USER_ROLES @UserName = 'GV17';

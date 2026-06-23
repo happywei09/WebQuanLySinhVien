@@ -5,7 +5,14 @@ GO
 -- STORED PROCEDURES - REPORTS
 -- =========================================================================
 
--- BÁO CÁO: Bảng điểm môn học theo lớp tín chỉ
+-- =========================================================================
+-- STORED PROCEDURE: SP_REPORT_BANGDIEM_MONHOC
+-- Description: Lấy bảng điểm môn học của một lớp tín chỉ để phục vụ in ấn.
+--              Tính điểm hết môn theo công thức: CC*0.1 + GK*0.3 + CK*0.6.
+-- Parameters:
+--   - @MALTC: Mã lớp tín chỉ cần lập bảng điểm
+-- Returns: Danh sách sinh viên kèm điểm thành phần và điểm hết môn, sắp xếp theo Tên, Họ.
+-- =========================================================================
 CREATE OR ALTER PROCEDURE SP_REPORT_BANGDIEM_MONHOC
     @MALTC INT
 AS
@@ -25,7 +32,15 @@ BEGIN
 END;
 GO
 
--- BÁO CÁO: Phiếu điểm cá nhân sinh viên
+-- =========================================================================
+-- STORED PROCEDURE: SP_REPORT_PHIEUDIEM
+-- Description: Lập phiếu điểm cá nhân của một sinh viên, liệt kê điểm hết môn
+--              của toàn bộ các môn học đã đăng ký tích lũy. Nếu học nhiều lần,
+--              lấy điểm của lần học có kết quả tốt nhất.
+-- Parameters:
+--   - @MASV: Mã sinh viên cần lập phiếu điểm
+-- Returns: Bảng danh sách môn học kèm điểm thành phần và điểm tổng kết hết môn.
+-- =========================================================================
 CREATE OR ALTER PROCEDURE SP_REPORT_PHIEUDIEM
     @MASV NCHAR(10)
 AS
@@ -76,10 +91,16 @@ BEGIN
     WHERE rn = 1
     ORDER BY TENMH;
 END;
-
 GO
 
--- BÁO CÁO: Bảng điểm tổng kết theo lớp (Dynamic Pivot + Bảng tạm)
+-- =========================================================================
+-- STORED PROCEDURE: SP_REPORT_BANGDIEM_TONGKET
+-- Description: Xuất bảng điểm tổng kết của một lớp học dạng PIVOT động.
+--              Hiển thị danh sách sinh viên theo dòng và điểm hết môn các môn học theo cột.
+-- Parameters:
+--   - @MALOP: Mã lớp học cần lập bảng điểm tổng kết
+-- Returns: Bảng PIVOT động chứa danh sách sinh viên và cột điểm của từng môn học.
+-- =========================================================================
 CREATE OR ALTER PROCEDURE SP_REPORT_BANGDIEM_TONGKET
     @MALOP NCHAR(10)
 AS
@@ -137,7 +158,13 @@ BEGIN
 END;
 GO
 
--- BÁO CÁO: Danh sách sinh viên đăng ký lớp tín chỉ
+-- =========================================================================
+-- STORED PROCEDURE: SP_REPORT_DSSV_DANGKY
+-- Description: Lấy danh sách sinh viên đã đăng ký vào một lớp tín chỉ cụ thể.
+-- Parameters:
+--   - @MALTC: Mã lớp tín chỉ
+-- Returns: Danh sách sinh viên (Mã SV, Họ, Tên, Phái, Mã lớp) đăng ký vào lớp tín chỉ này.
+-- =========================================================================
 CREATE OR ALTER PROCEDURE SP_REPORT_DSSV_DANGKY
     @MALTC INT
 AS
@@ -155,7 +182,15 @@ BEGIN
 END;
 GO
 
--- BÁO CÁO: Danh sách lớp tín chỉ của niên khoá + học kỳ (Bảng tạm)
+-- =========================================================================
+-- STORED PROCEDURE: SP_REPORT_DS_LOPTINCHI
+-- Description: Lấy danh sách lớp tín chỉ được mở trong Niên khóa và Học kỳ
+--              nhất định, có thống kê sĩ số đăng ký hiện tại của mỗi lớp.
+-- Parameters:
+--   - @NIENKHOA: Niên khóa
+--   - @HOCKY: Học kỳ (1, 2, 3)
+-- Returns: Bảng danh sách các lớp tín chỉ (Mã LTC, Tên môn học, Nhóm, Giảng viên, Sĩ số tối thiểu, Số đăng ký).
+-- =========================================================================
 CREATE OR ALTER PROCEDURE SP_REPORT_DS_LOPTINCHI
     @NIENKHOA NCHAR(9),
     @HOCKY INT

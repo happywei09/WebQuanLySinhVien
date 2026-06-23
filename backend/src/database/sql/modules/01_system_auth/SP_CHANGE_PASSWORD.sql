@@ -1,49 +1,19 @@
-CREATE PROCEDURE SP_CHANGE_PASSWORD
-    @AccountName NVARCHAR(50), -- Có thể là LoginName (đối với GV) hoặc Mã SV (đối với SV)
-    @OldPassword NVARCHAR(50),
-    @NewPassword NVARCHAR(50),
-    @IsStudent BIT -- 1: Sinh viên, 0: Giảng viên/PGV
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    BEGIN TRY
-        -- TRƯỜNG HỢP 1: ĐỔI MẬT KHẨU CHO SINH VIÊN
-        IF @IsStudent = 1
-        BEGIN
-            -- Kiểm tra mật khẩu cũ đúng không
-            IF NOT EXISTS (SELECT 1 FROM dbo.Sinhvien WHERE MASV = @AccountName AND [PASSWORD] = @OldPassword)
-            BEGIN
-                RAISERROR(N'Mật khẩu cũ của Sinh viên không chính xác!', 16, 1);
-                RETURN;
-            END
-
-            -- Cập nhật mật khẩu mới vào bảng Sinhvien
-            UPDATE dbo.Sinhvien 
-            SET [PASSWORD] = @NewPassword 
-            WHERE MASV = @AccountName;
-
-            PRINT N'Đổi mật khẩu Sinh viên thành công!';
-        END
-        
-        -- TRƯỜNG HỢP 2: ĐỔI MẬT KHẨU CHO GIẢNG VIÊN / PGV (Đổi mật khẩu SQL Login)
-        ELSE
-        BEGIN
-            -- Sử dụng SP hệ thống sp_password của SQL Server để đổi pass cho Login
-            -- Tham số: @old, @new, @loginame
-            EXEC sp_password @old = @OldPassword, @new = @NewPassword, @loginame = @AccountName;
-            
-            PRINT N'Đổi mật khẩu Login Giảng viên thành công!';
-        END
-    END TRY
-    BEGIN CATCH
-        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
-        RAISERROR(N'Lỗi khi đổi mật khẩu: %s', 16, 1, @ErrorMessage);
-    END CATCH
-END
+USE [QLDSV_HTC];
 GO
 
-ALTER PROCEDURE SP_CHANGE_PASSWORD
+-- =========================================================================
+-- STORED PROCEDURE: SP_CHANGE_PASSWORD
+-- Description: Thay đổi mật khẩu cho tài khoản.
+--              - Nếu là sinh viên: Thay đổi mật khẩu trong bảng Sinhvien.
+--              - Nếu là giảng viên/nhân viên: Thay đổi mật khẩu SQL Login của hệ thống.
+-- Parameters:
+--   - @UserName: Mã sinh viên hoặc mã giảng viên/nhân viên
+--   - @OldPassword: Mật khẩu cũ
+--   - @NewPassword: Mật khẩu mới cần đổi
+--   - @IsStudent: Bit phân biệt sinh viên (1) và giảng viên/PGV (0)
+-- Returns: Không trả về dữ liệu, in thông báo thành công hoặc ném lỗi.
+-- =========================================================================
+CREATE OR ALTER PROCEDURE SP_CHANGE_PASSWORD
     @UserName NVARCHAR(50),    -- Đồng bộ luôn là Mã GV hoặc Mã SV
     @OldPassword NVARCHAR(50),
     @NewPassword NVARCHAR(50),
@@ -102,5 +72,3 @@ BEGIN
     END CATCH
 END
 GO
-
-EXEC SP_CHANGE_PASSWORD @UserName = 'GV17', @OldPassword = '654321', @NewPassword = '123456', @IsStudent = 0;

@@ -1,4 +1,16 @@
-CREATE PROCEDURE SP_STUDENT_LOGIN
+USE [QLDSV_HTC];
+GO
+
+-- =========================================================================
+-- STORED PROCEDURE: SP_STUDENT_LOGIN
+-- Description: Kiểm tra đăng nhập của Sinh viên. Nếu thành công, trả về
+--              thông tin cá nhân gồm Mã SV, Họ, Tên, Mã Lớp và Role.
+-- Parameters:
+--   - @MaSV: Mã sinh viên đăng nhập
+--   - @Password: Mật khẩu sinh viên
+-- Returns: Bảng thông tin sinh viên và RoleName 'SV'
+-- =========================================================================
+CREATE OR ALTER PROCEDURE SP_STUDENT_LOGIN
     @MaSV NVARCHAR(10),
     @Password NVARCHAR(40)
 AS
@@ -24,5 +36,3 @@ BEGIN
     END
 END
 GO
-
-EXEC SP_STUDENT_LOGIN @MaSV = 'N23DCCN115', @Password = '123456';

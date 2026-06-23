@@ -5,6 +5,14 @@ GO
 -- STORED PROCEDURES - DASHBOARD
 -- =========================================================================
 
+-- =========================================================================
+-- STORED PROCEDURE: SP_DASHBOARD_GET_FILTERS
+-- Description: Lấy dữ liệu danh mục để phục vụ làm bộ lọc (Filter) trên Dashboard:
+--              Recordset 0: Danh sách khoa (Mã khoa, Tên khoa)
+--              Recordset 1: Danh sách Niên khóa và Học kỳ có mở lớp tín chỉ.
+-- Parameters: Không
+-- Returns: Hai Recordsets dữ liệu.
+-- =========================================================================
 CREATE OR ALTER PROCEDURE SP_DASHBOARD_GET_FILTERS
 AS
 BEGIN
@@ -16,6 +24,17 @@ BEGIN
 END;
 GO
 
+-- =========================================================================
+-- STORED PROCEDURE: SP_DASHBOARD_GET_STATS
+-- Description: Lấy số liệu thống kê tổng hợp và chi tiết của các lớp tín chỉ mở.
+--              Recordset 0: Thống kê tổng số sinh viên, số lớp đang mở, tổng số lớp và tổng lượt đăng ký.
+--              Recordset 1: Danh sách chi tiết các lớp tín chỉ bao gồm thông tin môn học, sĩ số đăng ký hiện tại.
+-- Parameters:
+--   - @MAKHOA: Mã khoa lọc thống kê (Mặc định NULL)
+--   - @NIENKHOA: Niên khóa lọc thống kê (Mặc định NULL)
+--   - @HOCKY: Học kỳ lọc thống kê (Mặc định NULL)
+-- Returns: Hai Recordsets thống kê dữ liệu.
+-- =========================================================================
 CREATE OR ALTER PROCEDURE SP_DASHBOARD_GET_STATS
     @MAKHOA NCHAR(10) = NULL,
     @NIENKHOA NCHAR(9) = NULL,

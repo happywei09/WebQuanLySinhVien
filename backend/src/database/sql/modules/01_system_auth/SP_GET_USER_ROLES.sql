@@ -1,8 +1,13 @@
+USE [QLDSV_HTC];
+GO
+
 -- =========================================================================
 -- STORED PROCEDURE: SP_GET_USER_ROLES
 -- Description: Lấy danh sách các database roles của một database user cụ thể.
+-- Parameters:
+--   - @UserName: Tên database user cần lấy vai trò
+-- Returns: Bảng danh sách các RoleName của User.
 -- =========================================================================
-
 CREATE OR ALTER PROCEDURE SP_GET_USER_ROLES
     @UserName NVARCHAR(128)
 AS
