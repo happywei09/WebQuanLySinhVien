@@ -187,7 +187,10 @@ window.SinhVienModule = {
             if (op.type === 'create' || op.type === 'update') {
                 map.set(op.key, { ...op.newValue });
             } else if (op.type === 'delete') {
-                map.delete(op.key);
+                const item = map.get(op.key);
+                if (item) {
+                    item._isDeleted = true;
+                }
             }
         });
 
@@ -268,14 +271,25 @@ window.SinhVienModule = {
 
         data.forEach((sv, index) => {
             const tr = document.createElement('tr');
+            if (sv._isDeleted) {
+                tr.style.opacity = '0.6';
+                tr.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
+            }
 
             const pendingOp = this.state.pendingOperations[sv.MASV];
             const statusBadge = this.getStatusBadge(pendingOp);
 
-            const actionContent = isPGV
-                ? `<button class="btn btn-primary btn-sm" onclick="window.SinhVienModule.openModal('${sv.MASV}', '${this.escapeJs(sv.HO || '')}', '${this.escapeJs(sv.TEN || '')}', ${sv.PHAI ? 1 : 0}, '${this.escapeJs(sv.MALOP)}')">Sửa</button>
-           <button class="btn btn-danger btn-sm" onclick="window.SinhVienModule.handleDelete('${sv.MASV}')">Xoá</button>`
-                : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+            let actionContent = '';
+            if (isPGV) {
+                if (sv._isDeleted) {
+                    actionContent = `<button class="btn btn-secondary btn-sm" onclick="window.SinhVienModule.handleCancelDelete('${sv.MASV}')">Huỷ xoá</button>`;
+                } else {
+                    actionContent = `<button class="btn btn-primary btn-sm" onclick="window.SinhVienModule.openModal('${sv.MASV}', '${this.escapeJs(sv.HO || '')}', '${this.escapeJs(sv.TEN || '')}', ${sv.PHAI ? 1 : 0}, '${this.escapeJs(sv.MALOP)}')">Sửa</button>
+                                     <button class="btn btn-danger btn-sm" onclick="window.SinhVienModule.handleDelete('${sv.MASV}')">Xoá</button>`;
+                }
+            } else {
+                actionContent = `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+            }
 
             tr.innerHTML = `
         <td>${index + 1}</td>
@@ -431,6 +445,14 @@ window.SinhVienModule = {
         this.filterAndRenderData();
         this.updateActionState();
         Toast.success('Đã đưa thao tác xoá vào danh sách chờ ghi');
+    },
+
+    handleCancelDelete(ma) {
+        this.pushHistory();
+        delete this.state.pendingOperations[ma];
+        this.filterAndRenderData();
+        this.updateActionState();
+        Toast.success('Đã huỷ thao tác xoá sinh viên');
     },
 
     handleUndo() {

@@ -7,10 +7,18 @@
       <span class="breadcrumb-item active">Môn học</span>
     </div>
   </div>
-  <button class="btn btn-success">+ Thêm môn học</button>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+    <button class="btn btn-khaki" id="btnUndoMH">Phục hồi</button>
+    <button class="btn btn-revert" id="btnCommitMH">Ghi</button>
+    <button class="btn btn-success" id="btnAddMH">+ Thêm môn học</button>
+  </div>
 </div>
 
 <div class="card monhoc-list-card">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+    <h3 class="card-title" style="margin:0;">Danh sách môn học</h3>
+    <span id="monhocPendingStatus" style="font-size:13px; color:var(--text-muted);"></span>
+  </div>
   <div class="table-responsive monhoc-list-scroll">
     <table class="table" style="text-align: center;">
       <thead>

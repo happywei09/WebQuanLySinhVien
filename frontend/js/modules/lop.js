@@ -239,7 +239,10 @@ window.LopModule = {
       if (op.type === 'create' || op.type === 'update') {
         map.set(op.key, { ...op.newValue });
       } else if (op.type === 'delete') {
-        map.delete(op.key);
+        const item = map.get(op.key);
+        if (item) {
+          item._isDeleted = true;
+        }
       }
     });
 
@@ -276,12 +279,24 @@ window.LopModule = {
 
     data.forEach((item, index) => {
       const tr = document.createElement('tr');
+      if (item._isDeleted) {
+        tr.style.opacity = '0.6';
+        tr.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
+      }
       const pendingOp = this.state.pendingOperations[item.MALOP];
       const statusBadge = this.getStatusBadge(pendingOp);
-      const actionBtn = isPGV
-        ? `<button class="btn btn-info btn-sm" onclick="LopModule.openLopModal('edit','${this.escapeJs(item.MALOP)}')">Sửa</button>
-           <button class="btn btn-danger btn-sm" onclick="LopModule.handleDelete('${this.escapeJs(item.MALOP)}')">Xoá</button>`
-        : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+      
+      let actionBtn = '';
+      if (isPGV) {
+        if (item._isDeleted) {
+          actionBtn = `<button class="btn btn-secondary btn-sm" onclick="LopModule.handleCancelDelete('${this.escapeJs(item.MALOP)}')">Huỷ xoá</button>`;
+        } else {
+          actionBtn = `<button class="btn btn-info btn-sm" onclick="LopModule.openLopModal('edit','${this.escapeJs(item.MALOP)}')">Sửa</button>
+                       <button class="btn btn-danger btn-sm" onclick="LopModule.handleDelete('${this.escapeJs(item.MALOP)}')">Xoá</button>`;
+        }
+      } else {
+        actionBtn = `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+      }
 
       tr.innerHTML = `
         <td>${index + 1}</td>
@@ -718,7 +733,10 @@ window.LopModule = {
       if (op.type === 'create' || op.type === 'update') {
         map.set(op.key, { ...op.newValue });
       } else if (op.type === 'delete') {
-        map.delete(op.key);
+        const item = map.get(op.key);
+        if (item) {
+          item._isDeleted = true;
+        }
       }
     });
 
@@ -756,8 +774,21 @@ window.LopModule = {
 
       const pendingOp = this.state.detailPendingOperations[sv.MASV];
       const statusBadge = this.getStatusBadge(pendingOp);
-      const actionLabel = pendingOp?.type === 'delete' ? 'Chờ xoá' : '';
+      
       const tr = document.createElement('tr');
+      if (sv._isDeleted) {
+        tr.style.opacity = '0.6';
+        tr.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
+      }
+
+      let actionContent = '';
+      if (sv._isDeleted) {
+        actionContent = `<button class="btn btn-secondary btn-sm" onclick="LopModule.handleCancelDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Huỷ xoá</button>`;
+      } else {
+        actionContent = `<button class="btn btn-info btn-sm" onclick="LopModule.openStudentModal('edit','${this.escapeJs(sv.MASV)}')">Sửa</button>
+                         <button class="btn btn-danger btn-sm" onclick="LopModule.handleDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Xoá</button>`;
+      }
+
       tr.innerHTML = `
         <td>${index + 1}</td>
         <td>${sv.MASV || ''}</td>
@@ -769,9 +800,7 @@ window.LopModule = {
         <td>${sv.DANGHIHOC ? 'Đã nghỉ' : 'Đang học'}</td>
         <td>
           <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
-            <button class="btn btn-info btn-sm" onclick="LopModule.openStudentModal('edit','${this.escapeJs(sv.MASV)}')">Sửa</button>
-            <button class="btn btn-danger btn-sm" onclick="LopModule.handleDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Xoá</button>
-            ${actionLabel ? `<span style="margin-left:8px; font-size:12px; color:var(--danger-color); font-weight:600;">${actionLabel}</span>` : ''}
+            ${actionContent}
           </div>
         </td>
       `;
@@ -1156,6 +1185,14 @@ window.LopModule = {
     Toast.success('Đã đưa thao tác xoá sinh viên vào danh sách chờ ghi');
   },
 
+  handleCancelDeleteStudentRow(maSV) {
+    this.pushDetailHistory();
+    delete this.state.detailPendingOperations[maSV];
+    this.renderDetailStudentTable();
+    this.updateDetailActionState();
+    Toast.success('Đã huỷ thao tác xoá sinh viên');
+  },
+
   handleUndoDetailStudent() {
     if (this.state.detailHistory.length === 0) {
       Toast.info('Không có thay đổi nào để phục hồi');
@@ -1256,6 +1293,15 @@ window.LopModule = {
     Toast.success('Đã đưa thao tác xoá vào danh sách chờ ghi');
   },
 
+  handleCancelDelete(maLop) {
+    this.pushHistory();
+    delete this.state.pendingOperations[maLop];
+    this.initFilterOptions();
+    this.renderTable();
+    this.updateActionState();
+    Toast.success('Đã huỷ thao tác xoá lớp');
+  },
+
   handleUndo() {
     if (this.state.history.length === 0) {
       Toast.info('Không có thay đổi nào để phục hồi');
@@ -1301,6 +1347,8 @@ window.LopModule = {
       }
 
       Toast.success('Đã ghi tất cả thay đổi thành công');
+      this.state.pendingOperations = {};
+      this.state.history = [];
       await this.loadData();
     } catch (error) {
       Toast.error(`Ghi dữ liệu thất bại: ${error.message}`);

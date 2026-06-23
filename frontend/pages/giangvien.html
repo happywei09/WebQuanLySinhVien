@@ -7,7 +7,11 @@
       <span class="breadcrumb-item active">Giảng viên</span>
     </div>
   </div>
-  <button class="btn btn-success">+ Thêm giảng viên</button>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+    <button class="btn btn-khaki" id="btnUndoGV">Phục hồi</button>
+    <button class="btn btn-revert" id="btnCommitGV">Ghi</button>
+    <button class="btn btn-success" id="btnAddGV">+ Thêm giảng viên</button>
+  </div>
 </div>
 
 <!-- Bộ lọc và tìm kiếm giảng viên -->
@@ -27,6 +31,10 @@
 </div>
 
 <div class="card giangvien-list-card">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+    <h3 class="card-title" style="margin:0;">Danh sách giảng viên</h3>
+    <span id="giangvienPendingStatus" style="font-size:13px; color:var(--text-muted);"></span>
+  </div>
   <div class="table-responsive giangvien-list-scroll">
     <table class="table" style="text-align: center;">
       <thead>

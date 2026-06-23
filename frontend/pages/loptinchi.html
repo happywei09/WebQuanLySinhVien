@@ -7,7 +7,11 @@
       <span class="breadcrumb-item active">Lớp tín chỉ</span>
     </div>
   </div>
-  <button class="btn btn-success">+ Mở lớp tín chỉ</button>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+    <button class="btn btn-khaki" id="btnUndoLTC">Phục hồi</button>
+    <button class="btn btn-revert" id="btnCommitLTC">Ghi</button>
+    <button class="btn btn-success" id="btnAddLTC">+ Mở lớp tín chỉ</button>
+  </div>
 </div>
 
 <div class="card" style="margin-bottom: 24px;">
@@ -48,6 +52,10 @@
 </div>
 
 <div class="card loptinchi-list-card">
+  <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+    <h3 class="card-title" style="margin:0;">Danh sách lớp tín chỉ</h3>
+    <span id="loptinchiPendingStatus" style="font-size:13px; color:var(--text-muted);"></span>
+  </div>
   <div class="table-responsive loptinchi-list-scroll">
     <table class="table" style="text-align: center;">
       <thead>
