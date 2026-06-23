@@ -163,7 +163,10 @@ window.KhoaModule = {
       if (op.type === 'create' || op.type === 'update') {
         map.set(op.key, { ...op.newValue });
       } else if (op.type === 'delete') {
-        map.delete(op.key);
+        const item = map.get(op.key);
+        if (item) {
+          item._isDeleted = true;
+        }
       }
     });
 
@@ -387,6 +390,14 @@ window.KhoaModule = {
     } catch (error) {
       Toast.error(error.message);
     }
+  },
+
+  handleCancelDelete(ma) {
+    this.pushHistory();
+    delete this.state.pendingOperations[ma];
+    this.renderTable();
+    this.updateActionState();
+    Toast.success('Đã huỷ thao tác xoá khoa');
   },
 
   handleUndo() {

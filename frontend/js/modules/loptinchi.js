@@ -1,4 +1,20 @@
+/* ====================================
+   MODULE LOP TIN CHI (Ghi / Phục hồi)
+   File: js/modules/loptinchi.js
+ ==================================== */
+
 window.LopTinChiModule = {
+  state: {
+    originalData: [],
+    pendingOperations: {},
+    history: [],
+    monhocList: [],
+    giangvienList: [],
+    isAddingRow: false,
+    editingLTCId: null,
+    editingDraft: null
+  },
+
   async init() {
     this.cacheDOM();
     this.bindEvents();
@@ -7,11 +23,14 @@ window.LopTinChiModule = {
   },
 
   cacheDOM() {
-    this.tbody = document.querySelector('#pageContent tbody');
+    this.tbody = document.querySelector('.loptinchi-list-scroll table tbody');
     this.filterNK = document.getElementById('filterNienKhoa');
     this.filterHK = document.getElementById('filterHocKy');
     this.filterMH = document.getElementById('filterMonHoc');
     this.filterTT = document.getElementById('filterTrangThai');
+    this.btnCommit = document.getElementById('btnCommitLTC');
+    this.btnUndo = document.getElementById('btnUndoLTC');
+    this.pendingStatus = document.getElementById('loptinchiPendingStatus');
 
     if (!document.getElementById('modalLTC')) {
       const modalHTML = `
@@ -67,7 +86,7 @@ window.LopTinChiModule = {
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" id="btnCancelModalLTC">Huỷ</button>
-            <button class="btn btn-primary" id="btnSaveLTC">Lưu</button>
+            <button class="btn btn-primary" id="btnSaveLTC">Lưu tạm</button>
           </div>
         </div>
       </div>`;
@@ -90,21 +109,29 @@ window.LopTinChiModule = {
 
   bindEvents() {
     const user = Auth.getUser();
-    const isPGV = user && user.role === 'PGV';
-    const btnAdd = document.querySelector('.page-header .btn-success');
+    this.isPGV = user && user.role === 'PGV';
+    const btnAdd = document.getElementById('btnAddLTC');
+
     if (btnAdd) {
-      if (isPGV) {
+      if (this.isPGV) {
         btnAdd.onclick = () => this.openModal();
       } else {
         btnAdd.style.display = 'none';
       }
     }
 
+    if (!this.isPGV) {
+      if (this.btnCommit) this.btnCommit.style.display = 'none';
+      if (this.btnUndo) this.btnUndo.style.display = 'none';
+    }
+
     document.getElementById('btnCloseModalLTC').onclick = () => this.closeModal();
     document.getElementById('btnCancelModalLTC').onclick = () => this.closeModal();
-    this.btnSave.onclick = () => this.handleSave();
+    this.btnSave.onclick = () => this.handleSaveDraftRow();
 
-    // Bind event listeners for search filters
+    if (this.btnCommit) this.btnCommit.onclick = () => this.handleCommit();
+    if (this.btnUndo) this.btnUndo.onclick = () => this.handleUndo();
+
     if (this.filterNK) this.filterNK.onchange = () => this.renderData();
     if (this.filterHK) this.filterHK.onchange = () => this.renderData();
     if (this.filterMH) this.filterMH.onchange = () => this.renderData();
@@ -113,7 +140,6 @@ window.LopTinChiModule = {
 
   async loadDropdowns() {
     try {
-      // Tự động sinh danh sách Niên khóa (từ niên khóa hiện tại đến 5 năm sau)
       const date = new Date();
       const currentYear = date.getFullYear();
       const month = date.getMonth() + 1;
@@ -128,15 +154,18 @@ window.LopTinChiModule = {
 
       const [resMH, resGV] = await Promise.all([API.get('/monhoc'), API.get('/giangvien')]);
       if (resMH.success) {
+        this.state.monhocList = resMH.data || [];
         this.selectMH.innerHTML = '<option value="">-- Chọn Môn --</option>' +
-          resMH.data.map(m => `<option value="${m.MAMH}">${m.TENMH}</option>`).join('');
+          this.state.monhocList.map(m => `<option value="${m.MAMH}">${m.TENMH}</option>`).join('');
       }
       if (resGV.success) {
+        this.state.giangvienList = resGV.data || [];
         this.selectGV.innerHTML = '<option value="">-- Chọn Giảng viên --</option>' +
-          resGV.data.map(g => `<option value="${g.MAGV}">${g.HO} ${g.TEN}</option>`).join('');
-        this.giangvienList = resGV.data; // Store for fetching MAKHOA
+          this.state.giangvienList.map(g => `<option value="${g.MAGV}">${g.HO} ${g.TEN}</option>`).join('');
       }
-    } catch (e) { }
+    } catch (e) {
+      Toast.error('Không tải được danh sách môn học hoặc giảng viên');
+    }
   },
 
   normalizeText(str) {
@@ -148,8 +177,7 @@ window.LopTinChiModule = {
     const prevNK = this.filterNK.value;
     const prevMH = this.filterMH.value;
 
-    // 1. Niên khóa
-    const uniqueNK = [...new Set(this.lopTinChiListAll.map(item => this.normalizeText(item.NIENKHOA)))]
+    const uniqueNK = [...new Set(this.state.originalData.map(item => this.normalizeText(item.NIENKHOA)))]
       .filter(Boolean)
       .sort((a, b) => b.localeCompare(a));
 
@@ -160,13 +188,13 @@ window.LopTinChiModule = {
       this.filterNK.value = prevNK;
     }
 
-    // 2. Môn học
     const uniqueMH = new Map();
-    this.lopTinChiListAll.forEach(item => {
+    this.state.originalData.forEach(item => {
       if (item.MAMH) {
         const mamh = this.normalizeText(item.MAMH);
         if (!uniqueMH.has(mamh)) {
-          uniqueMH.set(mamh, item.TENMH || item.MAMH);
+          const mhObj = this.state.monhocList.find(m => m.MAMH === mamh);
+          uniqueMH.set(mamh, mhObj ? mhObj.TENMH : item.MAMH);
         }
       }
     });
@@ -182,13 +210,59 @@ window.LopTinChiModule = {
     }
   },
 
+  async loadData() {
+    if (this.hasPendingChanges()) {
+      const ok = confirm('Bạn đang có thay đổi chưa ghi. Tải lại dữ liệu sẽ bỏ các thay đổi này. Tiếp tục?');
+      if (!ok) return;
+    }
+
+    try {
+      this.tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Đang tải...</td></tr>';
+      const res = await API.get('/loptinchi');
+      if (res.success) {
+        this.state.originalData = res.data || [];
+        this.state.pendingOperations = {};
+        this.state.history = [];
+        this.populateFilters();
+        this.renderData();
+      }
+    } catch (error) {
+      this.tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:red;">Lỗi kết nối API.</td></tr>';
+      Toast.error(error.message);
+    } finally {
+      this.updateActionState();
+    }
+  },
+
+  getCurrentData() {
+    const map = new Map(this.state.originalData.map(item => [String(item.MALTC), { ...item }]));
+
+    Object.values(this.state.pendingOperations).forEach(op => {
+      if (op.type === 'create' || op.type === 'update') {
+        map.set(String(op.key), { ...op.newValue });
+      } else if (op.type === 'delete') {
+        const item = map.get(String(op.key));
+        if (item) {
+          item._isDeleted = true;
+        }
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) => {
+      // Sort by nienkhoa desc, hocky desc, maltc desc
+      if (a.NIENKHOA !== b.NIENKHOA) return b.NIENKHOA.localeCompare(a.NIENKHOA);
+      if (a.HOCKY !== b.HOCKY) return b.HOCKY - a.HOCKY;
+      return String(b.MALTC).localeCompare(String(a.MALTC));
+    });
+  },
+
   renderData() {
     const nk = this.normalizeText(this.filterNK.value);
     const hk = this.filterHK.value;
     const mh = this.filterMH.value;
     const tt = this.filterTT.value;
 
-    let filtered = this.lopTinChiListAll;
+    let filtered = this.getCurrentData();
 
     if (nk) {
       filtered = filtered.filter(item => this.normalizeText(item.NIENKHOA) === nk);
@@ -207,44 +281,90 @@ window.LopTinChiModule = {
     this.tbody.innerHTML = filtered.length === 0
       ? '<tr><td colspan="9" style="text-align:center;">Không tìm thấy lớp tín chỉ phù hợp</td></tr>'
       : filtered.map((item) => {
-        const actionBtn = this.isPGV
-          ? `<button class="btn btn-info btn-sm" onclick="window.LopTinChiModule.openModal(${item.MALTC}, '${item.NIENKHOA}', ${item.HOCKY}, '${item.MAMH}', ${item.NHOM}, '${item.MAGV}', ${item.SOSVTOITHIEU}, ${item.HUYLOP ? 1 : 0})">Sửa</button>
-               <button class="btn btn-danger btn-sm" onclick="window.LopTinChiModule.handleDelete(${item.MALTC})">Xóa</button>`
-          : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
-        return `
-          <tr>
-            <td>${item.MALTC}</td>
-            <td>${item.NIENKHOA}</td>
-            <td>${item.HOCKY}</td>
-            <td>${item.TENMH || item.MAMH}</td>
-            <td>${item.NHOM}</td>
-            <td>${item.TENGV || item.MAGV}</td>
-            <td>${item.SOSVTOITHIEU}</td>
-            <td>${item.HUYLOP ? '<span style="color:red">Đã hủy</span>' : '<span style="color:green">Đang mở</span>'}</td>
-            <td style="text-align:center;">
-              ${actionBtn}
-            </td>
-          </tr>`;
-      }).join('');
+          const isTemp = String(item.MALTC).startsWith('temp_');
+          const displayId = isTemp ? '<i>Chờ cấp</i>' : item.MALTC;
+
+          const trClass = item._isDeleted ? 'style="opacity: 0.6; background-color: rgba(220, 53, 69, 0.05);"' : '';
+
+          const pendingOp = this.state.pendingOperations[item.MALTC];
+          const statusBadge = this.getStatusBadge(pendingOp);
+
+          // Get names dynamically
+          const mhObj = this.state.monhocList.find(m => m.MAMH === item.MAMH);
+          const tenMH = mhObj ? mhObj.TENMH : item.MAMH;
+
+          const gvObj = this.state.giangvienList.find(g => g.MAGV === item.MAGV);
+          const tenGV = gvObj ? `${gvObj.HO} ${gvObj.TEN}` : item.MAGV;
+
+          let actionBtn = '';
+          if (this.isPGV) {
+            if (item._isDeleted) {
+              actionBtn = `<button class="btn btn-secondary btn-sm" onclick="window.LopTinChiModule.handleCancelDelete('${item.MALTC}')">Huỷ xoá</button>`;
+            } else {
+              actionBtn = `<button class="btn btn-info btn-sm" onclick="window.LopTinChiModule.openModal('${item.MALTC}', '${item.NIENKHOA}', ${item.HOCKY}, '${item.MAMH}', ${item.NHOM}, '${item.MAGV}', ${item.SOSVTOITHIEU}, ${item.HUYLOP ? 1 : 0})">Sửa</button>
+                           <button class="btn btn-danger btn-sm" onclick="window.LopTinChiModule.handleDelete('${item.MALTC}')">Xóa</button>`;
+            }
+          } else {
+            actionBtn = `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+          }
+
+          return `
+            <tr ${trClass}>
+              <td>${displayId}</td>
+              <td>${item.NIENKHOA}</td>
+              <td>${item.HOCKY}</td>
+              <td>${tenMH} ${statusBadge}</td>
+              <td>${item.NHOM}</td>
+              <td>${tenGV}</td>
+              <td>${item.SOSVTOITHIEU}</td>
+              <td>${item.HUYLOP ? '<span style="color:red">Đã hủy</span>' : '<span style="color:green">Đang mở</span>'}</td>
+              <td style="text-align:center;">
+                <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                  ${actionBtn}
+                </div>
+              </td>
+            </tr>`;
+        }).join('');
   },
 
-  async loadData() {
-    const user = Auth.getUser();
-    this.isPGV = user && user.role === 'PGV';
+  getStatusBadge(pendingOp) {
+    if (!pendingOp) return '';
+    const labelMap = {
+      create: 'Chờ thêm',
+      update: 'Chờ cập nhật',
+      delete: 'Chờ xoá'
+    };
+    return `
+      <span style="display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; background:rgba(147,33,32,0.12); color:var(--primary-color); font-size:12px; font-weight:600;">
+        ${labelMap[pendingOp.type] || 'Chờ ghi'}
+      </span>
+    `;
+  },
 
-    try {
-      this.tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Đang tải...</td></tr>';
-      const res = await API.get('/loptinchi');
-      if (res.success) {
-        this.lopTinChiListAll = res.data || [];
-        this.populateFilters();
-        this.renderData();
-      }
-    } catch (error) { Toast.error(error.message); }
+  hasPendingChanges() {
+    return Object.keys(this.state.pendingOperations).length > 0;
+  },
+
+  snapshotPendingOperations() {
+    return JSON.parse(JSON.stringify(this.state.pendingOperations));
+  },
+
+  pushHistory() {
+    this.state.history.push(this.snapshotPendingOperations());
+  },
+
+  updateActionState() {
+    const count = Object.keys(this.state.pendingOperations).length;
+    if (this.btnCommit) this.btnCommit.disabled = count === 0;
+    if (this.btnUndo) this.btnUndo.disabled = this.state.history.length === 0;
+    if (this.pendingStatus) {
+      this.pendingStatus.textContent = count > 0 ? `${count} thay đổi đang chờ ghi` : '';
+    }
   },
 
   openModal(ma = '', nk = '', hk = '1', mh = '', nhom = '', gv = '', svmin = '', huy = 0) {
     this.isEdit = !!ma;
+    this.state.editingLTCId = ma || null;
     document.getElementById('modalTitleLTC').textContent = this.isEdit ? 'Sửa Lớp Tín Chỉ' : 'Mở Lớp Tín Chỉ';
     this.groupHuy.style.display = this.isEdit ? 'block' : 'none';
 
@@ -287,6 +407,11 @@ window.LopTinChiModule = {
 
       this.inputNK.value = nextNK;
       this.selectHK.value = nextHK;
+      this.selectMH.value = '';
+      this.inputNhom.value = '';
+      this.inputSVMin.value = '';
+      this.selectGV.value = '';
+      this.selectHuy.value = '0';
     } else {
       if (nk) {
         let exists = false;
@@ -305,12 +430,12 @@ window.LopTinChiModule = {
       }
       this.inputNK.value = nk;
       this.selectHK.value = hk;
+      this.selectMH.value = mh;
+      this.inputNhom.value = nhom;
+      this.selectGV.value = gv;
+      this.inputSVMin.value = svmin;
+      this.selectHuy.value = huy;
     }
-    this.selectMH.value = mh;
-    this.inputNhom.value = nhom;
-    this.selectGV.value = gv;
-    this.inputSVMin.value = svmin;
-    this.selectHuy.value = huy;
 
     this.modal.classList.add('active');
   },
@@ -318,9 +443,10 @@ window.LopTinChiModule = {
   closeModal() {
     this.modal.classList.remove('active');
     this.form.reset();
+    this.state.editingLTCId = null;
   },
 
-  async handleSave() {
+  handleSaveDraftRow() {
     const nk = this.inputNK.value.trim();
     const hk = this.selectHK.value;
     const mh = this.selectMH.value;
@@ -334,46 +460,180 @@ window.LopTinChiModule = {
       return;
     }
 
-    // Find the MAKHOA of the selected GiangVien
-    const gvObj = this.giangvienList.find(g => g.MAGV === gv);
+    const gvObj = this.state.giangvienList.find(g => g.MAGV === gv);
     const makhoa = gvObj ? gvObj.MAKHOA : '';
 
-    try {
-      this.btnSave.disabled = true;
-      const data = {
-        NIENKHOA: nk, HOCKY: hk, MAMH: mh, NHOM: nhom, MAGV: gv, MAKHOA: makhoa, SOSVTOITHIEU: svmin, HUYLOP: huy
+    this.pushHistory();
+
+    if (this.isEdit) {
+      const ma = this.state.editingLTCId;
+      const originalItem = this.state.originalData.find(item => String(item.MALTC) === String(ma));
+      const existingPending = this.state.pendingOperations[ma];
+
+      const ltcData = {
+        MALTC: String(ma).startsWith('temp_') ? ma : Number(ma),
+        NIENKHOA: nk,
+        HOCKY: Number(hk),
+        MAMH: mh,
+        NHOM: Number(nhom),
+        MAGV: gv,
+        MAKHOA: makhoa,
+        SOSVTOITHIEU: Number(svmin),
+        HUYLOP: huy
       };
 
-      let res;
-      if (this.isEdit) {
-        res = await API.put(`/loptinchi/update/${this.inputMa.value}`, data);
+      if (existingPending && existingPending.type === 'create') {
+        this.state.pendingOperations[ma] = {
+          ...existingPending,
+          newValue: ltcData
+        };
       } else {
-        res = await API.post('/loptinchi/create', data);
+        this.state.pendingOperations[ma] = {
+          type: 'update',
+          key: ma,
+          oldValue: originalItem ? { ...originalItem } : null,
+          newValue: ltcData
+        };
       }
 
-      if (res.success) {
-        Toast.success(res.message);
-        this.closeModal();
-        await this.loadData();
+      // Check if reverted to original values
+      const pending = this.state.pendingOperations[ma];
+      if (pending && pending.type === 'update' && pending.oldValue &&
+          pending.oldValue.NIENKHOA === nk &&
+          Number(pending.oldValue.HOCKY) === Number(hk) &&
+          pending.oldValue.MAMH === mh &&
+          Number(pending.oldValue.NHOM) === Number(nhom) &&
+          pending.oldValue.MAGV === gv &&
+          Number(pending.oldValue.SOSVTOITHIEU) === Number(svmin) &&
+          !!pending.oldValue.HUYLOP === huy) {
+        delete this.state.pendingOperations[ma];
       }
+    } else {
+      const tempId = 'temp_' + Date.now();
+      const ltcData = {
+        MALTC: tempId,
+        NIENKHOA: nk,
+        HOCKY: Number(hk),
+        MAMH: mh,
+        NHOM: Number(nhom),
+        MAGV: gv,
+        MAKHOA: makhoa,
+        SOSVTOITHIEU: Number(svmin),
+        HUYLOP: false
+      };
+
+      this.state.pendingOperations[tempId] = {
+        type: 'create',
+        key: tempId,
+        newValue: ltcData
+      };
+    }
+
+    this.closeModal();
+    this.renderData();
+    this.updateActionState();
+    Toast.success('Đã lưu tạm thay đổi lớp tín chỉ');
+  },
+
+  handleDelete(ma) {
+    if (!confirm(`Bạn có chắc muốn xóa lớp tín chỉ ${ma}?`)) return;
+
+    const existingPending = this.state.pendingOperations[ma];
+    this.pushHistory();
+
+    if (existingPending && existingPending.type === 'create') {
+      delete this.state.pendingOperations[ma];
+    } else {
+      const originalItem = this.state.originalData.find(item => String(item.MALTC) === String(ma));
+      if (!originalItem) {
+        Toast.error('Không tìm thấy lớp tín chỉ để xoá');
+        this.state.history.pop();
+        return;
+      }
+
+      this.state.pendingOperations[ma] = {
+        type: 'delete',
+        key: ma,
+        oldValue: { ...originalItem }
+      };
+    }
+
+    this.renderData();
+    this.updateActionState();
+    Toast.success('Đã đưa thao tác xoá lớp tín chỉ vào danh sách chờ ghi');
+  },
+
+  handleCancelDelete(ma) {
+    this.pushHistory();
+    delete this.state.pendingOperations[ma];
+    this.renderData();
+    this.updateActionState();
+    Toast.success('Đã huỷ thao tác xoá lớp tín chỉ');
+  },
+
+  handleUndo() {
+    if (this.state.history.length === 0) {
+      Toast.info('Không có thay đổi nào để phục hồi');
+      return;
+    }
+
+    this.state.pendingOperations = this.state.history.pop();
+    this.renderData();
+    this.updateActionState();
+    Toast.success('Đã phục hồi thay đổi gần nhất');
+  },
+
+  async handleCommit() {
+    const operations = Object.values(this.state.pendingOperations);
+    if (operations.length === 0) {
+      Toast.info('Không có thay đổi nào để ghi');
+      return;
+    }
+
+    try {
+      this.btnCommit.disabled = true;
+      this.btnCommit.textContent = 'Đang ghi...';
+
+      const sortedOperations = [
+        ...operations.filter(op => op.type === 'create'),
+        ...operations.filter(op => op.type === 'update'),
+        ...operations.filter(op => op.type === 'delete')
+      ];
+
+      for (const op of sortedOperations) {
+        if (op.type === 'create') {
+          // Strip MALTC for create since it is auto-generated by the database
+          const payload = { ...op.newValue };
+          delete payload.MALTC;
+          await API.post('/loptinchi/create', payload);
+        } else if (op.type === 'update') {
+          await API.put(`/loptinchi/update/${op.key}`, op.newValue);
+        } else if (op.type === 'delete') {
+          await API.delete(`/loptinchi/delete/${op.key}`);
+        }
+      }
+
+      Toast.success('Đã ghi tất cả thay đổi thành công');
+      await this.reloadAfterCommit();
     } catch (error) {
-      Toast.error(error.message);
+      Toast.error(`Ghi dữ liệu thất bại: ${error.message}`);
     } finally {
-      this.btnSave.disabled = false;
+      if (this.btnCommit) {
+        this.btnCommit.textContent = 'Ghi';
+      }
+      this.updateActionState();
     }
   },
 
-  async handleDelete(ma) {
-    if (!confirm(`Bạn có chắc muốn xóa lớp tín chỉ ${ma}?`)) return;
-    try {
-      const res = await API.delete(`/loptinchi/delete/${ma}`);
-      if (res.success) {
-        Toast.success(res.message);
-        await this.loadData();
-      }
-    } catch (error) {
-      Toast.error(error.message);
-    }
+  async reloadAfterCommit() {
+    const res = await API.get('/loptinchi');
+    this.state.originalData = res.success ? (res.data || []) : [];
+    this.state.pendingOperations = {};
+    this.state.history = [];
+    this.populateFilters();
+    this.renderData();
+    this.updateActionState();
   }
 };
+
 window.LopTinChiModule.init();
