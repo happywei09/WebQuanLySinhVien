@@ -35,6 +35,25 @@ const getStats = async (req, res, next) => {
   }
 };
 
+/**
+ * Lấy danh sách bộ lọc Khoa, Niên khoá, Học kỳ (phục vụ báo cáo và đăng ký học)
+ */
+const getFilters = async (req, res, next) => {
+  try {
+    const result = await executeStoredProcedure("SP_DASHBOARD_GET_FILTERS");
+    res.json({
+      success: true,
+      data: {
+        khoas: result.recordsets[0] || [],
+        semesters: result.recordsets[1] || []
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getStats,
+  getFilters,
 };
