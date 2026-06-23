@@ -1520,8 +1520,52 @@ CREATE OR ALTER PROCEDURE SP_DELETE_LOPTINCHI
     @MALTC INT
 AS
 BEGIN
-    DELETE FROM LOPTINCHI
+    SET NOCOUNT ON;
+
+    DECLARE @Count INT;
+    DECLARE @MinStudents INT;
+
+    -- Lấy số sinh viên tối thiểu của lớp tín chỉ
+    SELECT @MinStudents = SOSVTOITHIEU
+    FROM LOPTINCHI
     WHERE MALTC = @MALTC;
+
+    -- Nếu lớp tín chỉ không tồn tại, kết thúc
+    IF @MinStudents IS NULL
+    BEGIN
+        RAISERROR(N'Lớp tín chỉ không tồn tại!', 16, 1);
+        RETURN;
+    END;
+
+    -- Đếm số sinh viên hiện đang đăng ký hoạt động (HUYDANGKY = 0)
+    SELECT @Count = COUNT(*)
+    FROM DANGKY
+    WHERE MALTC = @MALTC AND HUYDANGKY = 0;
+
+    -- Kiểm tra điều kiện: số đăng ký phải bé hơn số tối thiểu
+    IF @Count >= @MinStudents
+    BEGIN
+        RAISERROR(N'Không thể xóa lớp tín chỉ này vì số sinh viên đăng ký (%d) đạt hoặc vượt quá số lượng tối thiểu (%d)!', 16, 1, @Count, @MinStudents);
+        RETURN;
+    END;
+
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        -- Xóa các đăng ký của lớp tín chỉ trước để tránh lỗi khóa ngoại
+        DELETE FROM DANGKY
+        WHERE MALTC = @MALTC;
+
+        -- Xóa lớp tín chỉ
+        DELETE FROM LOPTINCHI
+        WHERE MALTC = @MALTC;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        RAISERROR(N'Lỗi khi xóa lớp tín chỉ: %s', 16, 1, @ErrorMessage);
+    END CATCH;
 END;
 GO
 
