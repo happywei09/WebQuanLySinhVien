@@ -431,15 +431,13 @@ BEGIN
     -- Xóa DB User nếu tồn tại
     IF @UserName IS NOT NULL
     BEGIN
-        DECLARE @SqlUser NVARCHAR(256) = N'DROP USER ' + QUOTENAME(@UserName);
-        EXEC sp_executesql @SqlUser;
+        EXEC sp_dropuser @UserName;
     END
 
     -- Xóa SQL Login nếu tồn tại
     IF EXISTS (SELECT 1 FROM master.dbo.syslogins WHERE name = @LoginName)
     BEGIN
-        DECLARE @SqlLogin NVARCHAR(256) = N'DROP LOGIN ' + QUOTENAME(@LoginName);
-        EXEC sp_executesql @SqlLogin;
+        EXEC sp_droplogin @LoginName
     END
 END;
 GO

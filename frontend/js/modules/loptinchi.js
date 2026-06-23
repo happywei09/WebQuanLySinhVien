@@ -43,6 +43,12 @@ window.LopTinChiModule = {
           <div class="modal-body">
             <form id="formLTC">
               <input type="hidden" id="maLTC">
+              <div class="form-group">
+                <label class="form-label required">Khoa</label>
+                <select id="khoaLTC" class="form-control" required>
+                  <option value="">-- Chọn Khoa --</option>
+                </select>
+              </div>
               <div style="display: flex; gap: 16px;">
                 <div class="form-group" style="flex: 1;">
                   <label class="form-label required">Niên khóa</label>
@@ -105,6 +111,7 @@ window.LopTinChiModule = {
     this.selectGV = document.getElementById('giangvienLTC');
     this.selectHuy = document.getElementById('huylopLTC');
     this.groupHuy = document.getElementById('groupHuyLop');
+    this.selectKhoa = document.getElementById('khoaLTC');
   },
 
   bindEvents() {
@@ -136,6 +143,16 @@ window.LopTinChiModule = {
     if (this.filterHK) this.filterHK.onchange = () => this.renderData();
     if (this.filterMH) this.filterMH.onchange = () => this.renderData();
     if (this.filterTT) this.filterTT.onchange = () => this.renderData();
+
+    if (this.selectGV) {
+      this.selectGV.onchange = () => {
+        const gv = this.selectGV.value;
+        const gvObj = this.state.giangvienList.find(g => (g.MAGV ? g.MAGV.trim() : '') === gv);
+        if (gvObj && gvObj.MAKHOA && this.selectKhoa) {
+          this.selectKhoa.value = gvObj.MAKHOA.trim();
+        }
+      };
+    }
   },
 
   async loadDropdowns() {
@@ -152,19 +169,28 @@ window.LopTinChiModule = {
       }
       this.inputNK.innerHTML = nkOptions;
 
-      const [resMH, resGV] = await Promise.all([API.get('/monhoc'), API.get('/giangvien')]);
+      const [resMH, resGV, resKhoa] = await Promise.all([
+        API.get('/monhoc'),
+        API.get('/giangvien'),
+        API.get('/khoa')
+      ]);
       if (resMH.success) {
         this.state.monhocList = resMH.data || [];
         this.selectMH.innerHTML = '<option value="">-- Chọn Môn --</option>' +
-          this.state.monhocList.map(m => `<option value="${m.MAMH}">${m.TENMH}</option>`).join('');
+          this.state.monhocList.map(m => `<option value="${m.MAMH ? m.MAMH.trim() : ''}">${m.MAMH ? m.MAMH.trim() : ''} - ${m.TENMH}</option>`).join('');
       }
       if (resGV.success) {
         this.state.giangvienList = resGV.data || [];
         this.selectGV.innerHTML = '<option value="">-- Chọn Giảng viên --</option>' +
-          this.state.giangvienList.map(g => `<option value="${g.MAGV}">${g.HO} ${g.TEN}</option>`).join('');
+          this.state.giangvienList.map(g => `<option value="${g.MAGV ? g.MAGV.trim() : ''}">${g.MAGV ? g.MAGV.trim() : ''} - ${g.HO} ${g.TEN}</option>`).join('');
+      }
+      if (resKhoa.success) {
+        this.state.khoaList = resKhoa.data || [];
+        this.selectKhoa.innerHTML = '<option value="">-- Chọn Khoa --</option>' +
+          this.state.khoaList.map(k => `<option value="${k.MAKHOA ? k.MAKHOA.trim() : ''}">${k.TENKHOA}</option>`).join('');
       }
     } catch (e) {
-      Toast.error('Không tải được danh sách môn học hoặc giảng viên');
+      Toast.error('Không tải được danh sách môn học, giảng viên hoặc khoa');
     }
   },
 
@@ -201,7 +227,7 @@ window.LopTinChiModule = {
 
     let mhOptions = '<option value="">Tất cả Môn học</option>';
     uniqueMH.forEach((tenMH, mamh) => {
-      mhOptions += `<option value="${mamh}">${tenMH}</option>`;
+      mhOptions += `<option value="${mamh}">${mamh ? mamh.trim().toUpperCase() : ''} - ${tenMH}</option>`;
     });
     this.filterMH.innerHTML = mhOptions;
 
@@ -217,7 +243,7 @@ window.LopTinChiModule = {
     }
 
     try {
-      this.tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Đang tải...</td></tr>';
+      this.tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Đang tải...</td></tr>';
       const res = await API.get('/loptinchi');
       if (res.success) {
         this.state.originalData = res.data || [];
@@ -227,7 +253,7 @@ window.LopTinChiModule = {
         this.renderData();
       }
     } catch (error) {
-      this.tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:red;">Lỗi kết nối API.</td></tr>';
+      this.tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:red;">Lỗi kết nối API.</td></tr>';
       Toast.error(error.message);
     } finally {
       this.updateActionState();
@@ -279,7 +305,7 @@ window.LopTinChiModule = {
     }
 
     this.tbody.innerHTML = filtered.length === 0
-      ? '<tr><td colspan="9" style="text-align:center;">Không tìm thấy lớp tín chỉ phù hợp</td></tr>'
+      ? '<tr><td colspan="10" style="text-align:center;">Không tìm thấy lớp tín chỉ phù hợp</td></tr>'
       : filtered.map((item) => {
           const isTemp = String(item.MALTC).startsWith('temp_');
           const displayId = isTemp ? '<i>Chờ cấp</i>' : item.MALTC;
@@ -290,10 +316,10 @@ window.LopTinChiModule = {
           const statusBadge = this.getStatusBadge(pendingOp);
 
           // Get names dynamically
-          const mhObj = this.state.monhocList.find(m => m.MAMH === item.MAMH);
+          const mhObj = this.state.monhocList.find(m => (m.MAMH ? m.MAMH.trim() : '') === (item.MAMH ? item.MAMH.trim() : ''));
           const tenMH = mhObj ? mhObj.TENMH : item.MAMH;
 
-          const gvObj = this.state.giangvienList.find(g => g.MAGV === item.MAGV);
+          const gvObj = this.state.giangvienList.find(g => (g.MAGV ? g.MAGV.trim() : '') === (item.MAGV ? item.MAGV.trim() : ''));
           const tenGV = gvObj ? `${gvObj.HO} ${gvObj.TEN}` : item.MAGV;
 
           let actionBtn = '';
@@ -301,7 +327,7 @@ window.LopTinChiModule = {
             if (item._isDeleted) {
               actionBtn = `<button class="btn btn-secondary btn-sm" onclick="window.LopTinChiModule.handleCancelDelete('${item.MALTC}')">Huỷ xoá</button>`;
             } else {
-              actionBtn = `<button class="btn btn-info btn-sm" onclick="window.LopTinChiModule.openModal('${item.MALTC}', '${item.NIENKHOA}', ${item.HOCKY}, '${item.MAMH}', ${item.NHOM}, '${item.MAGV}', ${item.SOSVTOITHIEU}, ${item.HUYLOP ? 1 : 0})">Sửa</button>
+              actionBtn = `<button class="btn btn-info btn-sm" onclick="window.LopTinChiModule.openModal('${item.MALTC}', '${item.NIENKHOA}', ${item.HOCKY}, '${item.MAMH ? item.MAMH.trim() : ''}', ${item.NHOM}, '${item.MAGV ? item.MAGV.trim() : ''}', ${item.SOSVTOITHIEU}, ${item.HUYLOP ? 1 : 0}, '${item.MAKHOA ? item.MAKHOA.trim() : ''}')">Sửa</button>
                            <button class="btn btn-danger btn-sm" onclick="window.LopTinChiModule.handleDelete('${item.MALTC}')">Xóa</button>`;
             }
           } else {
@@ -316,6 +342,7 @@ window.LopTinChiModule = {
               <td>${tenMH} ${statusBadge}</td>
               <td>${item.NHOM}</td>
               <td>${tenGV}</td>
+              <td>${item.MAKHOA ? item.MAKHOA.trim() : ''}</td>
               <td>${item.SOSVTOITHIEU}</td>
               <td>${item.HUYLOP ? '<span style="color:red">Đã hủy</span>' : '<span style="color:green">Đang mở</span>'}</td>
               <td style="text-align:center;">
@@ -362,7 +389,7 @@ window.LopTinChiModule = {
     }
   },
 
-  openModal(ma = '', nk = '', hk = '1', mh = '', nhom = '', gv = '', svmin = '', huy = 0) {
+  openModal(ma = '', nk = '', hk = '1', mh = '', nhom = '', gv = '', svmin = '', huy = 0, khoa = '') {
     this.isEdit = !!ma;
     this.state.editingLTCId = ma || null;
     document.getElementById('modalTitleLTC').textContent = this.isEdit ? 'Sửa Lớp Tín Chỉ' : 'Mở Lớp Tín Chỉ';
@@ -412,6 +439,7 @@ window.LopTinChiModule = {
       this.inputSVMin.value = '';
       this.selectGV.value = '';
       this.selectHuy.value = '0';
+      if (this.selectKhoa) this.selectKhoa.value = '';
     } else {
       if (nk) {
         let exists = false;
@@ -430,11 +458,12 @@ window.LopTinChiModule = {
       }
       this.inputNK.value = nk;
       this.selectHK.value = hk;
-      this.selectMH.value = mh;
+      this.selectMH.value = mh ? mh.trim() : '';
       this.inputNhom.value = nhom;
-      this.selectGV.value = gv;
+      this.selectGV.value = gv ? gv.trim() : '';
       this.inputSVMin.value = svmin;
       this.selectHuy.value = huy;
+      if (this.selectKhoa) this.selectKhoa.value = khoa ? khoa.trim() : '';
     }
 
     this.modal.classList.add('active');
@@ -454,14 +483,12 @@ window.LopTinChiModule = {
     const gv = this.selectGV.value;
     const svmin = this.inputSVMin.value;
     const huy = this.selectHuy.value === '1';
+    const khoa = this.selectKhoa ? this.selectKhoa.value : '';
 
-    if (!nk || !mh || !nhom || !gv || !svmin) {
+    if (!nk || !mh || !nhom || !gv || !svmin || !khoa) {
       Toast.warning('Vui lòng nhập đầy đủ thông tin');
       return;
     }
-
-    const gvObj = this.state.giangvienList.find(g => g.MAGV === gv);
-    const makhoa = gvObj ? gvObj.MAKHOA : '';
 
     this.pushHistory();
 
@@ -477,7 +504,7 @@ window.LopTinChiModule = {
         MAMH: mh,
         NHOM: Number(nhom),
         MAGV: gv,
-        MAKHOA: makhoa,
+        MAKHOA: khoa,
         SOSVTOITHIEU: Number(svmin),
         HUYLOP: huy
       };
@@ -501,9 +528,10 @@ window.LopTinChiModule = {
       if (pending && pending.type === 'update' && pending.oldValue &&
           pending.oldValue.NIENKHOA === nk &&
           Number(pending.oldValue.HOCKY) === Number(hk) &&
-          pending.oldValue.MAMH === mh &&
+          (pending.oldValue.MAMH ? pending.oldValue.MAMH.trim() : '') === mh &&
           Number(pending.oldValue.NHOM) === Number(nhom) &&
-          pending.oldValue.MAGV === gv &&
+          (pending.oldValue.MAGV ? pending.oldValue.MAGV.trim() : '') === gv &&
+          (pending.oldValue.MAKHOA ? pending.oldValue.MAKHOA.trim() : '') === khoa &&
           Number(pending.oldValue.SOSVTOITHIEU) === Number(svmin) &&
           !!pending.oldValue.HUYLOP === huy) {
         delete this.state.pendingOperations[ma];
@@ -517,7 +545,7 @@ window.LopTinChiModule = {
         MAMH: mh,
         NHOM: Number(nhom),
         MAGV: gv,
-        MAKHOA: makhoa,
+        MAKHOA: khoa,
         SOSVTOITHIEU: Number(svmin),
         HUYLOP: false
       };

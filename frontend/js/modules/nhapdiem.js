@@ -186,7 +186,7 @@ window.NhapDiemModule = {
     });
 
     uniqueSubjects.forEach((tenMH, mamh) => {
-      this.selectMonHoc.innerHTML += `<option value="${mamh}">${tenMH}</option>`;
+      this.selectMonHoc.innerHTML += `<option value="${mamh}">${mamh ? mamh.trim().toUpperCase() : ''} - ${tenMH}</option>`;
     });
 
     if (prevSubject && uniqueSubjects.has(prevSubject)) {

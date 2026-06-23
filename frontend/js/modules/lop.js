@@ -803,25 +803,23 @@ window.LopModule = {
       const statusBadge = this.getStatusBadge(pendingOp);
 
       const actionLabel = pendingOp?.type === 'delete' ? 'Chờ xoá' : '';
-
-      const actionContent = isPGV
-        ? `<button class="btn btn-info btn-sm" onclick="LopModule.openStudentModal('edit','${this.escapeJs(sv.MASV)}')">Sửa</button>
-           <button class="btn btn-danger btn-sm" onclick="LopModule.handleDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Xoá</button>
-           ${actionLabel ? `<span style="margin-left:8px; font-size:12px; color:var(--danger-color); font-weight:600;">${actionLabel}</span>` : ''}`
-        : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+      let actionContent = '';
+      if (isPGV) {
+        if (sv._isDeleted) {
+          actionContent = `<button class="btn btn-secondary btn-sm" onclick="LopModule.handleCancelDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Huỷ xoá</button>`;
+        } else {
+          actionContent = `<button class="btn btn-info btn-sm" onclick="LopModule.openStudentModal('edit','${this.escapeJs(sv.MASV)}')">Sửa</button>
+                           <button class="btn btn-danger btn-sm" onclick="LopModule.handleDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Xoá</button>
+                           ${actionLabel ? `<span style="margin-left:8px; font-size:12px; color:var(--danger-color); font-weight:600;">${actionLabel}</span>` : ''}`;
+        }
+      } else {
+        actionContent = `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
+      }
 
       const tr = document.createElement('tr');
       if (sv._isDeleted) {
         tr.style.opacity = '0.6';
         tr.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
-      }
-
-      // let actionContent = '';
-      if (sv._isDeleted) {
-        actionContent = `<button class="btn btn-secondary btn-sm" onclick="LopModule.handleCancelDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Huỷ xoá</button>`;
-      } else {
-        actionContent = `<button class="btn btn-info btn-sm" onclick="LopModule.openStudentModal('edit','${this.escapeJs(sv.MASV)}')">Sửa</button>
-                         <button class="btn btn-danger btn-sm" onclick="LopModule.handleDeleteStudentRow('${this.escapeJs(sv.MASV)}')">Xoá</button>`;
       }
 
       tr.innerHTML = `
