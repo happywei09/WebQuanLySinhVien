@@ -17,11 +17,13 @@
 <!-- Bộ lọc và tìm kiếm sinh viên -->
 <div class="card" style="margin-bottom: 24px;">
     <div class="card-body" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
-        <div style="flex: 2; min-width: 200px;">
+        <div style="flex: 2; min-width: 250px;">
             <label class="form-label"
-                style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">TÌM KIẾM SINH
-                VIÊN</label>
-            <input type="text" id="searchSV" class="form-control" placeholder="Nhập mã SV hoặc họ tên cần tìm..." />
+                style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">TÌM KIẾM SINH VIÊN</label>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="searchSV" class="form-control" placeholder="Nhập mã SV hoặc họ tên cần tìm..." style="flex: 1;" />
+                <button class="btn btn-secondary" id="btnSearchSV" style="flex-shrink: 0; height: 38px;">Tìm</button>
+            </div>
         </div>
         <div style="flex: 1; min-width: 150px;">
             <label class="form-label"

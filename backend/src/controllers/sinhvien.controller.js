@@ -60,6 +60,13 @@ const deleteSinhVien = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+const searchSinhVien = async (req, res, next) => {
+  try {
+    const data = await sinhvienService.searchSinhVien(req.query.keyword || "");
+    res.json({ success: true, message: "Success", data });
+  } catch (error) { next(error); }
+};
+
 module.exports = {
   getAllSinhVien,
   getSinhVienById,
@@ -68,4 +75,5 @@ module.exports = {
   createSinhVien,
   updateSinhVien,
   deleteSinhVien,
+  searchSinhVien,
 };

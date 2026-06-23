@@ -8,6 +8,7 @@ const { validateRequired, validateMaField, validateTrimmedText } = require("../m
 router.get("/", authenticate, authorize(...PERMISSIONS.SINHVIEN.VIEW), svController.getAllSinhVien);
 router.get("/lop/:maLop", authenticate, authorize(...PERMISSIONS.SINHVIEN.VIEW), svController.getSinhVienByLop);
 router.get("/khoa/:maKhoa", authenticate, authorize(...PERMISSIONS.SINHVIEN.VIEW), svController.getSinhVienByKhoa);
+router.get("/search", authenticate, authorize(...PERMISSIONS.SINHVIEN.VIEW), svController.searchSinhVien);
 router.get("/:id", authenticate, authorize(...PERMISSIONS.SINHVIEN.VIEW), svController.getSinhVienById);
 router.post("/create", authenticate, authorize(...PERMISSIONS.SINHVIEN.CREATE), validateRequired(["MASV", "HO", "TEN", "MALOP"]), validateMaField("MASV", "Mã sinh viên"), validateMaField("MALOP", "Mã lớp"), validateTrimmedText("HO", "Họ", { maxLength: 50 }), validateTrimmedText("TEN", "Tên", { maxLength: 10 }), svController.createSinhVien);
 router.put("/update/:id", authenticate, authorize(...PERMISSIONS.SINHVIEN.UPDATE), validateRequired(["HO", "TEN", "MALOP"]), validateMaField("MALOP", "Mã lớp"), validateTrimmedText("HO", "Họ", { maxLength: 50 }), validateTrimmedText("TEN", "Tên", { maxLength: 10 }), svController.updateSinhVien);

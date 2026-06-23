@@ -6,8 +6,15 @@ window.GiangVienModule = {
     await this.loadData();
   },
 
+  debounce(func, delay = 500) {
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(func, delay);
+  },
+
   cacheDOM() {
     this.tbody = document.querySelector('#pageContent tbody');
+    this.searchInput = document.getElementById('searchGV');
+    this.btnSearch = document.getElementById('btnSearchGV');
     if (!document.getElementById('modalGV')) {
       const modalHTML = `
       <div class="modal-overlay" id="modalGV">
@@ -97,6 +104,21 @@ window.GiangVienModule = {
     document.getElementById('btnCloseModalGV').onclick = () => this.closeModal();
     document.getElementById('btnCancelModalGV').onclick = () => this.closeModal();
     this.btnSave.onclick = () => this.handleSave();
+
+    if (this.btnSearch) {
+      this.btnSearch.onclick = () => {
+        const keyword = this.searchInput ? this.searchInput.value.trim() : '';
+        this.loadData(keyword);
+      };
+    }
+    if (this.searchInput) {
+      this.searchInput.addEventListener('input', () => {
+        this.debounce(() => {
+          const keyword = this.searchInput.value.trim();
+          this.loadData(keyword);
+        });
+      });
+    }
   },
 
   async loadKhoaList() {
@@ -108,13 +130,14 @@ window.GiangVienModule = {
       }
     } catch (e) { }
   },
-  async loadData() {
+  async loadData(keyword = '') {
     const user = Auth.getUser();
     const isPGV = user && user.role === 'PGV';
 
     try {
       this.tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Đang tải...</td></tr>';
-      const res = await API.get('/giangvien');
+      const endpoint = keyword ? `/giangvien/search?keyword=${encodeURIComponent(keyword)}` : '/giangvien';
+      const res = await API.get(endpoint);
       if (res.success) {
         this.tbody.innerHTML = res.data.length === 0
           ? '<tr><td colspan="8" style="text-align:center;">Không có dữ liệu</td></tr>'

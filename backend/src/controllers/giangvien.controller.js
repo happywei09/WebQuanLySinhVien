@@ -46,6 +46,13 @@ const deleteGiangVien = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+const searchGiangVien = async (req, res, next) => {
+  try {
+    const data = await giangvienService.searchGiangVien(req.query.keyword || "");
+    res.json({ success: true, message: "Success", data });
+  } catch (error) { next(error); }
+};
+
 module.exports = {
   getAllGiangVien,
   getGiangVienById,
@@ -53,4 +60,5 @@ module.exports = {
   createGiangVien,
   updateGiangVien,
   deleteGiangVien,
+  searchGiangVien,
 };

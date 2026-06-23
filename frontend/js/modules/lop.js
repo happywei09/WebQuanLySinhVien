@@ -21,7 +21,8 @@ window.LopModule = {
     detailEditingStudentId: null,
     detailEditingDraft: null,
     currentDetailLop: null,
-    khoaList: [] // Cache danh sách khoa từ API
+    khoaList: [], // Cache danh sách khoa từ API
+    searchKeyword: ''
   },
 
   async init() {
@@ -31,9 +32,15 @@ window.LopModule = {
     await this.loadData();
   },
 
+  debounce(func, delay = 500) {
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(func, delay);
+  },
+
   cacheDOM() {
     this.tbody = document.getElementById('tbodyLop');
     this.searchLop = document.getElementById('searchLop');
+    this.btnSearchLop = document.getElementById('btnSearchLop');
     this.filterKhoaHoc = document.getElementById('filterKhoaHoc');
     this.filterKhoa = document.getElementById('filterKhoa');
     this.btnAdd = document.getElementById('btnAddLop');
@@ -126,8 +133,19 @@ window.LopModule = {
     if (this.btnCloseStudentModal) this.btnCloseStudentModal.onclick = () => this.closeStudentModal();
     if (this.btnCancelStudentModal) this.btnCancelStudentModal.onclick = () => this.closeStudentModal();
 
+    if (this.btnSearchLop) {
+      this.btnSearchLop.onclick = () => {
+        const keyword = this.searchLop ? this.searchLop.value.trim() : '';
+        this.loadData(keyword);
+      };
+    }
     if (this.searchLop) {
-      this.searchLop.addEventListener('input', () => this.renderTable());
+      this.searchLop.addEventListener('input', () => {
+        this.debounce(() => {
+          const keyword = this.searchLop.value.trim();
+          this.loadData(keyword);
+        });
+      });
     }
     if (this.searchStudentInClass) {
       this.searchStudentInClass.addEventListener('input', () => this.renderDetailStudentTable());
@@ -140,10 +158,23 @@ window.LopModule = {
     }
   },
 
-  async loadData() {
+  async loadData(keyword = '') {
+    if (this.hasPendingChanges() && keyword === this.state.searchKeyword) {
+      this.renderTable();
+      this.updateActionState();
+      return;
+    }
+
     try {
       this.tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Đang tải...</td></tr>';
-      const res = await API.get('/lop');
+      if (this.hasPendingChanges()) {
+        const ok = confirm('Bạn đang có thay đổi chưa ghi. Tải lại dữ liệu sẽ bỏ các thay đổi này. Tiếp tục?');
+        if (!ok) return;
+      }
+
+      this.state.searchKeyword = keyword;
+      const endpoint = keyword ? `/lop/search?keyword=${encodeURIComponent(keyword)}` : '/lop';
+      const res = await API.get(endpoint);
       if (res.success) {
         this.state.originalData = res.data || [];
         this.state.pendingOperations = {};
@@ -216,20 +247,14 @@ window.LopModule = {
   },
 
   getFilteredData() {
-    const keyword = this.searchLop ? this.searchLop.value.trim().toLowerCase() : '';
     const selectedKhoaHoc = this.filterKhoaHoc ? this.filterKhoaHoc.value : 'ALL';
     const selectedKhoa = this.filterKhoa ? this.filterKhoa.value : 'ALL';
 
     return this.getCurrentData().filter(item => {
-      const matchesSearch =
-        !keyword ||
-        (item.MALOP && item.MALOP.toLowerCase().includes(keyword)) ||
-        (item.TENLOP && item.TENLOP.toLowerCase().includes(keyword));
-
       const matchesKhoaHoc = selectedKhoaHoc === 'ALL' || item.KHOAHOC === selectedKhoaHoc;
       const matchesKhoa = selectedKhoa === 'ALL' || item.MAKHOA === selectedKhoa;
 
-      return matchesSearch && matchesKhoaHoc && matchesKhoa;
+      return matchesKhoaHoc && matchesKhoa;
     });
   },
 

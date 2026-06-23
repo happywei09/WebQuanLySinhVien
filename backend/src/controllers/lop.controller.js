@@ -58,6 +58,15 @@ const deleteLop = async (req, res, next) => {
   }
 };
 
+const searchLop = async (req, res, next) => {
+  try {
+    const data = await lopService.searchLop(req.query.keyword || "");
+    res.json({ success: true, message: "Success", data });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllLop,
   getLopById,
@@ -65,4 +74,5 @@ module.exports = {
   createLop,
   updateLop,
   deleteLop,
+  searchLop,
 };

@@ -7,7 +7,8 @@ window.SinhVienModule = {
     state: {
         originalData: [],
         pendingOperations: {},
-        history: []
+        history: [],
+        searchKeyword: ''
     },
     allLops: [], // Danh sách toàn bộ lớp học từ API
 
@@ -18,9 +19,15 @@ window.SinhVienModule = {
         await this.loadSinhVien();
     },
 
+    debounce(func, delay = 500) {
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(func, delay);
+    },
+
     cacheDOM() {
         // Bộ lọc và Tìm kiếm
         this.searchSV = document.getElementById('searchSV');
+        this.btnSearchSV = document.getElementById('btnSearchSV');
         this.filterSVKhoaHoc = document.getElementById('filterSVKhoaHoc');
         this.filterSVLop = document.getElementById('filterSVLop');
         this.btnAdd = document.getElementById('btnAddSV');
@@ -61,9 +68,20 @@ window.SinhVienModule = {
         if (this.btnCommit) this.btnCommit.onclick = () => this.handleCommit();
         if (this.btnUndo) this.btnUndo.onclick = () => this.handleUndo();
 
+        if (this.btnSearchSV) {
+            this.btnSearchSV.onclick = () => {
+                const keyword = this.searchSV ? this.searchSV.value.trim() : '';
+                this.loadSinhVien(keyword);
+            };
+        }
         // Lắng nghe sự kiện tìm kiếm & bộ lọc
         if (this.searchSV) {
-            this.searchSV.addEventListener('input', () => this.filterAndRenderData());
+            this.searchSV.addEventListener('input', () => {
+                this.debounce(() => {
+                    const keyword = this.searchSV.value.trim();
+                    this.loadSinhVien(keyword);
+                });
+            });
         }
         if (this.filterSVKhoaHoc) {
             this.filterSVKhoaHoc.addEventListener('change', () => {
@@ -129,15 +147,23 @@ window.SinhVienModule = {
         });
     },
 
-    async loadSinhVien() {
-        if (this.hasPendingChanges()) {
-            const ok = confirm('Bạn đang có thay đổi chưa ghi. Tải lại dữ liệu sẽ bỏ các thay đổi này. Tiếp tục?');
-            if (!ok) return;
+    async loadSinhVien(keyword = '') {
+        if (this.hasPendingChanges() && keyword === this.state.searchKeyword) {
+            this.filterAndRenderData();
+            this.updateActionState();
+            return;
         }
 
         try {
             this.tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Đang tải toàn bộ sinh viên...</td></tr>';
-            const res = await API.get('/sinhvien');
+            if (this.hasPendingChanges()) {
+                const ok = confirm('Bạn đang có thay đổi chưa ghi. Tải lại dữ liệu sẽ bỏ các thay đổi này. Tiếp tục?');
+                if (!ok) return;
+            }
+
+            this.state.searchKeyword = keyword;
+            const endpoint = keyword ? `/sinhvien/search?keyword=${encodeURIComponent(keyword)}` : '/sinhvien';
+            const res = await API.get(endpoint);
             if (res.success) {
                 this.state.originalData = res.data || [];
                 this.state.pendingOperations = {};
@@ -208,30 +234,23 @@ window.SinhVienModule = {
     },
 
     filterAndRenderData() {
-        const keyword = this.searchSV ? this.searchSV.value.trim().toLowerCase() : '';
         const selectedCohort = this.filterSVKhoaHoc ? this.filterSVKhoaHoc.value : 'ALL';
         const selectedClass = this.filterSVLop ? this.filterSVLop.value : 'ALL';
 
         const currentData = this.getCurrentData();
 
         const filtered = currentData.filter(sv => {
-            // 1. Tìm kiếm theo Mã SV hoặc Họ tên
-            const fullName = `${sv.HO || ''} ${sv.TEN || ''}`.trim().toLowerCase();
-            const matchesSearch = !keyword ||
-                (sv.MASV && sv.MASV.toLowerCase().includes(keyword)) ||
-                fullName.includes(keyword);
-
-            // 2. Lọc theo Khóa học (KHOAHOC từ bảng LOP)
+            // 1. Lọc theo Khóa học (KHOAHOC từ bảng LOP)
             let matchesCohort = true;
             if (selectedCohort !== 'ALL') {
                 const studentClass = this.allLops.find(l => l.MALOP === sv.MALOP);
                 matchesCohort = studentClass && studentClass.KHOAHOC === selectedCohort;
             }
 
-            // 3. Lọc theo Lớp
+            // 2. Lọc theo Lớp
             const matchesClass = selectedClass === 'ALL' || sv.MALOP === selectedClass;
 
-            return matchesSearch && matchesCohort && matchesClass;
+            return matchesCohort && matchesClass;
         });
 
         this.renderTable(filtered);
@@ -461,7 +480,9 @@ window.SinhVienModule = {
             Toast.success('Đã ghi tất cả thay đổi thành công');
             
             // Tải lại dữ liệu sau khi ghi thành công
-            const res = await API.get('/sinhvien');
+            const keyword = this.state.searchKeyword;
+            const endpoint = keyword ? `/sinhvien/search?keyword=${encodeURIComponent(keyword)}` : '/sinhvien';
+            const res = await API.get(endpoint);
             if (res.success) {
                 this.state.originalData = res.data || [];
             }

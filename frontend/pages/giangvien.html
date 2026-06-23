@@ -10,6 +10,20 @@
   <button class="btn btn-success">+ Thêm giảng viên</button>
 </div>
 
+<!-- Bộ lọc và tìm kiếm giảng viên -->
+<div class="card" style="margin-bottom: 24px;">
+  <div class="card-body" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
+    <div style="flex: 2; min-width: 250px;">
+      <label class="form-label"
+        style="font-weight: 600; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">TÌM KIẾM GIẢNG VIÊN</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="searchGV" class="form-control" placeholder="Nhập mã GV hoặc họ tên cần tìm..." style="flex: 1;" />
+        <button class="btn btn-secondary" id="btnSearchGV" style="flex-shrink: 0; height: 38px;">Tìm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="card">
   <div class="table-responsive">
     <table class="table" style="text-align: center;">
