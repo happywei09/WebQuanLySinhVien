@@ -8,6 +8,5 @@ const dashboardController = require("../controllers/dashboard.controller");
 const { authenticate } = require("../middleware/auth.middleware");
 
 router.get("/stats", authenticate, dashboardController.getStats);
-router.get("/filters", authenticate, dashboardController.getFilters);
 
 module.exports = router;
