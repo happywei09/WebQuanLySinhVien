@@ -76,7 +76,7 @@ window.KhoaModule = {
 
     try {
       this.tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Đang tải...</td></tr>';
-      
+
       if (this.hasPendingChanges()) {
         const ok = confirm('Bạn đang có thay đổi chưa ghi. Tải lại dữ liệu sẽ bỏ các thay đổi này. Tiếp tục?');
         if (!ok) return;
@@ -84,9 +84,9 @@ window.KhoaModule = {
 
       this.state.searchKeyword = keyword;
       const endpoint = keyword ? `/khoa/search?keyword=${keyword}` : '/khoa';
-      
+
       const response = await API.get(endpoint);
-      
+
       if (response.success) {
         this.state.originalData = response.data || [];
         this.state.pendingOperations = {};
@@ -117,7 +117,7 @@ window.KhoaModule = {
       const tr = document.createElement('tr');
       const pendingOp = this.state.pendingOperations[item.MAKHOA];
       const statusBadge = this.getStatusBadge(pendingOp);
-      const actionContent = isPGV 
+      const actionContent = isPGV
         ? `<button class="btn btn-info btn-sm" onclick="KhoaModule.startEditRow('${item.MAKHOA}')">Sửa</button>
            <button class="btn btn-danger btn-sm" onclick="KhoaModule.handleDelete('${item.MAKHOA}')">Xoá</button>`
         : `<span style="color: var(--text-muted); font-size: 13px;">Chỉ xem</span>`;
@@ -233,7 +233,7 @@ window.KhoaModule = {
     }
     this.state.editingKhoaId = ma;
     this.state.editingDraft = { MAKHOA: ma, TENKHOA: item.TENKHOA || '' };
-    
+
     if (this.khoaModalTitle) this.khoaModalTitle.textContent = 'Sửa thông tin khoa';
     if (this.khoaFormMaKhoa) {
       this.khoaFormMaKhoa.value = ma;

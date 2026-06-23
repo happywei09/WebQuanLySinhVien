@@ -341,15 +341,15 @@ window.LopModule = {
   populateLopFormKhoaHocSelect() {
     if (!this.lopFormKhoaHoc) return;
     const current = this.lopFormKhoaHoc.value;
-    
+
     this.lopFormKhoaHoc.innerHTML = '<option value="">-- Chọn Khóa học --</option>';
-    
+
     const years = new Set();
     // Sinh ra các khóa học chuẩn từ năm 2015-2019 đến 2035-2039
     for (let year = 2015; year <= 2035; year++) {
       years.add(`${year}-${year + 4}`);
     }
-    
+
     // Quét thêm dữ liệu thực tế để đảm bảo không bỏ sót khóa học nào
     const data = this.getCurrentData();
     data.forEach(item => {
@@ -357,7 +357,7 @@ window.LopModule = {
         years.add(item.KHOAHOC);
       }
     });
-    
+
     const sortedYears = Array.from(years).sort();
     sortedYears.forEach(kh => {
       const opt = document.createElement('option');
@@ -365,7 +365,7 @@ window.LopModule = {
       opt.textContent = kh;
       this.lopFormKhoaHoc.appendChild(opt);
     });
-    
+
     if (current && sortedYears.includes(current)) {
       this.lopFormKhoaHoc.value = current;
     }
@@ -401,16 +401,16 @@ window.LopModule = {
   populateLopFormKhoaSelect() {
     if (!this.lopFormSelectKhoa) return;
     const current = this.lopFormSelectKhoa.value;
-    
+
     this.lopFormSelectKhoa.innerHTML = '<option value="">-- Chọn Khoa --</option>';
-    
+
     this.state.khoaList.forEach(k => {
       const opt = document.createElement('option');
       opt.value = k.MAKHOA;
       opt.textContent = k.TENKHOA;
       this.lopFormSelectKhoa.appendChild(opt);
     });
-    
+
     if (current && this.state.khoaList.some(k => k.MAKHOA === current)) {
       this.lopFormSelectKhoa.value = current;
     }
@@ -745,7 +745,7 @@ window.LopModule = {
 
     if (students.length === 0 && !this.state.detailIsAddingRow) {
       const query = this.searchStudentInClass ? this.searchStudentInClass.value.trim() : '';
-      this.detailTbody.innerHTML = query 
+      this.detailTbody.innerHTML = query
         ? '<tr><td colspan="9" style="text-align:center; color: var(--text-muted);">Không tìm thấy sinh viên nào khớp với từ khóa tìm kiếm</td></tr>'
         : '<tr><td colspan="9" style="text-align:center;">Lớp này chưa có sinh viên nào</td></tr>';
       this.updateDetailActionState();

@@ -47,8 +47,8 @@
   </div>
 </div>
 
-<div class="card">
-  <div class="table-responsive">
+<div class="card loptinchi-list-card">
+  <div class="table-responsive loptinchi-list-scroll">
     <table class="table" style="text-align: center;">
       <thead>
         <tr>
@@ -71,4 +71,34 @@
     </table>
   </div>
 </div>
+
+<style>
+  /* Lop tin chi list - scrollable box */
+  .loptinchi-list-card .loptinchi-list-scroll {
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+  .loptinchi-list-card .loptinchi-list-scroll table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-surface);
+    z-index: 2;
+    border-bottom: 2px solid var(--border-color);
+  }
+
+  .loptinchi-list-card .loptinchi-list-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .loptinchi-list-card .loptinchi-list-scroll::-webkit-scrollbar-track {
+    background: var(--bg-main);
+  }
+
+  .loptinchi-list-card .loptinchi-list-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+  }
+</style>
+
 <script src="js/modules/loptinchi.js"></script>

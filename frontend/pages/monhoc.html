@@ -10,8 +10,8 @@
   <button class="btn btn-success">+ Thêm môn học</button>
 </div>
 
-<div class="card">
-  <div class="table-responsive">
+<div class="card monhoc-list-card">
+  <div class="table-responsive monhoc-list-scroll">
     <table class="table" style="text-align: center;">
       <thead>
         <tr>
@@ -31,4 +31,34 @@
     </table>
   </div>
 </div>
+
+<style>
+  /* Mon hoc list - scrollable box */
+  .monhoc-list-card .monhoc-list-scroll {
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+  .monhoc-list-card .monhoc-list-scroll table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-surface);
+    z-index: 2;
+    border-bottom: 2px solid var(--border-color);
+  }
+
+  .monhoc-list-card .monhoc-list-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .monhoc-list-card .monhoc-list-scroll::-webkit-scrollbar-track {
+    background: var(--bg-main);
+  }
+
+  .monhoc-list-card .monhoc-list-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+  }
+</style>
+
 <script src="js/modules/monhoc.js"></script>

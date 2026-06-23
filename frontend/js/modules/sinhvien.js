@@ -268,7 +268,7 @@ window.SinhVienModule = {
 
         data.forEach((sv, index) => {
             const tr = document.createElement('tr');
-            
+
             const pendingOp = this.state.pendingOperations[sv.MASV];
             const statusBadge = this.getStatusBadge(pendingOp);
 
@@ -478,7 +478,7 @@ window.SinhVienModule = {
             }
 
             Toast.success('Đã ghi tất cả thay đổi thành công');
-            
+
             // Tải lại dữ liệu sau khi ghi thành công
             const keyword = this.state.searchKeyword;
             const endpoint = keyword ? `/sinhvien/search?keyword=${encodeURIComponent(keyword)}` : '/sinhvien';
