@@ -48,6 +48,8 @@ window.SinhVienModule = {
         this.inputPhai = document.getElementById('phaiSV');
         this.selectLopModal = document.getElementById('lopSV');
         this.inputDaNghiHoc = document.getElementById('daNghiHocSV');
+        this.inputNgaySinh = document.getElementById('ngaySinhSV');
+        this.inputDiaChi = document.getElementById('diaChiSV');
     },
 
     bindEvents() {
@@ -287,7 +289,7 @@ window.SinhVienModule = {
                 if (sv._isDeleted) {
                     actionContent = `<button class="btn btn-secondary btn-sm" onclick="window.SinhVienModule.handleCancelDelete('${sv.MASV}')">Huỷ xoá</button>`;
                 } else {
-                    actionContent = `<button class="btn btn-primary btn-sm" onclick="window.SinhVienModule.openModal('${sv.MASV}', '${this.escapeJs(sv.HO || '')}', '${this.escapeJs(sv.TEN || '')}', ${sv.PHAI ? 1 : 0}, '${this.escapeJs(sv.MALOP)}', ${sv.DANGHIHOC ? 1 : 0})">Sửa</button>
+                    actionContent = `<button class="btn btn-primary btn-sm" onclick="window.SinhVienModule.openModal('${sv.MASV}')">Sửa</button>
                                      <button class="btn btn-danger btn-sm" onclick="window.SinhVienModule.handleDelete('${sv.MASV}')">Xoá</button>`;
                 }
             } else {
@@ -311,9 +313,37 @@ window.SinhVienModule = {
         });
     },
 
-    openModal(ma = '', ho = '', ten = '', phai = 0, malop = '', daNghiHoc = 0) {
+    openModal(ma = '') {
         this.isEdit = !!ma;
         document.getElementById('modalTitleSV').textContent = this.isEdit ? 'Sửa Sinh Viên' : 'Thêm Sinh Viên';
+
+        let ho = '';
+        let ten = '';
+        let phai = 0;
+        let malop = '';
+        let daNghiHoc = 0;
+        let ngaySinh = '';
+        let diaChi = '';
+
+        if (this.isEdit) {
+            const currentData = this.getCurrentData();
+            const sv = currentData.find(item => item.MASV === ma);
+            if (sv) {
+                ho = sv.HO || '';
+                ten = sv.TEN || '';
+                phai = sv.PHAI ? 1 : 0;
+                malop = sv.MALOP || '';
+                daNghiHoc = sv.DANGHIHOC ? 1 : 0;
+                diaChi = sv.DIACHI || '';
+                if (sv.NGAYSINH) {
+                    try {
+                        ngaySinh = new Date(sv.NGAYSINH).toISOString().split('T')[0];
+                    } catch (e) {
+                        console.error('Lỗi parse ngày sinh:', e);
+                    }
+                }
+            }
+        }
 
         this.inputMa.value = ma;
         this.inputMa.readOnly = this.isEdit;
@@ -321,6 +351,8 @@ window.SinhVienModule = {
         this.inputTen.value = ten;
         this.inputPhai.value = phai;
         if (this.inputDaNghiHoc) this.inputDaNghiHoc.value = daNghiHoc;
+        if (this.inputNgaySinh) this.inputNgaySinh.value = ngaySinh;
+        if (this.inputDiaChi) this.inputDiaChi.value = diaChi;
 
         // Nếu có chọn một lớp cụ thể ở bộ lọc, tự động gán làm lớp mặc định trong modal
         if (this.selectLopModal) {
@@ -346,6 +378,8 @@ window.SinhVienModule = {
         const ten = this.inputTen.value.trim();
         const phai = this.inputPhai.value;
         const maLop = this.selectLopModal ? this.selectLopModal.value : '';
+        const ngaySinh = this.inputNgaySinh ? this.inputNgaySinh.value : '';
+        const diaChi = this.inputDiaChi ? this.inputDiaChi.value.trim() : '';
 
         if (!ma || !ho || !ten || !maLop) {
             Toast.warning('Vui lòng điền đầy đủ thông tin sinh viên và chọn lớp');
@@ -354,7 +388,16 @@ window.SinhVienModule = {
 
         const isFemale = phai === "1";
         const daNghiHoc = this.inputDaNghiHoc ? this.inputDaNghiHoc.value === '1' : false;
-        const studentPayload = { MASV: ma, HO: ho, TEN: ten, PHAI: isFemale, MALOP: maLop, DANGHIHOC: daNghiHoc };
+        const studentPayload = { 
+            MASV: ma, 
+            HO: ho, 
+            TEN: ten, 
+            PHAI: isFemale, 
+            MALOP: maLop, 
+            DANGHIHOC: daNghiHoc,
+            NGAYSINH: ngaySinh || null,
+            DIACHI: diaChi || null
+        };
 
         if (this.isEdit) {
             const originalItem = this.state.originalData.find(item => item.MASV === ma);
@@ -383,6 +426,11 @@ window.SinhVienModule = {
 
             // Nếu update xong mà lại giống hệt original thì xóa pending operation đi
             const pending = this.state.pendingOperations[ma];
+            const oldNgaySinhFormatted = pending?.oldValue?.NGAYSINH ? new Date(pending.oldValue.NGAYSINH).toISOString().split('T')[0] : '';
+            const newNgaySinhFormatted = ngaySinh || '';
+            const oldDiaChi = pending?.oldValue?.DIACHI || '';
+            const newDiaChi = diaChi || '';
+
             if (
                 pending &&
                 pending.type === 'update' &&
@@ -391,7 +439,9 @@ window.SinhVienModule = {
                 pending.oldValue.TEN === ten &&
                 !!pending.oldValue.PHAI === isFemale &&
                 pending.oldValue.MALOP === maLop &&
-                !!pending.oldValue.DANGHIHOC === daNghiHoc
+                !!pending.oldValue.DANGHIHOC === daNghiHoc &&
+                oldNgaySinhFormatted === newNgaySinhFormatted &&
+                oldDiaChi === newDiaChi
             ) {
                 delete this.state.pendingOperations[ma];
             }
@@ -499,7 +549,9 @@ window.SinhVienModule = {
                         TEN: op.newValue.TEN,
                         PHAI: op.newValue.PHAI,
                         MALOP: op.newValue.MALOP,
-                        DANGHIHOC: op.newValue.DANGHIHOC
+                        DANGHIHOC: op.newValue.DANGHIHOC,
+                        NGAYSINH: op.newValue.NGAYSINH,
+                        DIACHI: op.newValue.DIACHI
                     });
                 } else if (op.type === 'delete') {
                     await API.delete(`/sinhvien/delete/${op.key}`);

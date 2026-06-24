@@ -24,6 +24,13 @@ class LopService {
   }
 
   async createLop(data) {
+    if (data.KHOAHOC) {
+      const startYear = parseInt(data.KHOAHOC.split("-")[0]);
+      const currentYear = new Date().getFullYear();
+      if (!isNaN(startYear) && startYear < currentYear) {
+        throw new Error(`Khóa học khi tạo lớp phải bắt đầu từ năm hiện tại (${currentYear}) trở đi`);
+      }
+    }
     return lopRepository.create(data);
   }
 

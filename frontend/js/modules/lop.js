@@ -384,9 +384,13 @@ window.LopModule = {
 
     this.lopFormKhoaHoc.innerHTML = '<option value="">-- Chọn Khóa học --</option>';
 
+    const currentYear = new Date().getFullYear();
+    const mode = this.state.lopModalMode || 'edit';
+    const startYearGen = (mode === 'create') ? currentYear : 2015;
+
     const years = new Set();
-    // Sinh ra các khóa học chuẩn từ năm 2015-2019 đến 2035-2039
-    for (let year = 2015; year <= 2035; year++) {
+    // Sinh ra các khóa học chuẩn
+    for (let year = startYearGen; year <= 2035; year++) {
       years.add(`${year}-${year + 4}`);
     }
 
@@ -394,7 +398,10 @@ window.LopModule = {
     const data = this.getCurrentData();
     data.forEach(item => {
       if (item.KHOAHOC) {
-        years.add(item.KHOAHOC);
+        const itemStartYear = parseInt(item.KHOAHOC.split('-')[0]);
+        if (mode !== 'create' || (!isNaN(itemStartYear) && itemStartYear >= currentYear)) {
+          years.add(item.KHOAHOC);
+        }
       }
     });
 

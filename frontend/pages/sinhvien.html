@@ -126,12 +126,22 @@
                         <input type="text" id="tenSV" class="form-control" required placeholder="Ví dụ: A">
                     </div>
                 </div>
+                <div style="display: flex; gap: 16px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label" for="ngaySinhSV">Ngày sinh</label>
+                        <input type="date" id="ngaySinhSV" class="form-control">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label required" for="phaiSV">Giới tính</label>
+                        <select id="phaiSV" class="form-control">
+                            <option value="0">Nam</option>
+                            <option value="1">Nữ</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="form-group">
-                    <label class="form-label required" for="phaiSV">Giới tính</label>
-                    <select id="phaiSV" class="form-control">
-                        <option value="0">Nam</option>
-                        <option value="1">Nữ</option>
-                    </select>
+                    <label class="form-label" for="diaChiSV">Địa chỉ</label>
+                    <input type="text" id="diaChiSV" class="form-control" placeholder="Ví dụ: 180 Cao Lỗ, Quận 8, HCM">
                 </div>
                 <div class="form-group">
                     <label class="form-label required" for="lopSV">Lớp Học</label>

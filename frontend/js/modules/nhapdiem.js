@@ -533,10 +533,15 @@ window.NhapDiemModule = {
       this.btnSave.disabled = true;
       this.btnSave.innerHTML = 'Đang lưu...';
 
-      const diemList = Object.keys(this.state.editedDiem).map(maSV => ({
-        MASV: maSV,
-        ...this.state.editedDiem[maSV]
-      }));
+      const diemList = Object.keys(this.state.editedDiem).map(maSV => {
+        const original = this.state.danhSachDiem.find(sv => sv.MASV === maSV) || {};
+        return {
+          MASV: maSV,
+          DIEM_CC: this.state.editedDiem[maSV].DIEM_CC !== undefined ? this.state.editedDiem[maSV].DIEM_CC : (original.DIEM_CC !== undefined ? original.DIEM_CC : null),
+          DIEM_GK: this.state.editedDiem[maSV].DIEM_GK !== undefined ? this.state.editedDiem[maSV].DIEM_GK : (original.DIEM_GK !== undefined ? original.DIEM_GK : null),
+          DIEM_CK: this.state.editedDiem[maSV].DIEM_CK !== undefined ? this.state.editedDiem[maSV].DIEM_CK : (original.DIEM_CK !== undefined ? original.DIEM_CK : null)
+        };
+      });
 
       await API.put('/diem/update-batch', { maLTC: this.state.currentLTC, diemList });
 
